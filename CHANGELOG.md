@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.7.0
+
+- **Timer and stopwatch** from the tray menu (**Timer**): a live activity in the island, with an alert when the countdown ends
+- **Microphone and camera dots:** a small orange or green dot beside the island while an app uses them. Off with **Microphone and camera dots** in Settings
+- **Battery alerts** on laptops: charger connected or removed, low battery (20% and 10%) and fully charged
+
 ## 1.6.0
 
 - **Lighter app:** the tray icon and the monitor list now use Windows directly instead of Windows Forms. The download is about 10 MB smaller (78 MB to 68 MB) and the behavior is the same

@@ -18,6 +18,9 @@ A Dynamic Island for Windows. Music, Claude Code, its usage limits and your noti
 - **Claude Code live activity:** the Claude spark thinks while Claude works, with the time so far, and breathes when Claude is waiting for you
 - **Claude usage:** rings for the **5-hour** and **weekly** limits, with reset times
 - **Codex:** a live activity while Codex works, its 5-hour and weekly limits, and an alert when it finishes
+- **Timer and stopwatch:** start one from the tray menu; it shows as a live activity and alerts you when the time is up
+- **Microphone and camera dots:** orange while the microphone is in use, green for the camera, like on iPhone
+- **Battery alerts** on laptops: charger connected or removed, low battery and fully charged
 - **Alerts** when Claude finishes a task or needs you
 - **Windows notifications** in the island, if you turn them on
 - **Two activities at once:** the second one splits off into a bubble beside the island
@@ -64,6 +67,8 @@ To try it without installing, run `WindowsIsland.exe --portable`.
 | Show Claude | Shows Claude Code activity and limits |
 | Claude alerts | Expands the island when Claude finishes or needs you |
 | Show Codex, Codex alerts | Codex activity and limits, and the alert when it finishes. Only appear once Codex is installed |
+| Microphone and camera dots | Shows a small dot beside the island while an app uses the microphone (orange) or the camera (green) |
+| Battery alerts | Charger connected or removed, low battery and fully charged. Laptops only |
 | Show Windows notifications | Shows new notifications in the island. Off by default |
 | Empty island | Keeps the collapsed island a plain pill, with no live activities. Hover or click to see them |
 | Show pill when idle | Keeps the small pill on screen when nothing is happening |

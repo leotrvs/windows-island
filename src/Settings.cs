@@ -24,6 +24,8 @@ namespace WindowsIsland
         public bool ClaudeBanners { get; set; } = true;
         public bool ShowCodex { get; set; } = true;     // Only shows anything once Codex is installed
         public bool CodexBanners { get; set; } = true;
+        public bool ShowPrivacyDots { get; set; } = true;
+        public bool BatteryAlerts { get; set; } = true;
         public bool ShowNotifications { get; set; } = false; // Reads notification content, so it is opt-in
         public bool HideInFullscreen { get; set; } = true;
         public bool StartWithWindows { get; set; } = false;

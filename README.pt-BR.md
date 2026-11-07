@@ -18,6 +18,9 @@ Uma Dynamic Island para o Windows. Música, Claude Code, os limites de uso e sua
 - **Atividade ao vivo do Claude Code:** o símbolo do Claude "pensa" enquanto ele trabalha, com o tempo decorrido, e pulsa quando ele está esperando você
 - **Uso do Claude:** anéis dos limites de **5 horas** e **semanal**, com o horário em que renovam
 - **Codex:** atividade ao vivo enquanto o Codex trabalha, os limites de 5 horas e semanal, e um aviso quando ele termina
+- **Timer e cronômetro:** inicie um pelo menu da bandeja; ele aparece como atividade ao vivo e avisa quando o tempo acaba
+- **Pontos de microfone e câmera:** laranja com o microfone em uso, verde com a câmera, como no iPhone
+- **Avisos de bateria** em notebooks: carregador conectado ou removido, bateria baixa e carregada
 - **Avisos** quando o Claude termina uma tarefa ou precisa de você
 - **Notificações do Windows** na ilha, se você ligar
 - **Duas atividades ao mesmo tempo:** a segunda se separa numa bolha ao lado da ilha
@@ -64,6 +67,8 @@ Para testar sem instalar, rode `WindowsIsland.exe --portable`.
 | Mostrar Claude | Mostra a atividade e os limites do Claude Code |
 | Avisos do Claude | Expande a ilha quando o Claude termina ou precisa de você |
 | Mostrar Codex, Avisos do Codex | Atividade e limites do Codex, e o aviso quando ele termina. Só aparecem com o Codex instalado |
+| Pontos de microfone e câmera | Mostra um pontinho ao lado da ilha enquanto um app usa o microfone (laranja) ou a câmera (verde) |
+| Avisos de bateria | Carregador conectado ou removido, bateria baixa e carregada. Só em notebooks |
 | Mostrar notificações do Windows | Mostra as notificações novas na ilha. Vem desligado |
 | Ilha vazia | Mantém a ilha recolhida como uma pílula simples, sem atividades. Passe o mouse ou clique para vê-las |
 | Mostrar pílula ociosa | Mantém a pílula na tela quando nada está acontecendo |

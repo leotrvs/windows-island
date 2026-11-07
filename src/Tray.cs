@@ -18,7 +18,9 @@ namespace WindowsIsland
         const uint NIF_MESSAGE = 1, NIF_ICON = 2, NIF_TIP = 4;
         const uint MF_STRING = 0, MF_CHECKED = 8, MF_SEPARATOR = 0x800;
         const uint TPM_RIGHTBUTTON = 2, TPM_BOTTOMALIGN = 0x20, TPM_RETURNCMD = 0x100;
-        const int CmdSettings = 1, CmdEmpty = 2, CmdUpdates = 3, CmdQuit = 4;
+        const uint MF_POPUP = 0x10;
+        const int CmdSettings = 1, CmdEmpty = 2, CmdUpdates = 3, CmdQuit = 4, CmdStopwatch = 200, CmdStopTimer = 201, CmdMinutes = 1000;
+        static readonly int[] TimerMinutes = { 1, 5, 10, 15, 25, 30, 45, 60 };
 
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
         struct NOTIFYICONDATA
@@ -64,13 +66,15 @@ namespace WindowsIsland
         readonly Settings settings;
         readonly Action changed;
         readonly Action openSettings, checkForUpdates, quit;
+        readonly TimerService timer;
         readonly HwndSource window;
         readonly int taskbarCreated;
         IntPtr hIcon;
         bool added;
 
-        public Tray(Settings settings, Action changed, Action openSettings, Action checkForUpdates, Action quit)
+        public Tray(Settings settings, Action changed, Action openSettings, Action checkForUpdates, Action quit, TimerService timer)
         {
+            this.timer = timer;
             this.settings = settings;
             this.changed = changed;
             this.openSettings = openSettings;
@@ -138,6 +142,13 @@ namespace WindowsIsland
             {
                 AppendMenu(menu, MF_STRING, (UIntPtr)CmdSettings, Strings.MenuSettings);
                 AppendMenu(menu, MF_STRING | (settings.EmptyIsland ? MF_CHECKED : 0), (UIntPtr)CmdEmpty, Strings.MenuEmptyIsland);
+                IntPtr timerMenu = CreatePopupMenu();
+                for (int i = 0; i < TimerMinutes.Length; i++)
+                    AppendMenu(timerMenu, MF_STRING, (UIntPtr)(CmdMinutes + TimerMinutes[i]), Strings.MenuTimerMinutes(TimerMinutes[i]));
+                AppendMenu(timerMenu, MF_SEPARATOR, UIntPtr.Zero, null);
+                AppendMenu(timerMenu, MF_STRING, (UIntPtr)CmdStopwatch, Strings.MenuStopwatch);
+                if (timer.Running) AppendMenu(timerMenu, MF_STRING, (UIntPtr)CmdStopTimer, Strings.MenuStopTimer);
+                AppendMenu(menu, MF_POPUP, (UIntPtr)(uint)timerMenu.ToInt64(), Strings.MenuTimer);
                 AppendMenu(menu, MF_SEPARATOR, UIntPtr.Zero, null);
                 AppendMenu(menu, MF_STRING, (UIntPtr)CmdUpdates, Strings.MenuCheckUpdates);
                 AppendMenu(menu, MF_STRING, (UIntPtr)CmdQuit, Strings.MenuQuit);
@@ -159,6 +170,11 @@ namespace WindowsIsland
                         break;
                     case CmdUpdates: checkForUpdates(); break;
                     case CmdQuit: quit(); break;
+                    case CmdStopwatch: timer.StartStopwatch(); break;
+                    case CmdStopTimer: timer.Stop(); break;
+                    default:
+                        if (command > CmdMinutes) timer.StartCountdown(command - CmdMinutes);
+                        break;
                 }
             }
             finally

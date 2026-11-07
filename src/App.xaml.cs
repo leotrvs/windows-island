@@ -25,6 +25,9 @@ namespace WindowsIsland
         MediaService media;
         ClaudeService claude;
         CodexService codex;
+        TimerService timer;
+        PrivacyService privacy;
+        BatteryService battery;
         readonly List<IslandWindow> islands = new List<IslandWindow>();
         readonly DispatcherTimer followTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(300) };
         DispatcherTimer updateTimer;
@@ -109,6 +112,9 @@ namespace WindowsIsland
             media = new MediaService(Dispatcher);
             claude = new ClaudeService(Dispatcher);
             codex = new CodexService(Dispatcher);
+            timer = new TimerService(Dispatcher);
+            privacy = new PrivacyService(Dispatcher);
+            battery = new BatteryService(Dispatcher);
             if (sample)
             {
                 media.UseSample();
@@ -119,7 +125,7 @@ namespace WindowsIsland
             if (sample)
             {
                 // Previews and README images use a single island on the primary monitor.
-                IslandWindow window = new IslandWindow(settings, media, claude, codex);
+                IslandWindow window = new IslandWindow(settings, media, claude, codex, timer, privacy);
                 islands.Add(window);
                 if (preview != null) window.Preview(preview);
                 if (render != null)
@@ -148,8 +154,17 @@ namespace WindowsIsland
 
             NotificationService notifications = new NotificationService(Dispatcher);
             notifications.Arrived += n => { foreach (IslandWindow island in islands) island.ShowNotification(n); };
+            timer.Finished += () =>
+            {
+                foreach (IslandWindow island in islands) island.ShowSystemBanner(Strings.TimerFinished, "");
+            };
+            battery.Alert += (title, body) => MainIsland?.ShowSystemBanner(title, body);
             Action applySettings = () =>
             {
+                if (settings.ShowPrivacyDots && !sample) privacy.Start();
+                else privacy.Stop();
+                if (settings.BatteryAlerts && !sample) battery.Start();
+                else battery.Stop();
                 if (!sample) ReconcileIslands();
                 foreach (IslandWindow island in islands) island.SettingsChanged();
                 if (settings.ShowNotifications && !sample) notifications.Start();
@@ -169,8 +184,10 @@ namespace WindowsIsland
                 settingsWindow.Activate();
             };
 
-            tray = new Tray(settings, applySettings, openSettings, () => _ = CheckForUpdatesAsync(true), () => Shutdown());
+            tray = new Tray(settings, applySettings, openSettings, () => _ = CheckForUpdatesAsync(true), () => Shutdown(), timer);
             if (sample) return;
+            if (settings.ShowPrivacyDots) privacy.Start();
+            if (settings.BatteryAlerts) battery.Start();
 
             showSettings = new EventWaitHandle(false, EventResetMode.AutoReset, ShowSettingsEvent);
             ThreadPool.RegisterWaitForSingleObject(showSettings,
@@ -237,7 +254,7 @@ namespace WindowsIsland
 
         void OpenIsland(Display display)
         {
-            IslandWindow island = new IslandWindow(settings, media, claude, codex);
+            IslandWindow island = new IslandWindow(settings, media, claude, codex, timer, privacy);
             island.MoveTo(display, false);
             islands.Add(island);
             island.Show();

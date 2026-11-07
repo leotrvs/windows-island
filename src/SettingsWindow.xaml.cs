@@ -51,6 +51,8 @@ namespace WindowsIsland
             Toggle(Strings.MenuBanners, null, () => settings.ClaudeBanners, v => settings.ClaudeBanners = v);
             Toggle(Strings.MenuCodex, null, () => settings.ShowCodex, v => settings.ShowCodex = v);
             Toggle(Strings.MenuCodexBanners, null, () => settings.CodexBanners, v => settings.CodexBanners = v);
+            Toggle(Strings.MenuPrivacyDots, Strings.HintPrivacyDots, () => settings.ShowPrivacyDots, v => settings.ShowPrivacyDots = v);
+            Toggle(Strings.MenuBatteryAlerts, Strings.HintBatteryAlerts, () => settings.BatteryAlerts, v => settings.BatteryAlerts = v);
             Toggle(Strings.MenuNotifications, Strings.HintNotifications, () => settings.ShowNotifications, v => settings.ShowNotifications = v);
 
             Section(Strings.SectionBehavior);

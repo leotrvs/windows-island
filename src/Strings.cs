@@ -112,5 +112,20 @@ namespace WindowsIsland
         public static string UpdatedTo(string version) => T("Updated to version ", "Atualizado para a versão ") + version;
         public static string MenuOpenSettings => T("Open settings file", "Abrir arquivo de configurações");
         public static string MenuQuit => T("Quit", "Sair");
+        public static string MenuTimer => T("Timer", "Timer");
+        public static string MenuTimerMinutes(int minutes) => minutes < 60 ? minutes + T(" min", " min") : (minutes / 60) + " h";
+        public static string MenuStopwatch => T("Stopwatch", "Cronômetro");
+        public static string MenuStopTimer => T("Stop", "Parar");
+        public static string TimerFinished => T("Timer finished", "Timer terminou");
+        public static string TimerLabel => T("Timer", "Timer");
+        public static string StopwatchLabel => T("Stopwatch", "Cronômetro");
+        public static string MenuPrivacyDots => T("Microphone and camera dots", "Pontos de microfone e câmera");
+        public static string HintPrivacyDots => T("Orange when the microphone is in use, green for the camera", "Laranja com o microfone em uso, verde com a câmera");
+        public static string MenuBatteryAlerts => T("Battery alerts", "Avisos de bateria");
+        public static string HintBatteryAlerts => T("Charger and low battery, on laptops", "Carregador e bateria baixa, em notebooks");
+        public static string BatteryCharging => T("Charging", "Carregando");
+        public static string BatteryUnplugged => T("Charger disconnected", "Carregador desconectado");
+        public static string BatteryFull => T("Battery full", "Bateria carregada");
+        public static string BatteryLow => T("Battery low", "Bateria baixa");
     }
 }

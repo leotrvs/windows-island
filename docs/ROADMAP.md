@@ -2,11 +2,11 @@
 
 Ideas planned for upcoming releases, in the order they are expected to land. Nothing here is promised for a specific version.
 
-## Next: more live activities (1.7)
+## Next
 
-- Timer and stopwatch
-- Battery and charging, on laptops
-- The microphone and camera in use, like the green and orange dots on iPhone
+- Pause and resume for the timer, and a custom duration
+- Names of the apps using the microphone or camera, shown when you hover the dots
+- Battery percentage as a live activity while charging
 
 ## Later
 
@@ -18,6 +18,7 @@ Ideas planned for upcoming releases, in the order they are expected to land. Not
 
 ## Done
 
+- Timer and stopwatch, microphone and camera dots, battery alerts (1.7.0)
 - Lighter app: no Windows Forms, about 10 MB smaller (1.6.0)
 - Codex activity, limits and alerts (1.5.0)
 - Choosing the monitor: primary, a specific one, all, or the one with the mouse (1.4.0)

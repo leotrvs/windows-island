@@ -48,6 +48,7 @@ pwsh -File scripts/build.ps1
 | `src\Updater.cs` | Signed updates from GitHub releases |
 | `src\UpdateKey.cs` | The public half of the update signing key |
 | `src\Native.cs` | Overlay window style, fullscreen and maximized detection |
+| `src\Extras.cs` | The timer, the microphone and camera dots, and battery alerts |
 | `src\Tray.cs` | The tray icon and its menu |
 | `src\Settings.cs` | Preferences, saved as JSON |
 | `src\Strings.cs` | English and Portuguese texts |

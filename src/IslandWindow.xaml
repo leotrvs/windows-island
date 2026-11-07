@@ -40,6 +40,15 @@
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Height" Value="40"/>
         </Style>
+        <Style x:Key="ClockMark" TargetType="Path">
+            <Setter Property="Data" Value="M7,1 A6,6 0 1 1 6.99,1 Z M7,4 L7,7.5 L9.5,9"/>
+            <Setter Property="Stroke" Value="#FF9F0A"/>
+            <Setter Property="StrokeThickness" Value="1.6"/>
+            <Setter Property="StrokeLineJoin" Value="Round"/>
+            <Setter Property="StrokeStartLineCap" Value="Round"/>
+            <Setter Property="StrokeEndLineCap" Value="Round"/>
+            <Setter Property="Stretch" Value="Uniform"/>
+        </Style>
         <Style x:Key="Caption" TargetType="TextBlock">
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="Foreground" Value="{StaticResource Secondary}"/>
@@ -62,7 +71,18 @@
                 <local:ClaudeSpark x:Name="BubbleSpark" Width="20" Height="20"/>
                 <Ellipse x:Name="BubbleArt" Width="22" Height="22" Visibility="Collapsed"/>
                 <Path x:Name="BubbleCodex" Style="{StaticResource CodexMark}" Width="14" Height="11" Visibility="Collapsed"/>
+                <Path x:Name="BubbleTimer" Style="{StaticResource ClockMark}" Width="16" Height="16" Visibility="Collapsed"/>
             </Grid>
+        </Border>
+
+        <!-- Microphone and camera in use, split off to the left of the island -->
+        <Border x:Name="PrivacyDots" Width="40" Height="22" CornerRadius="11" Background="Black"
+                HorizontalAlignment="Center" VerticalAlignment="Top" Opacity="0" IsHitTestVisible="False">
+            <Border.RenderTransform><TranslateTransform x:Name="PrivacyShift"/></Border.RenderTransform>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Ellipse x:Name="MicDot" Width="8" Height="8" Fill="#FF9F0A" Margin="3,0"/>
+                <Ellipse x:Name="CamDot" Width="8" Height="8" Fill="#30D158" Margin="3,0"/>
+            </StackPanel>
         </Border>
 
         <Border x:Name="Pill" Background="Black" HorizontalAlignment="Center" VerticalAlignment="Top"
@@ -92,6 +112,15 @@
                           HorizontalAlignment="Left" VerticalAlignment="Center" Margin="13,0,0,0"/>
                     <TextBlock x:Name="CodexCompactText" HorizontalAlignment="Right" VerticalAlignment="Center"
                                Margin="0,0,13,0" FontSize="13" FontWeight="SemiBold" Typography.NumeralAlignment="Tabular"/>
+                </Grid>
+
+                <!-- Timer, compact -->
+                <Grid x:Name="TimerCompact" Width="150" Height="34">
+                    <Path Style="{StaticResource ClockMark}" Width="15" Height="15"
+                          HorizontalAlignment="Left" VerticalAlignment="Center" Margin="13,0,0,0"/>
+                    <TextBlock x:Name="TimerCompactText" HorizontalAlignment="Right" VerticalAlignment="Center"
+                               Margin="0,0,13,0" FontSize="13" FontWeight="SemiBold" Foreground="#FF9F0A"
+                               Typography.NumeralAlignment="Tabular"/>
                 </Grid>
 
                 <!-- Music, expanded -->

@@ -17,8 +17,8 @@ namespace WindowsIsland
 {
     public partial class IslandWindow : Window
     {
-        enum View { Hidden, Minimal, Idle, MusicCompact, ClaudeCompact, CodexCompact, MusicExpanded, ClaudeExpanded, Banner }
-        enum Activity { None, Music, Claude, Codex }
+        enum View { Hidden, Minimal, Idle, MusicCompact, ClaudeCompact, CodexCompact, TimerCompact, MusicExpanded, ClaudeExpanded, Banner }
+        enum Activity { None, Music, Claude, Codex, Timer }
 
         static readonly Dictionary<View, Size> Sizes = new Dictionary<View, Size>
         {
@@ -28,6 +28,7 @@ namespace WindowsIsland
             [View.MusicCompact] = new Size(236, 34),
             [View.ClaudeCompact] = new Size(204, 34),
             [View.CodexCompact] = new Size(204, 34),
+            [View.TimerCompact] = new Size(150, 34),
             [View.MusicExpanded] = new Size(372, 172),
             [View.ClaudeExpanded] = new Size(372, 156),
             [View.Banner] = new Size(352, 74),
@@ -49,6 +50,10 @@ namespace WindowsIsland
         readonly MediaService media;
         readonly ClaudeService claude;
         readonly CodexService codex;
+        readonly TimerService timer;
+        readonly PrivacyService privacy;
+        readonly Spring privacyOpacity = new Spring(0, 0.002, 320, 1);
+        readonly Spring privacyShift = new Spring(0, 0.05, 260, 0.7);
 
         // Shape: slightly bouncy, like the real island.
         readonly Spring width = new Spring(112, 0.05, 280, 0.72);
@@ -88,8 +93,10 @@ namespace WindowsIsland
         string lastElapsed, lastRemaining, lastCompactText, lastStatus;
         IntPtr hwnd;
 
-        internal IslandWindow(Settings settings, MediaService media, ClaudeService claude, CodexService codex)
+        internal IslandWindow(Settings settings, MediaService media, ClaudeService claude, CodexService codex, TimerService timer, PrivacyService privacy)
         {
+            this.timer = timer;
+            this.privacy = privacy;
             this.settings = settings;
             this.media = media;
             this.claude = claude;
@@ -100,6 +107,7 @@ namespace WindowsIsland
             panels[View.MusicCompact] = MusicCompact;
             panels[View.ClaudeCompact] = ClaudeCompact;
             panels[View.CodexCompact] = CodexCompact;
+            panels[View.TimerCompact] = TimerCompact;
             panels[View.MusicExpanded] = MusicExpanded;
             panels[View.ClaudeExpanded] = ClaudeExpanded;
             panels[View.Banner] = Banner;
@@ -138,6 +146,8 @@ namespace WindowsIsland
             claude.Alert += ShowBanner;
             codex.Changed += OnCodexChanged;
             codex.Finished += OnCodexFinished;
+            timer.Changed += OnTimerChanged;
+            privacy.Changed += OnPrivacyChanged;
 
             SourceInitialized += (s, e) =>
             {
@@ -150,6 +160,8 @@ namespace WindowsIsland
                 UpdateMusic();
                 UpdateClaude();
                 UpdateCodex();
+                UpdatePrivacy();
+                UpdateTimerLive();
                 shown.Target = 1;
                 Recompute();
                 StartLoop();
@@ -159,6 +171,31 @@ namespace WindowsIsland
 
         void OnMediaChanged() { UpdateMusic(); Recompute(); }
         void OnClaudeChanged() { UpdateClaude(); Recompute(); }
+
+        void OnTimerChanged() { UpdateTimerLive(); Recompute(); }
+        void OnPrivacyChanged() { UpdatePrivacy(); Recompute(); }
+
+        bool PrivacyOn { get { return settings.ShowPrivacyDots && (privacy.Microphone || privacy.Camera); } }
+
+        void UpdatePrivacy()
+        {
+            bool mic = privacy.Microphone && settings.ShowPrivacyDots, cam = privacy.Camera && settings.ShowPrivacyDots;
+            MicDot.Visibility = mic ? Visibility.Visible : Visibility.Collapsed;
+            CamDot.Visibility = cam ? Visibility.Visible : Visibility.Collapsed;
+            PrivacyDots.Width = mic && cam ? 40 : 26;
+            privacyOpacity.Target = mic || cam ? 1 : 0;
+        }
+
+        string lastTimerText;
+        void UpdateTimerLive()
+        {
+            string text = TimerService.Format(timer.Shown);
+            if (text != lastTimerText)
+            {
+                lastTimerText = text;
+                TimerCompactText.Text = text;
+            }
+        }
 
         void OnCodexChanged()
         {
@@ -254,6 +291,8 @@ namespace WindowsIsland
             claude.Alert -= ShowBanner;
             codex.Changed -= OnCodexChanged;
             codex.Finished -= OnCodexFinished;
+            timer.Changed -= OnTimerChanged;
+            privacy.Changed -= OnPrivacyChanged;
             enterTimer.Stop();
             leaveTimer.Stop();
             pollTimer.Stop();
@@ -328,7 +367,7 @@ namespace WindowsIsland
 
         void SnapAll()
         {
-            foreach (Spring spring in new[] { width, height, shown, stateScale, bubbleScale, bubbleOpacity, sessionArc, weeklyArc })
+            foreach (Spring spring in new[] { width, height, shown, stateScale, bubbleScale, bubbleOpacity, privacyOpacity, sessionArc, weeklyArc })
                 spring.Snap(spring.Target);
             foreach (Spring spring in presence.Values) spring.Snap(spring.Target);
         }
@@ -365,6 +404,7 @@ namespace WindowsIsland
 
         public void SettingsChanged()
         {
+            UpdatePrivacy();
             UpdateCodex();
             PlaceWindow();
             UpdateMusic();
@@ -394,6 +434,7 @@ namespace WindowsIsland
             if (music) active.Add(Activity.Music);
             if (working && claude.Waiting == 0) active.Add(Activity.Claude);
             if (CodexActive) active.Add(Activity.Codex);
+            if (timer.Running) active.Insert(working && claude.Waiting > 0 ? 1 : 0, Activity.Timer);
             Activity primary = active.Count > 0 ? active[0] : Activity.None;
             Activity second = active.Count > 1 ? active[1] : Activity.None;
 
@@ -410,14 +451,15 @@ namespace WindowsIsland
             else if (primary == Activity.Music && !settings.EmptyIsland) next = View.MusicCompact;
             else if (primary == Activity.Claude && !settings.EmptyIsland) next = View.ClaudeCompact;
             else if (primary == Activity.Codex && !settings.EmptyIsland) next = View.CodexCompact;
-            else if (!settings.ShowIdlePill) next = View.Hidden;
+            else if (primary == Activity.Timer) next = View.TimerCompact;
+            else if (!settings.ShowIdlePill && !PrivacyOn) next = View.Hidden;
             else if (maximized && !IsBottom) next = View.Minimal; // Stay out of the way of tab strips
             else next = View.Idle;
 
             // Auto-hide: an island that has shown nothing for a while steps away until something happens
             // or the mouse comes to its spot.
             bool idle = next == View.Idle || next == View.Minimal;
-            if (!idle || hovering) lastActive = DateTime.Now;
+            if (!idle || hovering || PrivacyOn) lastActive = DateTime.Now;
             autoHidden = idle && !forced.HasValue && settings.AutoHideSeconds > 0 &&
                          DateTime.Now - lastActive > TimeSpan.FromSeconds(settings.AutoHideSeconds);
             if (autoHidden) next = View.Hidden;
@@ -426,6 +468,7 @@ namespace WindowsIsland
             Activity shownActivity = next == View.MusicCompact ? Activity.Music
                                    : next == View.ClaudeCompact ? Activity.Claude
                                    : next == View.CodexCompact ? Activity.Codex
+                                   : next == View.TimerCompact ? Activity.Timer
                                    : Activity.None;
             Activity other = primary == shownActivity ? second : primary;
             Activity nextBubble = shownActivity != Activity.None && other != shownActivity ? other : Activity.None;
@@ -464,6 +507,7 @@ namespace WindowsIsland
                 BubbleSpark.Visibility = bubble == Activity.Claude ? Visibility.Visible : Visibility.Collapsed;
                 BubbleArt.Visibility = bubble == Activity.Music ? Visibility.Visible : Visibility.Collapsed;
                 BubbleCodex.Visibility = bubble == Activity.Codex ? Visibility.Visible : Visibility.Collapsed;
+                BubbleTimer.Visibility = bubble == Activity.Timer ? Visibility.Visible : Visibility.Collapsed;
             }
             bubbleOpacity.Target = hasBubble ? 1 : 0;
             bubbleScale.Target = hasBubble ? 1 : 0.4;
@@ -644,6 +688,8 @@ namespace WindowsIsland
             Bubble.VerticalAlignment = align;
             Pill.Margin = margin;
             Bubble.Margin = margin;
+            PrivacyDots.VerticalAlignment = align;
+            PrivacyDots.Margin = margin;
             Pill.RenderTransformOrigin = new Point(0.5, bottom ? 1 : 0);
             ApplyFrame();
         }
@@ -779,6 +825,8 @@ namespace WindowsIsland
             moving |= bubbleShift.Step(dt);
             moving |= bubbleScale.Step(dt);
             moving |= bubbleOpacity.Step(dt);
+            moving |= privacyOpacity.Step(dt);
+            moving |= privacyShift.Step(dt);
             moving |= sessionArc.Step(dt);
             moving |= weeklyArc.Step(dt);
             foreach (Spring spring in presence.Values) moving |= spring.Step(dt);
@@ -862,6 +910,11 @@ namespace WindowsIsland
             BubbleScale.ScaleX = BubbleScale.ScaleY = Math.Max(0, bubbleScale.Value * s);
             Bubble.Opacity = Math.Clamp(bubbleOpacity.Value, 0, 1) * visible;
 
+            privacyShift.Target = -(w / 2 + BubbleGap + PrivacyDots.Width / 2) * s;
+            PrivacyShift.X = privacyShift.Value;
+            PrivacyShift.Y = (bottom ? -1 : 1) * (Math.Min(h, 34) * s - PrivacyDots.Height) / 2; // Level with a compact island
+            PrivacyDots.Opacity = Math.Clamp(privacyOpacity.Value, 0, 1) * visible;
+
             if (Math.Abs(sessionArc.Value - drawnSessionArc) > 0.05)
             {
                 drawnSessionArc = sessionArc.Value;
@@ -885,6 +938,12 @@ namespace WindowsIsland
             {
                 UpdateProgress();
                 keepGoing |= media.IsPlaying;
+            }
+
+            if (presence[TimerCompact].Value > 0.01 && timer.Running)
+            {
+                UpdateTimerLive();
+                keepGoing = true;
             }
 
             // Codex: the prompt's cursor blinks softly and the timer counts while it works.
