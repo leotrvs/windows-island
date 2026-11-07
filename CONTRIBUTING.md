@@ -17,7 +17,7 @@ pwsh -File scripts/build.ps1
 ## Rules
 
 - **Never read Claude credentials or call Anthropic's private endpoints.** Claude data comes only from the session status files Claude Code keeps, Claude Code's own `/usage` command and the limits file Claude Usage Taskbar saves. Pull requests that change this will be declined.
-- **No network access.** The island works entirely on your computer.
+- **No network access beyond updates.** The only connection is the signed update check against this repository's releases, and it can be turned off.
 - **Privacy-sensitive features are opt-in.** Reading notifications stays off until the user turns it on.
 - **Add every user-visible text in both English and Portuguese** in `src\Strings.cs`.
 - **Keep it light.** The island is always on screen: the render loop must stop when nothing moves, and nothing should allocate per frame without need.
@@ -42,10 +42,12 @@ pwsh -File scripts/build.ps1
 | `src\ClaudeSpark.cs` | The Claude spark and its thinking animation, from `src\Assets\thinking.png` |
 | `src\NotificationService.cs` | New Windows notifications, read-only, through the SQLite that ships with Windows |
 | `src\Installer.cs` | Install, shortcuts and uninstall |
+| `src\Updater.cs` | Signed updates from GitHub releases |
+| `src\UpdateKey.cs` | The public half of the update signing key |
 | `src\Native.cs` | Overlay window style, fullscreen and maximized detection |
 | `src\Tray.cs` | The tray icon and its menu |
 | `src\Settings.cs` | Preferences, saved as JSON |
 | `src\Strings.cs` | English and Portuguese texts |
 | `scripts\` | Build, README images and leak checks |
 
-Planned work is in [docs/ROADMAP.md](docs/ROADMAP.md).
+Planned work is in [docs/ROADMAP.md](docs/ROADMAP.md). Maintainers should see [docs/RELEASING.md](docs/RELEASING.md).

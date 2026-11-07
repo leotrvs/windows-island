@@ -10,7 +10,7 @@ Uma Dynamic Island para o Windows. Música, Claude Code, os limites de uso e sua
 
 > Projeto não oficial da comunidade. Não é afiliado, endossado ou mantido pela Apple ou pela Anthropic. "Claude" e o logo do Claude pertencem à Anthropic; a licença MIT não os cobre.
 
-> **Versão de prévia.** Ainda não há releases publicadas. [Compile a partir do código](#compilar-a-partir-do-código) para testar.
+[![Baixar para Windows](https://img.shields.io/badge/Baixar_para_Windows-111111?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/leotrvs/windows-island/releases/latest/download/WindowsIsland.exe)
 
 ## Recursos
 
@@ -25,7 +25,8 @@ Uma Dynamic Island para o Windows. Música, Claude Code, os limites de uso e sua
 - **Leve:** cerca de 40 MB de memória e menos de 1% de CPU com música tocando
 - Instala só para o seu usuário, com atalhos no menu Iniciar e na Área de Trabalho e início com o Windows
 - Inglês e português do Brasil
-- **Nunca lê seu login ou token do Claude** e não faz conexões de rede
+- Atualizações automáticas assinadas
+- **Nunca lê seu login ou token do Claude**. A única conexão é a verificação de atualizações neste repositório
 
 ## Estados
 
@@ -40,7 +41,7 @@ Uma Dynamic Island para o Windows. Música, Claude Code, os limites de uso e sua
 
 ## Instalar
 
-1. [Compile](#compilar-a-partir-do-código) o `WindowsIsland.exe`, ou baixe de uma release quando houver.
+1. **Baixe** o `WindowsIsland.exe` da [última release](https://github.com/leotrvs/windows-island/releases/latest). O Windows pode mostrar um aviso do SmartScreen porque o app não tem certificado pago de assinatura de código: escolha **Mais informações** e depois **Executar assim mesmo**.
 2. **Abra o arquivo** e escolha **Sim**. Ele instala só para o seu usuário do Windows, sem direitos de administrador, cria atalhos no menu Iniciar e na Área de Trabalho e inicia com o Windows.
 3. A ilha aparece no topo da tela, e o ícone dela na bandeja.
 
@@ -74,6 +75,10 @@ Para testar sem instalar, rode `WindowsIsland.exe --portable`.
 
 Detalhes em [SECURITY.md](docs/SECURITY.pt-BR.md).
 
+## Atualizações
+
+A cada hora a ilha confere a última release do GitHub. Ela só instala uma atualização se a assinatura digital bater com a chave embutida no app e o hash do arquivo bater com a lista assinada, então um arquivo adulterado é recusado. Ela reinicia na versão nova quando você não está usando a ilha e mostra um aviso rápido. Desligue em **Atualizações automáticas** no menu da bandeja, onde **Procurar atualizações** faz uma verificação na hora.
+
 ## Desinstalar
 
 Vá em **Configurações do Windows > Aplicativos > Aplicativos instalados > Windows Island > Desinstalar**. Isso remove o app, os atalhos e as configurações.
@@ -93,7 +98,7 @@ Para contribuir, leia o [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Próximos passos
 
-Planejado: atualização automática pelas releases, esconder sozinha e quanto tempo a ilha fica aberta, modo de ilha vazia, ajustes de tamanho, posição e monitor, e uso do Codex. A lista completa está em [docs/ROADMAP.md](docs/ROADMAP.md).
+Planejado: esconder sozinha e quanto tempo a ilha fica aberta, modo de ilha vazia, ajustes de tamanho, posição e monitor, e uso do Codex. A lista completa está em [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Licença
 

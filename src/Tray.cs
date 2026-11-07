@@ -13,7 +13,7 @@ namespace WindowsIsland
         readonly Settings settings;
         readonly Action changed;
 
-        public Tray(Settings settings, Action changed, Action quit)
+        public Tray(Settings settings, Action changed, Action checkForUpdates, Action quit)
         {
             this.settings = settings;
             this.changed = changed;
@@ -30,6 +30,8 @@ namespace WindowsIsland
             menu.Items.Add(PositionMenu());
             menu.Items.Add(new Forms.ToolStripSeparator());
             menu.Items.Add(Toggle(Strings.MenuStartup, () => settings.StartWithWindows, v => settings.StartWithWindows = v));
+            menu.Items.Add(Toggle(Strings.MenuAutoUpdate, () => settings.AutoUpdate, v => settings.AutoUpdate = v));
+            menu.Items.Add(Strings.MenuCheckUpdates, null, (s, e) => checkForUpdates());
             menu.Items.Add(Strings.MenuOpenSettings, null, (s, e) => OpenSettingsFile());
             menu.Items.Add(Strings.MenuQuit, null, (s, e) => quit());
 

@@ -24,11 +24,11 @@ Ideas planned for upcoming releases. Nothing here is promised for a specific ver
 
 ## Install and updates
 
-- **Automatic updates** from GitHub releases, signed and verified before installing, like Claude Usage Taskbar
 - A smaller download: today the self-contained exe is about 78 MB. Dropping Windows Forms for the tray icon and trimming the Windows API projections should cut it down
 
 ## Done
 
+- Signed automatic updates from GitHub releases (1.0.0)
 - Start menu and Desktop shortcuts, created by the installer (0.2.0)
 - Reading Claude's limits without Claude Usage Taskbar (0.2.0)
 - Windows notifications in the island (0.2.0)

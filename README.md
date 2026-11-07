@@ -10,7 +10,7 @@ A Dynamic Island for Windows. Music, Claude Code, its usage limits and your noti
 
 > Unofficial community project. It is not affiliated with, endorsed by, or supported by Apple or Anthropic. "Claude" and the Claude logo belong to Anthropic; the MIT license does not cover them.
 
-> **Early preview.** There are no published releases yet. [Build it from source](#build-from-source) to try it.
+[![Download for Windows](https://img.shields.io/badge/Download_for_Windows-111111?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/leotrvs/windows-island/releases/latest/download/WindowsIsland.exe)
 
 ## Features
 
@@ -25,7 +25,8 @@ A Dynamic Island for Windows. Music, Claude Code, its usage limits and your noti
 - **Light:** about 40 MB of memory and under 1% CPU while music plays
 - Installs for your user only, with Start menu and Desktop shortcuts and start with Windows
 - English and Brazilian Portuguese
-- **Never reads your Claude login or token**, and makes no network connections
+- Signed automatic updates
+- **Never reads your Claude login or token**. Its only connection is checking this repository for updates
 
 ## States
 
@@ -40,7 +41,7 @@ A Dynamic Island for Windows. Music, Claude Code, its usage limits and your noti
 
 ## Install
 
-1. [Build](#build-from-source) `WindowsIsland.exe`, or download it from a release once there is one.
+1. **Download** `WindowsIsland.exe` from the [latest release](https://github.com/leotrvs/windows-island/releases/latest). Windows may show a SmartScreen warning because the app has no paid code-signing certificate: choose **More info**, then **Run anyway**.
 2. **Open it** and choose **Yes**. It installs for your Windows user only, with no administrator rights, adds Start menu and Desktop shortcuts and starts with Windows.
 3. The island appears at the top of the screen, and its icon in the tray.
 
@@ -74,6 +75,10 @@ To try it without installing, run `WindowsIsland.exe --portable`.
 
 Details are in [SECURITY.md](SECURITY.md).
 
+## Updates
+
+Every hour the island checks the latest GitHub release. It installs an update only if its digital signature matches the key built into the app and the file's hash matches the signed list, so a tampered file is rejected. It restarts into the new version when you are not using the island and shows a short notice. Turn this off with **Automatic updates** in the tray menu, where **Check for updates** runs a check on demand.
+
 ## Uninstall
 
 Go to **Windows Settings > Apps > Installed apps > Windows Island > Uninstall**. This removes the app, the shortcuts and the settings.
@@ -93,7 +98,7 @@ Contributors should read [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Roadmap
 
-Planned next: automatic updates from releases, auto-hide and how long the island stays open, an empty island mode, size, position and monitor settings, and Codex usage. The full list is in [docs/ROADMAP.md](docs/ROADMAP.md).
+Planned next: auto-hide and how long the island stays open, an empty island mode, size, position and monitor settings, and Codex usage. The full list is in [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## License
 

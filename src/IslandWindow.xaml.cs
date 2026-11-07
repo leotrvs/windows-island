@@ -35,7 +35,7 @@ namespace WindowsIsland
         const double MaxRadius = 38;
         const double BubbleSize = 34;
         const double BubbleGap = 7;
-        static readonly TimeSpan PausedMusicLinger = TimeSpan.FromSeconds(30);
+        static readonly TimeSpan PausedMusicLinger = TimeSpan.FromSeconds(5); // Then the island lets go of a paused song
         static readonly Brush White = Freeze(new SolidColorBrush(Colors.White));
         static readonly Brush Orange = Freeze(new SolidColorBrush(Color.FromRgb(0xE8, 0x87, 0x5F)));
         static readonly Brush Green = Freeze(new SolidColorBrush(Color.FromRgb(0x30, 0xD1, 0x58)));
@@ -394,6 +394,18 @@ namespace WindowsIsland
                 Subtitle = notification.Body,
                 Seconds = 5,
             });
+        }
+
+        // Messages from the app itself, such as update results. Not gated by the notifications option.
+        internal void ShowSystemBanner(string title, string body)
+        {
+            Enqueue(new BannerItem { App = Installer.Name, Title = title, Subtitle = body, Seconds = 5 });
+        }
+
+        // True while the user is looking at or using the island, so an update restart waits.
+        internal bool IsBusy
+        {
+            get { return hovering || view == View.Banner || view == View.MusicExpanded || view == View.ClaudeExpanded; }
         }
 
         void Enqueue(BannerItem item)

@@ -39,7 +39,7 @@ namespace WindowsIsland
             get { return File.Exists(InstalledExe) ? InstalledExe : Environment.ProcessPath; }
         }
 
-        static string Version
+        public static string Version
         {
             get { return typeof(Installer).Assembly.GetName().Version?.ToString(3) ?? "0.0.0"; }
         }

@@ -18,11 +18,15 @@
 ## O que o app nunca faz
 
 - Ler `~/.claude/.credentials.json` ou qualquer outro login, token ou cookie do Claude
-- Chamar as APIs da Anthropic ou se conectar à internet
+- Chamar as APIs da Anthropic
 - Guardar prompts, respostas, nomes de sessão ou caminhos de projeto
 - Ler suas notificações sem você ligar a opção, ou ler o conteúdo de outras janelas
 - Enviar análises ou telemetria
 - Pedir direitos de administrador
+
+## Acesso à rede
+
+A própria ilha faz um único tipo de conexão: uns 30 segundos depois de abrir e depois a cada hora, ela baixa os arquivos de release deste repositório no GitHub, a menos que você desligue **Atualizações automáticas**. Faz o mesmo quando você clica em **Procurar atualizações**. O GitHub vê seu endereço IP, como em qualquer download. Nenhum dado do Claude ou pessoal é enviado. Uma atualização só é instalada quando a assinatura RSA bate com a chave pública embutida no app e o SHA-256 do arquivo bate com o manifesto assinado.
 
 O comando `/usage` faz parte do Claude Code, que se conecta à Anthropic com o seu próprio login. A ilha nunca vê esse login.
 

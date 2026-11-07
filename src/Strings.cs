@@ -63,6 +63,12 @@ namespace WindowsIsland
         public static string MenuTop => T("Top", "Topo");
         public static string MenuBottom => T("Bottom", "Embaixo");
         public static string MenuStartup => T("Start with Windows", "Iniciar com o Windows");
+        public static string MenuAutoUpdate => T("Automatic updates", "Atualizações automáticas");
+        public static string MenuCheckUpdates => T("Check for updates", "Procurar atualizações");
+        public static string UpToDate => T("You have the latest version", "Você está na versão mais recente");
+        public static string UpdateFailed => T("Could not check for updates", "Não foi possível procurar atualizações");
+        public static string UpdatesNeedInstall => T("Updates work in the installed copy", "As atualizações funcionam na cópia instalada");
+        public static string UpdatedTo(string version) => T("Updated to version ", "Atualizado para a versão ") + version;
         public static string MenuOpenSettings => T("Open settings file", "Abrir arquivo de configurações");
         public static string MenuQuit => T("Quit", "Sair");
     }

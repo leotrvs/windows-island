@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.0
+
+First release.
+
+- Signed automatic updates from GitHub releases: the island checks every hour, verifies the signature and the file's hash, and restarts into the new version when you are not using it. **Automatic updates** and **Check for updates** are in the tray menu
+- A paused song leaves the island after 5 seconds instead of 30
+- Everything from the previews: music, Claude Code activity and limits, alerts, Windows notifications, the installer and spring animations
+
 ## 0.2.1
 
 - Music follows whichever player is actually playing. Before, a paused player could stay on the island for several seconds after another one started

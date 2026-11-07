@@ -4,6 +4,10 @@ obj/
 *.exe
 *.pdb
 
+# Release artifacts are uploaded to GitHub Releases, never committed
+update.json
+update.json.sig
+
 # Signing keys must stay outside this repository; these are a second line of defense
 *signing-key*.xml
 *.key

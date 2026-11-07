@@ -17,6 +17,7 @@ namespace WindowsIsland
         public bool ShowNotifications { get; set; } = false; // Reads notification content, so it is opt-in
         public bool HideInFullscreen { get; set; } = true;
         public bool StartWithWindows { get; set; } = false;
+        public bool AutoUpdate { get; set; } = true;
 
         const string RunKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
         const string RunValue = "WindowsIsland";
