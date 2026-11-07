@@ -11,13 +11,14 @@
 | Comando `/usage` do Claude Code | Roda a cada 2 minutos e quando você abre o painel do Claude | Guarda só as porcentagens e os horários de renovação, em memória. Não chama o modelo e não gasta tokens. |
 | `%LOCALAPPDATA%\ClaudeUsageTaskbar\usage.json` | Lê quando o arquivo muda, se existir | Usar os limites do Claude Usage Taskbar quando forem mais recentes |
 | `%LOCALAPPDATA%\Microsoft\Windows\Notifications\wpndatabase.db` | Lê, somente leitura, a cada 1,5 segundo, só com **Mostrar notificações do Windows** ligado | Mostrar app, título e texto das notificações que chegam com a ilha aberta. Nada é guardado. |
+| `~/.codex/sessions` | Lê o final do arquivo de sessão mais recente a cada 2 segundos, com **Mostrar Codex** ligado | Pega só se a última tarefa começou ou terminou e as porcentagens e horários de renovação dos limites. Nada é guardado. |
 | `%APPDATA%\WindowsIsland\settings.json` | Lê e grava | Guardar as preferências |
 | `%LOCALAPPDATA%\Programs\WindowsIsland` | Lê e grava | Guardar o app instalado |
 | Chave Run do Windows, lista de Aplicativos, atalhos | Lê e grava | Iniciar com o Windows, entrada de desinstalação e atalhos no menu Iniciar e na Área de Trabalho |
 
 ## O que o app nunca faz
 
-- Ler `~/.claude/.credentials.json` ou qualquer outro login, token ou cookie do Claude
+- Ler `~/.claude/.credentials.json`, `~/.codex/auth.json` ou qualquer outro login, token ou cookie do Claude ou do Codex
 - Chamar as APIs da Anthropic
 - Guardar prompts, respostas, nomes de sessão ou caminhos de projeto
 - Ler suas notificações sem você ligar a opção, ou ler o conteúdo de outras janelas

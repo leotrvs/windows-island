@@ -39,6 +39,9 @@ pwsh -File scripts/build.ps1
 | `src\MediaService.cs` | What is playing, from the Windows media controls |
 | `src\ClaudeService.cs` | Claude Code session status, alerts and when to read the limits |
 | `src\UsageProbe.cs` | Reads the limits from Claude Code's `/usage` command |
+| `src\CodexService.cs` | Codex activity and limits, from the end of its newest session file |
+| `src\Displays.cs` | The monitors and their bounds, for placing each island |
+| `src\SettingsWindow.xaml` | The settings window |
 | `src\ClaudeSpark.cs` | The Claude spark and its thinking animation, from `src\Assets\thinking.png` |
 | `src\NotificationService.cs` | New Windows notifications, read-only, through the SQLite that ships with Windows |
 | `src\Installer.cs` | Install, shortcuts and uninstall |

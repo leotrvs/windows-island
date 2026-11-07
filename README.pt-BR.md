@@ -8,7 +8,7 @@ Uma Dynamic Island para o Windows. Música, Claude Code, os limites de uso e sua
 <img src="docs/images/musicexpanded-pt.png" alt="A ilha expandida com a música tocando" width="460">
 </p>
 
-> Projeto não oficial da comunidade. Não é afiliado, endossado ou mantido pela Apple ou pela Anthropic. "Claude" e o logo do Claude pertencem à Anthropic; a licença MIT não os cobre.
+> Projeto não oficial da comunidade. Não é afiliado, endossado ou mantido pela Apple, pela Anthropic ou pela OpenAI. "Claude" e o logo do Claude pertencem à Anthropic, e "Codex" à OpenAI; a licença MIT não os cobre.
 
 [![Baixar para Windows](https://img.shields.io/badge/Baixar_para_Windows-111111?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/leotrvs/windows-island/releases/latest/download/WindowsIsland.exe)
 
@@ -17,6 +17,7 @@ Uma Dynamic Island para o Windows. Música, Claude Code, os limites de uso e sua
 - **Música** de qualquer player que aparece nos controles de mídia do Windows, como Spotify ou um navegador: capa, equalizador na cor da capa, barra de progresso que avança ao clicar, e tocar, pausar, próxima e anterior
 - **Atividade ao vivo do Claude Code:** o símbolo do Claude "pensa" enquanto ele trabalha, com o tempo decorrido, e pulsa quando ele está esperando você
 - **Uso do Claude:** anéis dos limites de **5 horas** e **semanal**, com o horário em que renovam
+- **Codex:** atividade ao vivo enquanto o Codex trabalha, os limites de 5 horas e semanal, e um aviso quando ele termina
 - **Avisos** quando o Claude termina uma tarefa ou precisa de você
 - **Notificações do Windows** na ilha, se você ligar
 - **Duas atividades ao mesmo tempo:** a segunda se separa numa bolha ao lado da ilha
@@ -35,6 +36,7 @@ Uma Dynamic Island para o Windows. Música, Claude Code, os limites de uso e sua
 | Ociosa | <img src="docs/images/idle-pt.png" alt="Pílula ociosa" width="260"> |
 | Música tocando, com o Claude trabalhando ao lado | <img src="docs/images/musiccompact-pt.png" alt="Música compacta com a bolha do Claude" width="380"> |
 | Claude trabalhando, com o tempo decorrido | <img src="docs/images/claudecompact-pt.png" alt="Atividade compacta do Claude" width="320"> |
+| Codex trabalhando | <img src="docs/images/codexcompact-pt.png" alt="Atividade compacta do Codex" width="320"> |
 | Claude terminou ou precisa de você | <img src="docs/images/banner-pt.png" alt="Aviso do Claude" width="420"> |
 | Uma notificação do Windows | <img src="docs/images/notification-pt.png" alt="Aviso de notificação" width="420"> |
 | Claude expandido, com os limites | <img src="docs/images/claudeexpanded-pt.png" alt="Claude expandido com os anéis de uso" width="460"> |
@@ -61,6 +63,7 @@ Para testar sem instalar, rode `WindowsIsland.exe --portable`.
 | Mostrar música | Mostra o que está tocando |
 | Mostrar Claude | Mostra a atividade e os limites do Claude Code |
 | Avisos do Claude | Expande a ilha quando o Claude termina ou precisa de você |
+| Mostrar Codex, Avisos do Codex | Atividade e limites do Codex, e o aviso quando ele termina. Só aparecem com o Codex instalado |
 | Mostrar notificações do Windows | Mostra as notificações novas na ilha. Vem desligado |
 | Ilha vazia | Mantém a ilha recolhida como uma pílula simples, sem atividades. Passe o mouse ou clique para vê-las |
 | Mostrar pílula ociosa | Mantém a pílula na tela quando nada está acontecendo |
@@ -80,6 +83,7 @@ Para testar sem instalar, rode `WindowsIsland.exe --portable`.
 
 - **Atividade do Claude:** o Claude Code mantém um arquivo pequeno por sessão aberta em `~/.claude/sessions`. A ilha lê apenas o tipo, o ID do processo, o status, o nome e o horário do status. Funciona com o terminal e com o app de desktop.
 - **Limites do Claude:** a cada 2 minutos, e quando você abre o painel do Claude, a ilha roda `claude -p /usage` em segundo plano, os mesmos números que você vê no Claude Code. Não chama o modelo e não gasta tokens. Se o [Claude Usage Taskbar](https://github.com/leotrvs/claude-usage-taskbar) estiver instalado e tiver números mais recentes, a ilha usa esses.
+- **Codex:** o Codex guarda cada sessão como um arquivo em `~/.codex/sessions`. A cada 2 segundos a ilha lê o final do mais recente e pega só se a última tarefa começou ou terminou e as porcentagens de limite que o Codex registrou. Elas se atualizam sempre que você usa o Codex. O login do Codex nunca é lido.
 - **Notificações:** a API oficial do Windows para ler notificações exige um pacote assinado, então a ilha lê, somente leitura, o banco local onde o Windows as guarda. Mostra só as notificações que chegam enquanto ela está aberta e não guarda nada. O Windows continua mostrando o próprio aviso: desligue **Mostrar faixas de notificação** de um app nas Configurações do Windows se quiser só a ilha.
 
 Detalhes em [SECURITY.md](docs/SECURITY.pt-BR.md).
@@ -107,7 +111,7 @@ Para contribuir, leia o [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Próximos passos
 
-Planejado: uso do Codex, download menor e mais atividades ao vivo. A lista completa está em [docs/ROADMAP.md](docs/ROADMAP.md).
+Planejado: download menor e mais atividades ao vivo. A lista completa está em [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Licença
 

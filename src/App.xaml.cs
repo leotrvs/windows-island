@@ -24,6 +24,7 @@ namespace WindowsIsland
         Settings settings;
         MediaService media;
         ClaudeService claude;
+        CodexService codex;
         readonly List<IslandWindow> islands = new List<IslandWindow>();
         readonly DispatcherTimer followTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(300) };
         DispatcherTimer updateTimer;
@@ -61,6 +62,13 @@ namespace WindowsIsland
             }
             bool sample = preview != null || render != null;
 
+            int diagnose = Array.IndexOf(e.Args, "--diagnose-codex");
+            if (diagnose >= 0 && diagnose + 1 < e.Args.Length)
+            {
+                System.IO.File.WriteAllText(e.Args[diagnose + 1], new CodexService(Dispatcher).Diagnose());
+                Shutdown();
+                return;
+            }
             if (Array.IndexOf(e.Args, "--install-silent") >= 0)
             {
                 Installer.Install();
@@ -100,16 +108,18 @@ namespace WindowsIsland
             settings = sample ? new Settings() : Settings.Load();
             media = new MediaService(Dispatcher);
             claude = new ClaudeService(Dispatcher);
+            codex = new CodexService(Dispatcher);
             if (sample)
             {
                 media.UseSample();
                 claude.UseSample();
+                codex.UseSample();
             }
 
             if (sample)
             {
                 // Previews and README images use a single island on the primary monitor.
-                IslandWindow window = new IslandWindow(settings, media, claude);
+                IslandWindow window = new IslandWindow(settings, media, claude, codex);
                 islands.Add(window);
                 if (preview != null) window.Preview(preview);
                 if (render != null)
@@ -168,6 +178,7 @@ namespace WindowsIsland
 
             _ = media.StartAsync();
             claude.Start();
+            codex.Start();
             if (settings.ShowNotifications) notifications.Start();
 
             Updater.CleanUp();
@@ -226,7 +237,7 @@ namespace WindowsIsland
 
         void OpenIsland(Display display)
         {
-            IslandWindow island = new IslandWindow(settings, media, claude);
+            IslandWindow island = new IslandWindow(settings, media, claude, codex);
             island.MoveTo(display, false);
             islands.Add(island);
             island.Show();

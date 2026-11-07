@@ -8,7 +8,7 @@ A Dynamic Island for Windows. Music, Claude Code, its usage limits and your noti
 <img src="docs/images/musicexpanded-en.png" alt="The island expanded with the song playing" width="460">
 </p>
 
-> Unofficial community project. It is not affiliated with, endorsed by, or supported by Apple or Anthropic. "Claude" and the Claude logo belong to Anthropic; the MIT license does not cover them.
+> Unofficial community project. It is not affiliated with, endorsed by, or supported by Apple, Anthropic or OpenAI. "Claude" and the Claude logo belong to Anthropic, and "Codex" to OpenAI; the MIT license does not cover them.
 
 [![Download for Windows](https://img.shields.io/badge/Download_for_Windows-111111?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/leotrvs/windows-island/releases/latest/download/WindowsIsland.exe)
 
@@ -17,6 +17,7 @@ A Dynamic Island for Windows. Music, Claude Code, its usage limits and your noti
 - **Music** from any player in the Windows media controls, such as Spotify or a browser: artwork, an equalizer tinted by the artwork, a progress bar you can click to seek, and play, pause, next and previous
 - **Claude Code live activity:** the Claude spark thinks while Claude works, with the time so far, and breathes when Claude is waiting for you
 - **Claude usage:** rings for the **5-hour** and **weekly** limits, with reset times
+- **Codex:** a live activity while Codex works, its 5-hour and weekly limits, and an alert when it finishes
 - **Alerts** when Claude finishes a task or needs you
 - **Windows notifications** in the island, if you turn them on
 - **Two activities at once:** the second one splits off into a bubble beside the island
@@ -35,6 +36,7 @@ A Dynamic Island for Windows. Music, Claude Code, its usage limits and your noti
 | Idle | <img src="docs/images/idle-en.png" alt="Idle pill" width="260"> |
 | Music playing, with Claude working beside it | <img src="docs/images/musiccompact-en.png" alt="Compact music with the Claude bubble" width="380"> |
 | Claude working, with the time so far | <img src="docs/images/claudecompact-en.png" alt="Compact Claude activity" width="320"> |
+| Codex working | <img src="docs/images/codexcompact-en.png" alt="Compact Codex activity" width="320"> |
 | Claude finished or needs you | <img src="docs/images/banner-en.png" alt="Claude alert" width="420"> |
 | A Windows notification | <img src="docs/images/notification-en.png" alt="Notification banner" width="420"> |
 | Claude expanded, with the limits | <img src="docs/images/claudeexpanded-en.png" alt="Claude expanded with usage rings" width="460"> |
@@ -61,6 +63,7 @@ To try it without installing, run `WindowsIsland.exe --portable`.
 | Show music | Shows what is playing |
 | Show Claude | Shows Claude Code activity and limits |
 | Claude alerts | Expands the island when Claude finishes or needs you |
+| Show Codex, Codex alerts | Codex activity and limits, and the alert when it finishes. Only appear once Codex is installed |
 | Show Windows notifications | Shows new notifications in the island. Off by default |
 | Empty island | Keeps the collapsed island a plain pill, with no live activities. Hover or click to see them |
 | Show pill when idle | Keeps the small pill on screen when nothing is happening |
@@ -80,6 +83,7 @@ To try it without installing, run `WindowsIsland.exe --portable`.
 
 - **Claude activity:** Claude Code keeps one small file per running session in `~/.claude/sessions`. The island reads only its kind, process ID, status, name and status time. It works with the terminal and with the desktop app.
 - **Claude limits:** every 2 minutes, and when you open the Claude panel, the island runs `claude -p /usage` in the background, the same numbers you see in Claude Code. It makes no model call and spends no tokens. If [Claude Usage Taskbar](https://github.com/leotrvs/claude-usage-taskbar) is installed and has fresher numbers, the island uses those.
+- **Codex:** Codex keeps each session as a file in `~/.codex/sessions`. Every 2 seconds the island reads the end of the newest one and takes only whether the last task started or finished and the limit percentages Codex recorded. They update whenever you use Codex. It never reads Codex's login.
 - **Notifications:** the official Windows API for reading notifications needs a signed package, so the island reads, read-only, the local database where Windows keeps them. It shows only notifications that arrive while it runs and stores nothing. Windows still shows its own banner too: turn off **Show notification banners** for an app in Windows Settings if you only want the island.
 
 Details are in [SECURITY.md](SECURITY.md).
@@ -107,7 +111,7 @@ Contributors should read [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Roadmap
 
-Planned next: Codex usage, a smaller download and more live activities. The full list is in [docs/ROADMAP.md](docs/ROADMAP.md).
+Planned next: a smaller download and more live activities. The full list is in [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## License
 

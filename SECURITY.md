@@ -11,13 +11,14 @@
 | Claude Code's `/usage` command | Runs it every 2 minutes and when you open the Claude panel | Keeps only the limit percentages and reset times, in memory. It makes no model call and spends no tokens. |
 | `%LOCALAPPDATA%\ClaudeUsageTaskbar\usage.json` | Reads it when it changes, if it exists | Uses Claude Usage Taskbar's limits when they are fresher |
 | `%LOCALAPPDATA%\Microsoft\Windows\Notifications\wpndatabase.db` | Reads it, read-only, every 1.5 seconds, only when **Show Windows notifications** is on | Shows the app name, title and text of notifications that arrive while the island runs. Nothing is stored. |
+| `~/.codex/sessions` | Reads the end of the newest session file every 2 seconds, while **Show Codex** is on | Takes only whether the last task started or finished and the rate-limit percentages and reset times. Nothing is stored. |
 | `%APPDATA%\WindowsIsland\settings.json` | Reads and writes | Stores preferences |
 | `%LOCALAPPDATA%\Programs\WindowsIsland` | Reads and writes | Holds the installed app |
 | Windows Run key, Apps list, shortcuts | Reads and writes | Start with Windows, uninstall entry, and Start menu and Desktop shortcuts |
 
 ## What the app never does
 
-- Read `~/.claude/.credentials.json` or any other Claude login, token or cookie
+- Read `~/.claude/.credentials.json`, `~/.codex/auth.json` or any other Claude or Codex login, token or cookie
 - Call Anthropic's APIs
 - Store prompts, responses, session names or project paths
 - Read your notifications unless you turn them on, or read the content of other windows

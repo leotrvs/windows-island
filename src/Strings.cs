@@ -11,6 +11,11 @@ namespace WindowsIsland
 
         public static string ClaudeDone => T("Claude finished", "Claude terminou");
         public static string ClaudeNeedsYou => T("Claude needs you", "Claude precisa de você");
+        public static string CodexDone => T("Codex finished", "Codex terminou");
+        public static string CodexIdle => T("No task running", "Nenhuma tarefa em andamento");
+        public static string CodexNoData => T("No data yet. Use Codex once to see its limits", "Sem dados ainda. Use o Codex uma vez para ver os limites");
+        public static string MenuCodex => T("Show Codex", "Mostrar Codex");
+        public static string MenuCodexBanners => T("Codex alerts", "Avisos do Codex");
         public static string Working => T("Working", "Trabalhando");
         public static string Waiting => T("Waiting", "Aguardando");
         public static string WaitingForYou => T("Waiting for you", "Aguardando você");

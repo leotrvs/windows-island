@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.5.0
+
+- **Codex** joins the island: a live activity with a timer while Codex works, its 5-hour and weekly limits under Claude's in the expanded panel, and a **Codex finished** alert. Read from the session files Codex keeps, without touching its login
+- **Show Codex** and **Codex alerts** in Settings
+
 ## 1.4.1
 
 - Fixed the **With the mouse** monitor mode: after moving to another screen the island flashed and then stayed invisible on every screen

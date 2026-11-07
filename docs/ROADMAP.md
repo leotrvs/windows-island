@@ -4,7 +4,6 @@ Ideas planned for upcoming releases. Nothing here is promised for a specific ver
 
 ## Activities
 
-- **Codex usage**, next to Claude. To investigate: the Codex CLI writes session logs under `~/.codex/sessions` that appear to include rate-limit percentages; check whether that is stable enough to read, the same read-only way Claude's session files are read
 - Timers, battery, and the microphone and camera in use
 - A way for scripts and other apps to show their own live activities
 - App icons on notification banners
@@ -17,6 +16,7 @@ Ideas planned for upcoming releases. Nothing here is promised for a specific ver
 
 ## Done
 
+- Codex activity, limits and alerts (1.5.0)
 - Choosing the monitor: primary, a specific one, all, or the one with the mouse (1.4.0)
 - Settings window, and the size and position of the island (1.3.0)
 - Configurable alert and paused-music durations, and auto-hide (1.2.0)

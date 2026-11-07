@@ -17,8 +17,8 @@ namespace WindowsIsland
 {
     public partial class IslandWindow : Window
     {
-        enum View { Hidden, Minimal, Idle, MusicCompact, ClaudeCompact, MusicExpanded, ClaudeExpanded, Banner }
-        enum Activity { None, Music, Claude }
+        enum View { Hidden, Minimal, Idle, MusicCompact, ClaudeCompact, CodexCompact, MusicExpanded, ClaudeExpanded, Banner }
+        enum Activity { None, Music, Claude, Codex }
 
         static readonly Dictionary<View, Size> Sizes = new Dictionary<View, Size>
         {
@@ -27,6 +27,7 @@ namespace WindowsIsland
             [View.Idle] = new Size(112, 30),
             [View.MusicCompact] = new Size(236, 34),
             [View.ClaudeCompact] = new Size(204, 34),
+            [View.CodexCompact] = new Size(204, 34),
             [View.MusicExpanded] = new Size(372, 172),
             [View.ClaudeExpanded] = new Size(372, 156),
             [View.Banner] = new Size(352, 74),
@@ -41,11 +42,13 @@ namespace WindowsIsland
         static readonly Brush Amber = Freeze(new SolidColorBrush(Color.FromRgb(0xFF, 0x9F, 0x0A)));
         static readonly Brush Red = Freeze(new SolidColorBrush(Color.FromRgb(0xFF, 0x45, 0x3A)));
         static readonly Brush ClaudeTint = Freeze(new SolidColorBrush(Color.FromArgb(0x29, 0xE8, 0x87, 0x5F)));
+        static readonly Brush CodexTint = Freeze(new SolidColorBrush(Color.FromArgb(0x2B, 0x5A, 0x8C, 0xFF)));
         static readonly Brush NotificationTint = Freeze(new SolidColorBrush(Color.FromArgb(0x33, 0xFF, 0xFF, 0xFF)));
 
         readonly Settings settings;
         readonly MediaService media;
         readonly ClaudeService claude;
+        readonly CodexService codex;
 
         // Shape: slightly bouncy, like the real island.
         readonly Spring width = new Spring(112, 0.05, 280, 0.72);
@@ -85,16 +88,18 @@ namespace WindowsIsland
         string lastElapsed, lastRemaining, lastCompactText, lastStatus;
         IntPtr hwnd;
 
-        internal IslandWindow(Settings settings, MediaService media, ClaudeService claude)
+        internal IslandWindow(Settings settings, MediaService media, ClaudeService claude, CodexService codex)
         {
             this.settings = settings;
             this.media = media;
             this.claude = claude;
+            this.codex = codex;
             InitializeComponent();
 
             panels[View.Idle] = IdlePanel;
             panels[View.MusicCompact] = MusicCompact;
             panels[View.ClaudeCompact] = ClaudeCompact;
+            panels[View.CodexCompact] = CodexCompact;
             panels[View.MusicExpanded] = MusicExpanded;
             panels[View.ClaudeExpanded] = ClaudeExpanded;
             panels[View.Banner] = Banner;
@@ -118,6 +123,7 @@ namespace WindowsIsland
 
             SessionLabel.Text = Strings.Session5h;
             WeeklyLabel.Text = Strings.Weekly;
+            CodexWeeklyLabel.Text = Strings.Weekly;
 
             Pill.MouseEnter += OnPillEnter;
             Pill.MouseLeave += OnPillLeave;
@@ -130,6 +136,8 @@ namespace WindowsIsland
             media.Changed += OnMediaChanged;
             claude.Changed += OnClaudeChanged;
             claude.Alert += ShowBanner;
+            codex.Changed += OnCodexChanged;
+            codex.Finished += OnCodexFinished;
 
             SourceInitialized += (s, e) =>
             {
@@ -141,6 +149,7 @@ namespace WindowsIsland
                 PlaceWindow();
                 UpdateMusic();
                 UpdateClaude();
+                UpdateCodex();
                 shown.Target = 1;
                 Recompute();
                 StartLoop();
@@ -150,6 +159,72 @@ namespace WindowsIsland
 
         void OnMediaChanged() { UpdateMusic(); Recompute(); }
         void OnClaudeChanged() { UpdateClaude(); Recompute(); }
+
+        void OnCodexChanged()
+        {
+            UpdateCodex();
+            ApplyTargets(); // The Claude panel grows or shrinks with the Codex section
+            Recompute();
+        }
+
+        void OnCodexFinished()
+        {
+            if (!settings.ShowCodex || !settings.CodexBanners) return;
+            Enqueue(new BannerItem { FromCodex = true, Title = Strings.CodexDone, Subtitle = "Codex", Seconds = settings.AlertSeconds });
+        }
+
+        bool CodexActive
+        {
+            get { return settings.ShowCodex && codex.Working; }
+        }
+
+        // The Codex part of the expanded panel shows once Codex is installed and turned on.
+        bool CodexSectionVisible
+        {
+            get { return settings.ShowCodex && codex.Installed; }
+        }
+
+        Size SizeOf(View value)
+        {
+            if (value == View.ClaudeExpanded) return new Size(372, ClaudePanelHeight);
+            return Sizes[value];
+        }
+
+        double ClaudePanelHeight
+        {
+            get { return CodexSectionVisible ? 230 : 156; }
+        }
+
+        void UpdateCodex()
+        {
+            bool visible = CodexSectionVisible;
+            CodexSection.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+            ClaudeExpanded.Height = ClaudePanelHeight;
+            if (!visible) return;
+
+            UpdateCodexLive();
+            UsageWindow session = codex.Session;
+            UsageWindow weekly = codex.Weekly;
+            int sessionPercent = session?.EffectivePercent ?? 0;
+            int weeklyPercent = weekly?.EffectivePercent ?? 0;
+            CodexSessionPercent.Text = session?.Percent != null ? sessionPercent + "%" : "–";
+            CodexWeeklyPercent.Text = weekly?.Percent != null ? weeklyPercent + "%" : "–";
+            CodexSessionArc.Data = Arc(sessionPercent, 36, 4);
+            CodexWeeklyArc.Data = Arc(weeklyPercent, 36, 4);
+            CodexSessionArc.Stroke = RingBrush(sessionPercent);
+            CodexWeeklyArc.Stroke = RingBrush(weeklyPercent);
+        }
+
+        // The parts that change every second while Codex works.
+        void UpdateCodexLive()
+        {
+            string elapsed = codex.WorkingSince.HasValue ? FormatTime(DateTime.Now - codex.WorkingSince.Value) : "";
+            if (CodexCompactText.Text != elapsed) CodexCompactText.Text = elapsed;
+            string status = codex.Working ? (Strings.Working + " " + elapsed).Trim()
+                          : codex.Session?.Percent != null ? Strings.CodexIdle
+                          : Strings.CodexNoData;
+            if (CodexStatus.Text != status) CodexStatus.Text = status;
+        }
 
         // The monitor this island lives on. Null means the primary monitor.
         internal Display Target { get; private set; }
@@ -177,6 +252,8 @@ namespace WindowsIsland
             media.Changed -= OnMediaChanged;
             claude.Changed -= OnClaudeChanged;
             claude.Alert -= ShowBanner;
+            codex.Changed -= OnCodexChanged;
+            codex.Finished -= OnCodexFinished;
             enterTimer.Stop();
             leaveTimer.Stop();
             pollTimer.Stop();
@@ -217,7 +294,7 @@ namespace WindowsIsland
         public void RenderStates(string folder, string suffix)
         {
             Directory.CreateDirectory(folder);
-            View[] states = { View.Idle, View.MusicCompact, View.ClaudeCompact, View.MusicExpanded, View.ClaudeExpanded, View.Banner };
+            View[] states = { View.Idle, View.MusicCompact, View.ClaudeCompact, View.CodexCompact, View.MusicExpanded, View.ClaudeExpanded, View.Banner };
             double[] levels = { 0.55, 0.95, 0.4, 0.75 };
             Array.Copy(levels, eqLevel, levels.Length);
             BannerTitle.Text = Strings.ClaudeDone;
@@ -288,6 +365,7 @@ namespace WindowsIsland
 
         public void SettingsChanged()
         {
+            UpdateCodex();
             PlaceWindow();
             UpdateMusic();
             UpdateClaude();
@@ -309,23 +387,29 @@ namespace WindowsIsland
         {
             bool music = MusicActive;
             bool working = ClaudeActive;
-            Activity primary = Activity.None, second = Activity.None;
-            if (working && claude.Waiting > 0) { primary = Activity.Claude; if (music) second = Activity.Music; }
-            else if (music) { primary = Activity.Music; if (working) second = Activity.Claude; }
-            else if (working) primary = Activity.Claude;
+
+            // Priority: Claude waiting for you, then music, then Claude working, then Codex working.
+            List<Activity> active = new List<Activity>();
+            if (working && claude.Waiting > 0) active.Add(Activity.Claude);
+            if (music) active.Add(Activity.Music);
+            if (working && claude.Waiting == 0) active.Add(Activity.Claude);
+            if (CodexActive) active.Add(Activity.Codex);
+            Activity primary = active.Count > 0 ? active[0] : Activity.None;
+            Activity second = active.Count > 1 ? active[1] : Activity.None;
 
             View next;
             if (forced.HasValue) next = forced.Value;
             else if (fullscreen && settings.HideInFullscreen) next = View.Hidden;
             else if (hovering || DateTime.Now < peekUntil)
                 next = primary == Activity.Music ? View.MusicExpanded
-                     : settings.ShowClaude ? View.ClaudeExpanded
+                     : settings.ShowClaude || CodexSectionVisible ? View.ClaudeExpanded
                      : settings.ShowMusic && media.HasSession ? View.MusicExpanded
                      : View.Idle;
             else if (DateTime.Now < bannerUntil) next = View.Banner;
             // Empty island: the collapsed island stays a plain pill. Activities only show when it expands.
             else if (primary == Activity.Music && !settings.EmptyIsland) next = View.MusicCompact;
             else if (primary == Activity.Claude && !settings.EmptyIsland) next = View.ClaudeCompact;
+            else if (primary == Activity.Codex && !settings.EmptyIsland) next = View.CodexCompact;
             else if (!settings.ShowIdlePill) next = View.Hidden;
             else if (maximized && !IsBottom) next = View.Minimal; // Stay out of the way of tab strips
             else next = View.Idle;
@@ -339,7 +423,10 @@ namespace WindowsIsland
             if (autoHidden) next = View.Hidden;
             if (autoHidden != revealTimer.IsEnabled) revealTimer.IsEnabled = autoHidden;
 
-            Activity shownActivity = next == View.MusicCompact ? Activity.Music : next == View.ClaudeCompact ? Activity.Claude : Activity.None;
+            Activity shownActivity = next == View.MusicCompact ? Activity.Music
+                                   : next == View.ClaudeCompact ? Activity.Claude
+                                   : next == View.CodexCompact ? Activity.Codex
+                                   : Activity.None;
             Activity other = primary == shownActivity ? second : primary;
             Activity nextBubble = shownActivity != Activity.None && other != shownActivity ? other : Activity.None;
             if (next != view || nextBubble != bubble)
@@ -353,7 +440,7 @@ namespace WindowsIsland
 
         void ApplyTargets()
         {
-            Size size = Sizes[view];
+            Size size = SizeOf(view);
             width.Target = size.Width;
             height.Target = size.Height;
             shown.Target = view == View.Hidden ? 0 : 1;
@@ -376,6 +463,7 @@ namespace WindowsIsland
             {
                 BubbleSpark.Visibility = bubble == Activity.Claude ? Visibility.Visible : Visibility.Collapsed;
                 BubbleArt.Visibility = bubble == Activity.Music ? Visibility.Visible : Visibility.Collapsed;
+                BubbleCodex.Visibility = bubble == Activity.Codex ? Visibility.Visible : Visibility.Collapsed;
             }
             bubbleOpacity.Target = hasBubble ? 1 : 0;
             bubbleScale.Target = hasBubble ? 1 : 0.4;
@@ -405,7 +493,7 @@ namespace WindowsIsland
             enterTimer.Stop();
             if (view == View.Banner)
             {
-                bool fromClaude = currentBanner == null || currentBanner.FromClaude;
+                bool fromClaude = currentBanner == null || currentBanner.FromClaude || currentBanner.FromCodex;
                 bannerUntil = DateTime.MinValue;
                 if (banners.Count > 0) { NextBanner(); return; }
                 if (!fromClaude) { Recompute(); return; } // A notification click just dismisses it
@@ -420,6 +508,7 @@ namespace WindowsIsland
         sealed class BannerItem
         {
             public bool FromClaude;
+            public bool FromCodex;
             public string App;
             public string Title;
             public string Subtitle;
@@ -486,8 +575,9 @@ namespace WindowsIsland
             currentBanner = item;
 
             BannerSpark.Visibility = item.FromClaude ? Visibility.Visible : Visibility.Collapsed;
-            BannerBell.Visibility = item.FromClaude ? Visibility.Collapsed : Visibility.Visible;
-            BannerIcon.Background = item.FromClaude ? ClaudeTint : NotificationTint;
+            BannerCodex.Visibility = item.FromCodex ? Visibility.Visible : Visibility.Collapsed;
+            BannerBell.Visibility = item.FromClaude || item.FromCodex ? Visibility.Collapsed : Visibility.Visible;
+            BannerIcon.Background = item.FromClaude ? ClaudeTint : item.FromCodex ? CodexTint : NotificationTint;
             BannerApp.Text = item.App ?? "";
             BannerApp.Visibility = item.FromClaude || string.IsNullOrEmpty(item.App) ? Visibility.Collapsed : Visibility.Visible;
             BannerTitle.Text = item.Title;
@@ -543,7 +633,8 @@ namespace WindowsIsland
             // Room for the largest state at the user's sizes, plus the bubble and the shadow.
             double largest = Math.Max(settings.ExpandedScale, settings.CollapsedScale);
             Width = Math.Max(520, 372 * largest + 140);
-            Height = Math.Max(Sizes[View.MusicExpanded].Height * settings.ExpandedScale, 34 * settings.CollapsedScale) + settings.OffsetY + 44;
+            double tallest = Math.Max(Sizes[View.MusicExpanded].Height, ClaudePanelHeight);
+            Height = Math.Max(tallest * settings.ExpandedScale, 34 * settings.CollapsedScale) + settings.OffsetY + 44;
             Left = Math.Clamp(screen.Left + (screen.Width - Width) / 2 + settings.OffsetX, screen.Left, Math.Max(screen.Left, screen.Right - Width));
             Top = bottom ? work.Bottom - Height : work.Top;
 
@@ -794,6 +885,21 @@ namespace WindowsIsland
             {
                 UpdateProgress();
                 keepGoing |= media.IsPlaying;
+            }
+
+            // Codex: the prompt's cursor blinks softly and the timer counts while it works.
+            bool codexVisible = presence[CodexCompact].Value > 0.01 || presence[ClaudeExpanded].Value > 0.01 ||
+                                (bubble == Activity.Codex && bubbleOpacity.Value > 0.01);
+            if (codexVisible && codex.Working)
+            {
+                double blink = 0.55 + 0.45 * (0.5 + 0.5 * Math.Cos(clock * 3.2));
+                CodexCompactGlyph.Opacity = ExpandedCodexGlyph.Opacity = BubbleCodex.Opacity = blink;
+                UpdateCodexLive();
+                keepGoing = true;
+            }
+            else
+            {
+                CodexCompactGlyph.Opacity = ExpandedCodexGlyph.Opacity = BubbleCodex.Opacity = 1;
             }
 
             bool claudeVisible = presence[ClaudeCompact].Value > 0.01 || presence[ClaudeExpanded].Value > 0.01 ||
