@@ -1,0 +1,19 @@
+# Build output
+bin/
+obj/
+*.exe
+*.pdb
+
+# Signing keys must stay outside this repository; these are a second line of defense
+*signing-key*.xml
+*.key
+*.pem
+*.pfx
+*.snk
+
+# Local Claude and editor files
+.claude/
+.vs/
+.vscode/
+*.user
+Thumbs.db

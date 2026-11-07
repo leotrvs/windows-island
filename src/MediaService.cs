@@ -1,0 +1,303 @@
+using System;
+using System.IO;
+using System.Threading.Tasks;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Threading;
+using Windows.Foundation;
+using Windows.Media.Control;
+using Windows.Storage.Streams;
+
+namespace WindowsIsland
+{
+    // Reads what is playing from the Windows media controls, the same source as the volume flyout,
+    // so it works with Spotify, browsers and any player that shows up there.
+    sealed class MediaService
+    {
+        public event Action Changed;
+
+        public bool HasSession { get; private set; }
+        public string Title { get; private set; } = "";
+        public string Artist { get; private set; } = "";
+        public BitmapSource Art { get; private set; }
+        public Color Accent { get; private set; } = Colors.White;
+        public bool IsPlaying { get; private set; }
+        public TimeSpan Duration { get; private set; }
+        public DateTime LastPlayingAt { get; private set; } = DateTime.MinValue;
+
+        TimeSpan position;
+        DateTimeOffset positionStamp = DateTimeOffset.Now;
+        double rate = 1;
+        int generation;
+
+        readonly Dispatcher dispatcher;
+        GlobalSystemMediaTransportControlsSessionManager manager;
+        GlobalSystemMediaTransportControlsSession session;
+
+        public MediaService(Dispatcher dispatcher)
+        {
+            this.dispatcher = dispatcher;
+        }
+
+        // The reported position only changes on seeks and state changes, so it is moved forward locally.
+        public TimeSpan Position
+        {
+            get
+            {
+                if (!IsPlaying || Duration <= TimeSpan.Zero) return position;
+                TimeSpan current = position + TimeSpan.FromTicks((long)((DateTimeOffset.Now - positionStamp).Ticks * rate));
+                if (current < TimeSpan.Zero) return TimeSpan.Zero;
+                return current > Duration ? Duration : current;
+            }
+        }
+
+        // Made-up track for previews and documentation images, so no real listening data is ever shown.
+        public void UseSample()
+        {
+            HasSession = true;
+            Title = "Midnight Drive";
+            Artist = "Neon Avenue";
+            IsPlaying = true;
+            LastPlayingAt = DateTime.MaxValue;
+            Duration = TimeSpan.FromSeconds(222);
+            position = TimeSpan.FromSeconds(78);
+            positionStamp = DateTimeOffset.Now;
+            rate = 0; // Frozen in place, so every image shows the same moment
+            Art = SampleArt();
+            Accent = AccentOf(Art);
+        }
+
+        static BitmapSource SampleArt()
+        {
+            DrawingVisual visual = new DrawingVisual();
+            using (DrawingContext context = visual.RenderOpen())
+            {
+                LinearGradientBrush sky = new LinearGradientBrush(Color.FromRgb(0xFF, 0x6A, 0x3D), Color.FromRgb(0x6B, 0x2F, 0xD9), 90);
+                context.DrawRectangle(sky, null, new System.Windows.Rect(0, 0, 160, 160));
+                context.DrawEllipse(new SolidColorBrush(Color.FromArgb(230, 0xFF, 0xD1, 0x6B)), null, new System.Windows.Point(80, 92), 34, 34);
+                context.DrawRectangle(new SolidColorBrush(Color.FromRgb(0x24, 0x10, 0x4A)), null, new System.Windows.Rect(0, 104, 160, 56));
+            }
+            RenderTargetBitmap bitmap = new RenderTargetBitmap(160, 160, 96, 96, PixelFormats.Pbgra32);
+            bitmap.Render(visual);
+            bitmap.Freeze();
+            return bitmap;
+        }
+
+        public async Task StartAsync()
+        {
+            try
+            {
+                manager = await GlobalSystemMediaTransportControlsSessionManager.RequestAsync();
+            }
+            catch (Exception)
+            {
+                return; // No media controls on this system: the island simply never shows music.
+            }
+            manager.CurrentSessionChanged += (sender, args) => Post(Attach);
+            Attach();
+        }
+
+        public void TogglePlayPause()
+        {
+            if (session == null) return;
+            position = Position;
+            positionStamp = DateTimeOffset.Now;
+            IsPlaying = !IsPlaying; // Answer the click at once; the real state follows in an event.
+            if (IsPlaying) LastPlayingAt = DateTime.Now;
+            Changed?.Invoke();
+            Run(() => session.TryTogglePlayPauseAsync());
+        }
+
+        public void Next() { Run(() => session.TrySkipNextAsync()); }
+        public void Previous() { Run(() => session.TrySkipPreviousAsync()); }
+
+        public void Seek(TimeSpan target)
+        {
+            if (session == null) return;
+            position = target;
+            positionStamp = DateTimeOffset.Now;
+            Run(() => session.TryChangePlaybackPositionAsync(target.Ticks));
+        }
+
+        async void Run(Func<IAsyncOperation<bool>> command)
+        {
+            if (session == null) return;
+            try { await command(); }
+            catch (Exception) { }
+        }
+
+        void Post(Action action)
+        {
+            dispatcher.BeginInvoke(action);
+        }
+
+        void Attach()
+        {
+            if (session != null)
+            {
+                session.MediaPropertiesChanged -= OnMediaPropertiesChanged;
+                session.PlaybackInfoChanged -= OnPlaybackInfoChanged;
+                session.TimelinePropertiesChanged -= OnTimelinePropertiesChanged;
+            }
+
+            generation++;
+            try { session = manager.GetCurrentSession(); }
+            catch (Exception) { session = null; }
+
+            HasSession = session != null;
+            if (session == null)
+            {
+                Title = Artist = "";
+                Art = null;
+                IsPlaying = false;
+                Changed?.Invoke();
+                return;
+            }
+
+            session.MediaPropertiesChanged += OnMediaPropertiesChanged;
+            session.PlaybackInfoChanged += OnPlaybackInfoChanged;
+            session.TimelinePropertiesChanged += OnTimelinePropertiesChanged;
+            ReadPlayback();
+            ReadTimeline();
+            Changed?.Invoke();
+            _ = ReadPropertiesAsync(generation);
+        }
+
+        void OnMediaPropertiesChanged(GlobalSystemMediaTransportControlsSession sender, MediaPropertiesChangedEventArgs args)
+        {
+            Post(() => { _ = ReadPropertiesAsync(generation); });
+        }
+
+        void OnPlaybackInfoChanged(GlobalSystemMediaTransportControlsSession sender, PlaybackInfoChangedEventArgs args)
+        {
+            Post(() => { ReadPlayback(); Changed?.Invoke(); });
+        }
+
+        void OnTimelinePropertiesChanged(GlobalSystemMediaTransportControlsSession sender, TimelinePropertiesChangedEventArgs args)
+        {
+            Post(() => { ReadTimeline(); Changed?.Invoke(); });
+        }
+
+        void ReadPlayback()
+        {
+            if (session == null) return;
+            try
+            {
+                GlobalSystemMediaTransportControlsSessionPlaybackInfo info = session.GetPlaybackInfo();
+                bool playing = info.PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing;
+                position = Position;
+                positionStamp = DateTimeOffset.Now;
+                if (playing || IsPlaying) LastPlayingAt = DateTime.Now;
+                IsPlaying = playing;
+                rate = info.PlaybackRate ?? 1;
+            }
+            catch (Exception)
+            {
+            }
+        }
+
+        void ReadTimeline()
+        {
+            if (session == null) return;
+            try
+            {
+                GlobalSystemMediaTransportControlsSessionTimelineProperties timeline = session.GetTimelineProperties();
+                Duration = timeline.EndTime - timeline.StartTime;
+                position = timeline.Position - timeline.StartTime;
+                DateTimeOffset stamp = timeline.LastUpdatedTime;
+                DateTimeOffset now = DateTimeOffset.Now;
+                positionStamp = stamp.Year < 2000 || stamp > now ? now : stamp;
+            }
+            catch (Exception)
+            {
+            }
+        }
+
+        async Task ReadPropertiesAsync(int expected)
+        {
+            GlobalSystemMediaTransportControlsSession current = session;
+            if (current == null) return;
+
+            GlobalSystemMediaTransportControlsSessionMediaProperties properties;
+            try { properties = await current.TryGetMediaPropertiesAsync(); }
+            catch (Exception) { return; }
+            if (properties == null || expected != generation) return;
+
+            string title = properties.Title ?? "";
+            string artist = string.IsNullOrEmpty(properties.Artist) ? properties.AlbumArtist ?? "" : properties.Artist;
+            bool trackChanged = title != Title || artist != Artist;
+            Title = title;
+            Artist = artist;
+            Changed?.Invoke();
+
+            if (!trackChanged && Art != null) return;
+            IRandomAccessStreamReference thumbnail = properties.Thumbnail;
+            if (thumbnail == null)
+            {
+                Art = null;
+                Accent = Colors.White;
+                Changed?.Invoke();
+                return;
+            }
+
+            Tuple<BitmapSource, Color> loaded = await Task.Run(() => LoadArtAsync(thumbnail));
+            if (expected != generation || title != Title) return;
+            Art = loaded?.Item1;
+            Accent = loaded?.Item2 ?? Colors.White;
+            Changed?.Invoke();
+        }
+
+        static async Task<Tuple<BitmapSource, Color>> LoadArtAsync(IRandomAccessStreamReference reference)
+        {
+            try
+            {
+                MemoryStream memory = new MemoryStream();
+                using (IRandomAccessStreamWithContentType stream = await reference.OpenReadAsync())
+                using (Stream source = stream.AsStreamForRead())
+                    await source.CopyToAsync(memory).ConfigureAwait(false);
+                memory.Position = 0;
+
+                BitmapImage image = new BitmapImage();
+                image.BeginInit();
+                image.CacheOption = BitmapCacheOption.OnLoad;
+                image.DecodePixelWidth = 160;
+                image.StreamSource = memory;
+                image.EndInit();
+                image.Freeze();
+                return Tuple.Create<BitmapSource, Color>(image, AccentOf(image));
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        // The color the equalizer takes, like iOS does: the most vivid tone in the artwork, kept bright.
+        static Color AccentOf(BitmapSource image)
+        {
+            BitmapSource small = new TransformedBitmap(
+                new FormatConvertedBitmap(image, PixelFormats.Bgra32, null, 0),
+                new ScaleTransform(24.0 / image.PixelWidth, 24.0 / image.PixelHeight));
+            int width = small.PixelWidth, height = small.PixelHeight;
+            byte[] pixels = new byte[width * height * 4];
+            small.CopyPixels(pixels, width * 4, 0);
+
+            double r = 0, g = 0, b = 0, total = 0;
+            for (int i = 0; i < pixels.Length; i += 4)
+            {
+                double pb = pixels[i], pg = pixels[i + 1], pr = pixels[i + 2];
+                double max = Math.Max(pr, Math.Max(pg, pb)), min = Math.Min(pr, Math.Min(pg, pb));
+                double saturation = max <= 0 ? 0 : (max - min) / max;
+                double weight = saturation * saturation * (max / 255) + 0.01;
+                r += pr * weight; g += pg * weight; b += pb * weight; total += weight;
+            }
+            r /= total; g /= total; b /= total;
+
+            double peak = Math.Max(r, Math.Max(g, b));
+            double low = Math.Min(r, Math.Min(g, b));
+            if (peak < 1 || (peak - low) / peak < 0.18) return Color.FromRgb(235, 235, 240); // Gray artwork
+            double scale = Math.Max(1, 235 / peak);
+            return Color.FromRgb((byte)Math.Min(255, r * scale), (byte)Math.Min(255, g * scale), (byte)Math.Min(255, b * scale));
+        }
+    }
+}
