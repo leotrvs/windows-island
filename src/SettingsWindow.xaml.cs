@@ -37,10 +37,18 @@ namespace WindowsIsland
             saveTimer.Tick += (s, e) => { saveTimer.Stop(); settings.Save(); };
             SourceInitialized += (s, e) =>
             {
+                IntPtr handle = new WindowInteropHelper(this).Handle;
                 int on = 1;
-                DwmSetWindowAttribute(new WindowInteropHelper(this).Handle, DWMWA_USE_IMMERSIVE_DARK_MODE, ref on, sizeof(int));
+                DwmSetWindowAttribute(handle, DWMWA_USE_IMMERSIVE_DARK_MODE, ref on, sizeof(int));
+                int round = 2; // DWMWCP_ROUND
+                DwmSetWindowAttribute(handle, 33, ref round, sizeof(int));
+                int border = 0x00382E2E; // A faint outline, since there is no title bar to frame the window
+                DwmSetWindowAttribute(handle, 34, ref border, sizeof(int));
             };
             Closed += (s, e) => { if (saveTimer.IsEnabled) { saveTimer.Stop(); settings.Save(); } };
+            CloseButton.MouseEnter += (s, e) => CloseButton.Background = new SolidColorBrush(Color.FromRgb(0x2C, 0x2C, 0x2E));
+            CloseButton.MouseLeave += (s, e) => CloseButton.Background = Brushes.Transparent;
+            CloseButton.MouseLeftButtonUp += (s, e) => Close();
             PlaceNearTray();
             BuildTabs();
             Build(tab);
@@ -58,7 +66,8 @@ namespace WindowsIsland
             Height = Math.Min(Height, Math.Max(MinHeight, work.Height - 24));
             bool taskbarLeft = work.Left > bounds.Left + 1, taskbarTop = work.Top > bounds.Top + 1;
             Left = taskbarLeft ? work.Left + 12 : work.Right - Width - 12;
-            Top = taskbarTop ? work.Top + 12 : work.Bottom - Height - 12;
+// Left well above the taskbar: the hidden-icons flyout opens right there and would cover the window.
+            Top = taskbarTop ? work.Top + 12 : Math.Max(work.Top + 12, work.Bottom - Height - 250);
         }
 
         void BuildTabs()
@@ -127,6 +136,10 @@ namespace WindowsIsland
                 () => string.Equals(settings.Position, "Bottom", StringComparison.OrdinalIgnoreCase) ? 1 : 0,
                 i => settings.Position = i == 1 ? "Bottom" : "Top");
             MonitorRow();
+            string[] ringValues = { "Blue", "Green", "Purple" };
+            Segmented(Strings.RingColorLabel, new[] { Strings.ColorBlue, Strings.ColorGreen, Strings.ColorPurple },
+                () => Math.Max(0, Array.FindIndex(ringValues, v => string.Equals(v, settings.RingColor, StringComparison.OrdinalIgnoreCase))),
+                i => settings.RingColor = ringValues[i]);
             SliderRow(Strings.CollapsedSize, Settings.MinScale, Settings.MaxScale, 0.05, Percent, () => settings.CollapsedScale, v => settings.CollapsedScale = v, false);
             SliderRow(Strings.ExpandedSize, Settings.MinScale, Settings.MaxScale, 0.05, Percent, () => settings.ExpandedScale, v => settings.ExpandedScale = v, true);
             SliderRow(Strings.DistanceFromEdge, Settings.MinOffsetY, Settings.MaxOffsetY, 1, Pixels, () => settings.OffsetY, v => settings.OffsetY = v, false);

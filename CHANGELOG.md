@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.10.0
+
+- **Codex icon:** the Codex logo replaces the old prompt symbol in the island
+- **Usage ring color:** blue by default, like in Claude and Codex themselves, with Green and Purple in Settings, under Appearance. The rings still turn amber and red as the limit gets close
+- **Settings window:** a black header with a close button instead of the gray Windows title bar (no minimize or maximize), and it opens higher, clear of the hidden-icons flyout
+- The collapsed music view is narrower
+- New README picture showing the collapsed and expanded states, and a blue Download button that stands out on the dark GitHub theme
+
 ## 1.9.0
 
 - **Pages in the island:** when it is expanded, scroll the mouse wheel over it or click the dots to move between music, Claude (with Codex) and the timer. You can see Claude's limits and sessions without pausing the music

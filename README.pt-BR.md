@@ -5,12 +5,14 @@
 Uma Dynamic Island para o Windows. Música, Claude Code, os limites de uso e suas notificações ficam numa pequena pílula no topo da tela, com o visual do iPhone e animações de mola.
 
 <p align="center">
-<img src="docs/images/musicexpanded-pt.png" alt="A ilha expandida com a música tocando" width="460">
+<img src="docs/images/hero-pt.png" alt="Windows Island nos estados recolhido e expandido" width="760">
+</p>
+
+<p align="center">
+<a href="https://github.com/leotrvs/windows-island/releases/latest/download/WindowsIsland.exe"><img alt="Baixar para Windows" src="https://img.shields.io/badge/Baixar_para_Windows-0A84FF?style=for-the-badge&logo=windows&logoColor=white"></a>
 </p>
 
 > Projeto não oficial da comunidade. Não é afiliado, endossado ou mantido pela Apple, pela Anthropic ou pela OpenAI. "Claude" e o logo do Claude pertencem à Anthropic, e "Codex" à OpenAI; a licença MIT não os cobre.
-
-[![Baixar para Windows](https://img.shields.io/badge/Baixar_para_Windows-111111?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/leotrvs/windows-island/releases/latest/download/WindowsIsland.exe)
 
 ## Recursos
 

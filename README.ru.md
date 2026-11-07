@@ -5,12 +5,14 @@
 Dynamic Island для Windows. Музыка, Claude Code, его лимиты использования и ваши уведомления живут в маленькой капсуле в верхней части экрана — в стиле iPhone и с пружинными анимациями.
 
 <p align="center">
-<img src="docs/images/musicexpanded-en.png" alt="Развёрнутый остров с играющей песней" width="460">
+<img src="docs/images/hero-en.png" alt="Windows Island в свёрнутом и развёрнутом состояниях" width="760">
+</p>
+
+<p align="center">
+<a href="https://github.com/leotrvs/windows-island/releases/latest/download/WindowsIsland.exe"><img alt="Скачать для Windows" src="https://img.shields.io/badge/Download_for_Windows-0A84FF?style=for-the-badge&logo=windows&logoColor=white"></a>
 </p>
 
 > Неофициальный проект сообщества. Он не связан с Apple, Anthropic или OpenAI, не одобрен и не поддерживается ими. «Claude» и логотип Claude принадлежат Anthropic, а «Codex» — OpenAI; лицензия MIT на них не распространяется.
-
-[![Скачать для Windows](https://img.shields.io/badge/Download_for_Windows-111111?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/leotrvs/windows-island/releases/latest/download/WindowsIsland.exe)
 
 ## Возможности
 

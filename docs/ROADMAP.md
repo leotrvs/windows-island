@@ -22,6 +22,7 @@ Ideas planned for upcoming releases, in the order they are expected to land. Not
 
 ## Done
 
+- Codex icon, usage ring colors, black Settings header, narrower music view (1.10.0)
 - Pages in the island, timer page with pause and custom length, shorter music view (1.9.0)
 - App icon, Settings with tabs near the tray, discreet and more reliable microphone dots (1.8.0)
 - Timer and stopwatch, microphone and camera dots, battery alerts (1.7.0)

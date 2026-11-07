@@ -70,7 +70,7 @@
             <Grid>
                 <local:ClaudeSpark x:Name="BubbleSpark" Width="20" Height="20"/>
                 <Ellipse x:Name="BubbleArt" Width="22" Height="22" Visibility="Collapsed"/>
-                <Path x:Name="BubbleCodex" Style="{StaticResource CodexMark}" Width="14" Height="11" Visibility="Collapsed"/>
+                <Image x:Name="BubbleCodex" Source="Assets/codex.png" Width="20" Height="20" Visibility="Collapsed"/>
                 <Path x:Name="BubbleTimer" Style="{StaticResource ClockMark}" Width="16" Height="16" Visibility="Collapsed"/>
             </Grid>
         </Border>
@@ -93,7 +93,7 @@
                 <Grid x:Name="IdlePanel" Width="112" Height="30"/>
 
                 <!-- Music, compact -->
-                <Grid x:Name="MusicCompact" Width="236" Height="34">
+                <Grid x:Name="MusicCompact" Width="204" Height="34">
                     <Border x:Name="CompactArt" Width="22" Height="22" CornerRadius="6" HorizontalAlignment="Left"
                             Margin="7,0,0,0" Background="{StaticResource ArtPlaceholder}"/>
                     <Canvas x:Name="CompactEq" Width="20" Height="14" HorizontalAlignment="Right" Margin="0,0,13,0"/>
@@ -108,8 +108,8 @@
 
                 <!-- Codex, compact -->
                 <Grid x:Name="CodexCompact" Width="176" Height="34">
-                    <Path x:Name="CodexCompactGlyph" Style="{StaticResource CodexMark}" Width="15" Height="12"
-                          HorizontalAlignment="Left" VerticalAlignment="Center" Margin="13,0,0,0"/>
+                    <Image x:Name="CodexCompactGlyph" Source="Assets/codex.png" Width="22" Height="22"
+                           HorizontalAlignment="Left" VerticalAlignment="Center" Margin="8,0,0,0"/>
                     <TextBlock x:Name="CodexCompactText" HorizontalAlignment="Right" VerticalAlignment="Center"
                                Margin="0,0,13,0" FontSize="13" FontWeight="SemiBold" Typography.NumeralAlignment="Tabular"/>
                 </Grid>
@@ -245,8 +245,8 @@
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <Border Width="38" Height="38" CornerRadius="19" Background="#2B5A8CFF" VerticalAlignment="Center">
-                                    <Path x:Name="ExpandedCodexGlyph" Style="{StaticResource CodexMark}" Width="16" Height="13"/>
+                                <Border Width="38" Height="38" VerticalAlignment="Center">
+                                    <Image x:Name="ExpandedCodexGlyph" Source="Assets/codex.png" Width="38" Height="38"/>
                                 </Border>
                                 <StackPanel Grid.Column="1" Margin="12,0,8,0" VerticalAlignment="Center">
                                     <TextBlock Text="Codex" FontSize="15" FontWeight="SemiBold"/>
@@ -335,7 +335,7 @@
                                 <local:ClaudeSpark x:Name="BannerSpark" Width="26" Height="26"/>
                                 <Path x:Name="BannerBell" Data="{StaticResource BellGlyph}" Fill="White" Width="18" Height="19"
                                       Stretch="Uniform" Visibility="Collapsed"/>
-                                <Path x:Name="BannerCodex" Style="{StaticResource CodexMark}" Width="18" Height="15" Visibility="Collapsed"/>
+                                <Image x:Name="BannerCodex" Source="Assets/codex.png" Width="30" Height="30" Visibility="Collapsed"/>
                             </Grid>
                         </Border>
                         <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">

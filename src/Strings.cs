@@ -116,6 +116,10 @@ namespace WindowsIsland
         public static string MenuTimerMinutes(int minutes) => minutes < 60 ? minutes + T(" min", " min") : (minutes / 60) + " h";
         public static string MenuStopwatch => T("Stopwatch", "Cronômetro");
         public static string MenuStopTimer => T("Stop", "Parar");
+        public static string RingColorLabel => T("Usage ring color", "Cor dos anéis de uso");
+        public static string ColorBlue => T("Blue", "Azul");
+        public static string ColorGreen => T("Green", "Verde");
+        public static string ColorPurple => T("Purple", "Roxo");
         public static string TimerStart => T("Start", "Iniciar");
         public static string TimerPause => T("Pause", "Pausar");
         public static string TimerResume => T("Resume", "Continuar");

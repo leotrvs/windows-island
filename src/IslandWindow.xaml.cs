@@ -26,7 +26,7 @@ namespace WindowsIsland
             [View.Hidden] = new Size(90, 24),
             [View.Minimal] = new Size(76, 6),
             [View.Idle] = new Size(112, 30),
-            [View.MusicCompact] = new Size(236, 34),
+            [View.MusicCompact] = new Size(204, 34),
             [View.ClaudeCompact] = new Size(176, 34),
             [View.CodexCompact] = new Size(176, 34),
             [View.TimerCompact] = new Size(150, 34),
@@ -45,7 +45,9 @@ namespace WindowsIsland
         static readonly Brush Amber = Freeze(new SolidColorBrush(Color.FromRgb(0xFF, 0x9F, 0x0A)));
         static readonly Brush Red = Freeze(new SolidColorBrush(Color.FromRgb(0xFF, 0x45, 0x3A)));
         static readonly Brush ClaudeTint = Freeze(new SolidColorBrush(Color.FromArgb(0x29, 0xE8, 0x87, 0x5F)));
-        static readonly Brush CodexTint = Freeze(new SolidColorBrush(Color.FromArgb(0x2B, 0x5A, 0x8C, 0xFF)));
+        static readonly Brush CodexTint = Brushes.Transparent; // The Codex icon brings its own color
+        static readonly Brush Blue = Freeze(new SolidColorBrush(Color.FromRgb(0x3B, 0x8C, 0xFF)));
+        static readonly Brush Purple = Freeze(new SolidColorBrush(Color.FromRgb(0x9B, 0x6B, 0xFF)));
         static readonly Brush NotificationTint = Freeze(new SolidColorBrush(Color.FromArgb(0x33, 0xFF, 0xFF, 0xFF)));
 
         readonly Settings settings;
@@ -1193,9 +1195,15 @@ namespace WindowsIsland
             return geometry;
         }
 
-        static Brush RingBrush(int percent)
+        // The usage rings use the chosen color, then turn amber and red as the limit gets close.
+        Brush RingBrush(int percent)
         {
-            return percent >= 90 ? Red : percent >= 70 ? Amber : Green;
+            if (percent >= 90) return Red;
+            if (percent >= 70) return Amber;
+            string choice = settings.RingColor ?? "Blue";
+            return choice.Equals("Green", StringComparison.OrdinalIgnoreCase) ? Green
+                 : choice.Equals("Purple", StringComparison.OrdinalIgnoreCase) ? Purple
+                 : Blue;
         }
 
         static string FormatTime(TimeSpan time)
