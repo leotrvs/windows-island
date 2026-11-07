@@ -4,6 +4,7 @@ Ideas planned for upcoming releases, in the order they are expected to land. Not
 
 ## Next
 
+- An animated GIF at the top of the README showing the island in motion (collapsed, expanding, switching pages, a banner), recorded from sample data only, never from a real screen
 - Names of the apps using the microphone or camera, shown when you hover the dots
 - Battery percentage as a live activity while charging
 - Choose which pages appear, and their order
