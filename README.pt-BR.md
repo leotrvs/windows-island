@@ -52,7 +52,9 @@ Para testar sem instalar, rode `WindowsIsland.exe --portable`.
 1. **Passe o mouse** sobre a ilha para expandir, ou **clique** nela. Tire o mouse e ela recolhe.
 2. **Clique** na barra de progresso para ir até aquele ponto da música.
 3. **Clique** num aviso ou notificação para dispensar.
-4. **Clique com o botão direito** no ícone da bandeja para ver as opções e **Sair**.
+4. **Clique** no ícone da bandeja, ou abra o atalho do Windows Island com ele rodando, para abrir os **Ajustes**. Clique com o botão direito no ícone para as ações rápidas e **Sair**.
+
+<img src="docs/images/settings-pt.png" alt="A janela de ajustes" width="320">
 
 | Opção | O que faz |
 |---|---|
@@ -65,6 +67,8 @@ Para testar sem instalar, rode `WindowsIsland.exe --portable`.
 | Expandir ao passar o mouse | Expande quando o mouse para sobre a ilha. Desligado, é preciso clicar |
 | Esconder em tela cheia | Esconde a ilha em jogos, vídeos e apresentações |
 | Posição | Topo da tela, ou logo acima da barra de tarefas |
+| Tamanho recolhida, tamanho expandida | De 80% a 130%, separado para cada estado |
+| Distância da borda, posição horizontal | Afasta a ilha da borda ou move para o lado |
 | Esconder sozinha quando ociosa | Esconde a ilha depois de um tempo sem mostrar nada. Ela volta com uma atividade nova ou quando você leva o mouse até o lugar dela |
 | Duração dos avisos | Quanto tempo os avisos do Claude e as notificações ficam na tela |
 | Esconder música pausada após | Quanto tempo uma música pausada fica na ilha |
@@ -102,7 +106,7 @@ Para contribuir, leia o [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Próximos passos
 
-Planejado: janela de configurações, ajustes de tamanho, posição e monitor, e uso do Codex. A lista completa está em [docs/ROADMAP.md](docs/ROADMAP.md).
+Planejado: escolha de monitor, e uso do Codex. A lista completa está em [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Licença
 

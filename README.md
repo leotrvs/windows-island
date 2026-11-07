@@ -52,7 +52,9 @@ To try it without installing, run `WindowsIsland.exe --portable`.
 1. **Hover** over the island to expand it, or **click** it. Move the mouse away and it collapses.
 2. **Click** the progress bar to jump to that point of the song.
 3. **Click** an alert or notification to dismiss it.
-4. **Right-click** the tray icon for the options and **Quit**.
+4. **Click** the tray icon, or open the Windows Island shortcut while it runs, to open **Settings**. Right-click the icon for quick actions and **Quit**.
+
+<img src="docs/images/settings-en.png" alt="The settings window" width="320">
 
 | Option | What it does |
 |---|---|
@@ -65,6 +67,8 @@ To try it without installing, run `WindowsIsland.exe --portable`.
 | Expand on hover | Expands when the mouse rests on the island. When off, click it |
 | Hide in fullscreen | Hides the island during games, videos and presentations |
 | Position | Top of the screen, or just above the taskbar |
+| Collapsed size, expanded size | 80% to 130%, set apart for each state |
+| Distance from the edge, horizontal position | Moves the island down from the edge or to the side |
 | Auto-hide when idle | Hides the island after it has shown nothing for a while. It comes back with new activity, or when you move the mouse to its spot |
 | Alert duration | How long Claude alerts and notifications stay on screen |
 | Hide paused music after | How long a paused song stays on the island |
@@ -102,7 +106,7 @@ Contributors should read [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Roadmap
 
-Planned next: a settings window, size, position and monitor settings, and Codex usage. The full list is in [docs/ROADMAP.md](docs/ROADMAP.md).
+Planned next: monitor settings, and Codex usage. The full list is in [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## License
 

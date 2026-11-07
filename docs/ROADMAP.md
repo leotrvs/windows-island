@@ -2,11 +2,6 @@
 
 Ideas planned for upcoming releases. Nothing here is promised for a specific version.
 
-## Behavior
-
-- **Settings window:** an iOS-style window for every option, since the tray menu is getting long
-- **Size and position:** set the size of the collapsed and the expanded island, and nudge its position, separately for each state
-
 ## Monitors
 
 - Choose where it appears: the primary monitor, a specific monitor, all monitors, or the active monitor (the one with the mouse)
@@ -26,6 +21,7 @@ Ideas planned for upcoming releases. Nothing here is promised for a specific ver
 
 ## Done
 
+- Settings window, and the size and position of the island (1.3.0)
 - Configurable alert and paused-music durations, and auto-hide (1.2.0)
 - Empty island mode (1.1.0)
 - Signed automatic updates from GitHub releases (1.0.0)

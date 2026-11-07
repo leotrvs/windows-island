@@ -52,7 +52,9 @@ Para probarla sin instalar, ejecuta `WindowsIsland.exe --portable`.
 1. **Pasa el ratón** sobre la isla para expandirla, o **haz clic** en ella. Aparta el ratón y se contrae.
 2. **Haz clic** en la barra de progreso para saltar a ese punto de la canción.
 3. **Haz clic** en un aviso o notificación para descartarlo.
-4. **Haz clic derecho** en el icono de la bandeja para ver las opciones y **Salir**.
+4. **Haz clic** en el icono de la bandeja, o abre el acceso directo de Windows Island mientras se ejecuta, para abrir **Settings**. Haz clic derecho en el icono para las acciones rápidas y **Salir**.
+
+<img src="docs/images/settings-en.png" alt="La ventana de ajustes" width="320">
 
 | Opción | Qué hace |
 |---|---|
@@ -65,6 +67,8 @@ Para probarla sin instalar, ejecuta `WindowsIsland.exe --portable`.
 | Expand on hover | Expande al dejar el ratón sobre la isla. Si está desactivado, haz clic |
 | Hide in fullscreen | Oculta la isla en juegos, vídeos y presentaciones |
 | Position | Parte superior de la pantalla, o justo encima de la barra de tareas |
+| Collapsed size, Expanded size | De 80% a 130%, por separado para cada estado |
+| Distance from the edge, Horizontal position | Aleja la isla del borde o la mueve hacia un lado |
 | Auto-hide when idle | Oculta la isla cuando lleva un rato sin mostrar nada. Vuelve con una actividad nueva o al llevar el ratón a su lugar |
 | Alert duration | Cuánto tiempo quedan en pantalla los avisos de Claude y las notificaciones |
 | Hide paused music after | Cuánto tiempo queda en la isla una canción en pausa |
@@ -104,7 +108,7 @@ Si quieres contribuir, lee [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Próximos pasos
 
-Planeado: una ventana de ajustes, ajustes de tamaño, posición y monitor, y el uso de Codex. La lista completa está en [docs/ROADMAP.md](docs/ROADMAP.md).
+Planeado: elegir el monitor, y el uso de Codex. La lista completa está en [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Licencia
 
