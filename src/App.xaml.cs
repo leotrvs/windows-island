@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,7 +22,10 @@ namespace WindowsIsland
         bool ownsMutex;
         Tray tray;
         Settings settings;
-        IslandWindow window;
+        MediaService media;
+        ClaudeService claude;
+        readonly List<IslandWindow> islands = new List<IslandWindow>();
+        readonly DispatcherTimer followTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(300) };
         DispatcherTimer updateTimer;
         bool updating;
         SettingsWindow settingsWindow;
@@ -94,38 +98,50 @@ namespace WindowsIsland
             }
 
             settings = sample ? new Settings() : Settings.Load();
-            MediaService media = new MediaService(Dispatcher);
-            ClaudeService claude = new ClaudeService(Dispatcher);
+            media = new MediaService(Dispatcher);
+            claude = new ClaudeService(Dispatcher);
             if (sample)
             {
                 media.UseSample();
                 claude.UseSample();
             }
 
-            window = new IslandWindow(settings, media, claude);
-            if (preview != null) window.Preview(preview);
-            if (render != null)
+            if (sample)
             {
-                settings.OffsetY = 28; // Even padding around the island in the images
-                window.Opacity = 0;
-                window.Loaded += (s, a) => Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() =>
+                // Previews and README images use a single island on the primary monitor.
+                IslandWindow window = new IslandWindow(settings, media, claude);
+                islands.Add(window);
+                if (preview != null) window.Preview(preview);
+                if (render != null)
                 {
-                    string suffix = "-" + CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
-                    window.RenderStates(render, suffix);
-                    SettingsWindow page = new SettingsWindow(new Settings(), () => { }, () => { }, () => { });
-                    page.SaveSnapshot(System.IO.Path.Combine(render, "settings" + suffix + ".png"));
-                    Shutdown();
-                }));
+                    settings.OffsetY = 28; // Even padding around the island in the images
+                    window.Opacity = 0;
+                    window.Loaded += (s, a) => Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() =>
+                    {
+                        string suffix = "-" + CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+                        window.RenderStates(render, suffix);
+                        SettingsWindow page = new SettingsWindow(new Settings(), () => { }, () => { }, () => { });
+                        page.SaveSnapshot(System.IO.Path.Combine(render, "settings" + suffix + ".png"));
+                        Shutdown();
+                    }));
+                    window.Show();
+                    return;
+                }
                 window.Show();
-                return;
             }
-            window.Show();
+            else
+            {
+                ReconcileIslands();
+                Microsoft.Win32.SystemEvents.DisplaySettingsChanged += (s, a) => Dispatcher.BeginInvoke(new Action(ReconcileIslands));
+                followTimer.Tick += (s, a) => FollowMouse();
+            }
 
             NotificationService notifications = new NotificationService(Dispatcher);
-            notifications.Arrived += window.ShowNotification;
+            notifications.Arrived += n => { foreach (IslandWindow island in islands) island.ShowNotification(n); };
             Action applySettings = () =>
             {
-                window.SettingsChanged();
+                if (!sample) ReconcileIslands();
+                foreach (IslandWindow island in islands) island.SettingsChanged();
                 if (settings.ShowNotifications && !sample) notifications.Start();
                 else notifications.Stop();
             };
@@ -134,7 +150,8 @@ namespace WindowsIsland
             {
                 if (settingsWindow == null)
                 {
-                    settingsWindow = new SettingsWindow(settings, applySettings, () => _ = CheckForUpdatesAsync(true), window.PeekExpanded);
+                    settingsWindow = new SettingsWindow(settings, applySettings, () => _ = CheckForUpdatesAsync(true),
+                        () => { foreach (IslandWindow island in islands) island.PeekExpanded(); });
                     settingsWindow.Closed += (s, a) => settingsWindow = null;
                     settingsWindow.Show();
                 }
@@ -155,7 +172,7 @@ namespace WindowsIsland
 
             Updater.CleanUp();
             if (afterUpdate)
-                window.Loaded += (s, a) => window.ShowSystemBanner(Installer.Name, Strings.UpdatedTo(Installer.Version));
+                MainIsland.Loaded += (s, a) => MainIsland.ShowSystemBanner(Installer.Name, Strings.UpdatedTo(Installer.Version));
             updateTimer = new DispatcherTimer { Interval = FirstUpdateCheck };
             updateTimer.Tick += (s, a) =>
             {
@@ -163,6 +180,71 @@ namespace WindowsIsland
                 if (settings.AutoUpdate) _ = CheckForUpdatesAsync(false);
             };
             updateTimer.Start();
+        }
+
+        // The island on the primary monitor (or the only one) speaks for the app, such as update messages.
+        IslandWindow MainIsland
+        {
+            get { return islands[0]; }
+        }
+
+        // Makes the set of islands match the Monitor setting: one per monitor for "All", otherwise a
+        // single island on the primary monitor, a chosen one, or the one under the mouse.
+        void ReconcileIslands()
+        {
+            string mode = settings.Monitor ?? "Primary";
+            bool all = mode.Equals("All", StringComparison.OrdinalIgnoreCase);
+            bool follow = mode.Equals("Active", StringComparison.OrdinalIgnoreCase);
+
+            List<Display> wanted;
+            if (all) wanted = Displays.All();
+            else if (follow) wanted = new List<Display> { Displays.UnderCursor() };
+            else if (mode.Equals("Primary", StringComparison.OrdinalIgnoreCase)) wanted = new List<Display> { Displays.Primary() };
+            else wanted = new List<Display> { Displays.ById(mode) ?? Displays.Primary() }; // A monitor that was unplugged falls back
+            if (wanted.Count == 0) wanted.Add(Displays.Primary());
+
+            if (!all)
+            {
+                while (islands.Count > 1) CloseIsland(islands[islands.Count - 1]);
+                if (islands.Count == 0) OpenIsland(wanted[0]);
+                else islands[0].MoveTo(wanted[0], islands[0].Target?.Id != wanted[0].Id);
+            }
+            else
+            {
+                foreach (IslandWindow island in islands.ToArray())
+                {
+                    Display same = wanted.Find(d => d.Id == island.Target?.Id);
+                    if (same == null) CloseIsland(island);
+                    else island.MoveTo(same, false); // Refreshes its bounds after a display change
+                }
+                foreach (Display display in wanted)
+                    if (!islands.Exists(i => i.Target?.Id == display.Id)) OpenIsland(display);
+                islands.Sort((a, b) => wanted.FindIndex(d => d.Id == a.Target?.Id).CompareTo(wanted.FindIndex(d => d.Id == b.Target?.Id)));
+            }
+            followTimer.IsEnabled = follow;
+        }
+
+        void OpenIsland(Display display)
+        {
+            IslandWindow island = new IslandWindow(settings, media, claude);
+            island.MoveTo(display, false);
+            islands.Add(island);
+            island.Show();
+        }
+
+        void CloseIsland(IslandWindow island)
+        {
+            island.Detach();
+            islands.Remove(island);
+            island.Close();
+        }
+
+        // "Active" mode: the island hops to the monitor the mouse is on.
+        void FollowMouse()
+        {
+            if (islands.Count == 0) return;
+            Display display = Displays.UnderCursor();
+            if (islands[0].Target?.Id != display.Id) islands[0].MoveTo(display, true);
         }
 
         // The previous version is quitting after replacing itself; take over its single-instance lock.
@@ -180,14 +262,14 @@ namespace WindowsIsland
             {
                 if (!Updater.CanUpdate)
                 {
-                    if (manual) window.ShowSystemBanner(Installer.Name, Strings.UpdatesNeedInstall);
+                    if (manual) MainIsland.ShowSystemBanner(Installer.Name, Strings.UpdatesNeedInstall);
                     return;
                 }
 
                 Tuple<UpdateResult, UpdateInfo> check = await Updater.CheckAsync();
                 if (check.Item1 == UpdateResult.Available && await Updater.DownloadVerifiedAsync(check.Item2))
                 {
-                    while (window.IsBusy) await Task.Delay(2000); // Never restart under the user's mouse
+                    while (islands.Exists(i => i.IsBusy)) await Task.Delay(2000); // Never restart under the user's mouse
                     if (Updater.ApplyAndRestart())
                     {
                         Shutdown();
@@ -195,7 +277,7 @@ namespace WindowsIsland
                     }
                 }
                 if (manual)
-                    window.ShowSystemBanner(Installer.Name, check.Item1 == UpdateResult.UpToDate ? Strings.UpToDate : Strings.UpdateFailed);
+                    MainIsland.ShowSystemBanner(Installer.Name, check.Item1 == UpdateResult.UpToDate ? Strings.UpToDate : Strings.UpdateFailed);
             }
             finally
             {

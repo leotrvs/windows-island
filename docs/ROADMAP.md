@@ -2,10 +2,6 @@
 
 Ideas planned for upcoming releases. Nothing here is promised for a specific version.
 
-## Monitors
-
-- Choose where it appears: the primary monitor, a specific monitor, all monitors, or the active monitor (the one with the mouse)
-
 ## Activities
 
 - **Codex usage**, next to Claude. To investigate: the Codex CLI writes session logs under `~/.codex/sessions` that appear to include rate-limit percentages; check whether that is stable enough to read, the same read-only way Claude's session files are read
@@ -21,6 +17,7 @@ Ideas planned for upcoming releases. Nothing here is promised for a specific ver
 
 ## Done
 
+- Choosing the monitor: primary, a specific one, all, or the one with the mouse (1.4.0)
 - Settings window, and the size and position of the island (1.3.0)
 - Configurable alert and paused-music durations, and auto-hide (1.2.0)
 - Empty island mode (1.1.0)

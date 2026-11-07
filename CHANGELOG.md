@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.4.0
+
+- **Monitor** in Settings: show the island on the primary monitor, on a specific one, on all of them at once, or on the one with the mouse, where it hops over as the cursor moves
+- Fullscreen and maximized windows are now detected on each island's own monitor
+
 ## 1.3.0
 
 - **Settings window** in the style of iOS Settings, with every option. Click the tray icon, choose **Settings…**, or open the shortcut while the island runs

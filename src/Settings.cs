@@ -8,6 +8,7 @@ namespace WindowsIsland
     public sealed class Settings
     {
         public string Position { get; set; } = "Top"; // Top or Bottom
+        public string Monitor { get; set; } = "Primary"; // Primary, Active (follows the mouse), All, or a device name
         public double OffsetY { get; set; } = 8;
         public double OffsetX { get; set; } = 0;             // From the screen's center, in DIPs
         public double CollapsedScale { get; set; } = 1.0;    // Idle and compact island

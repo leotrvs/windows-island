@@ -18,7 +18,6 @@ namespace WindowsIsland
         const long WS_EX_NOACTIVATE = 0x08000000;
         const uint SWP_NOSIZE = 0x1, SWP_NOMOVE = 0x2, SWP_NOACTIVATE = 0x10, SWP_NOOWNERZORDER = 0x200;
         const uint MONITOR_DEFAULTTONEAREST = 2;
-        const uint MONITORINFOF_PRIMARY = 1;
         const int QUNS_RUNNING_D3D_FULL_SCREEN = 3;
         const int QUNS_PRESENTATION_MODE = 4;
         static readonly IntPtr HWND_TOPMOST = new IntPtr(-1);
@@ -65,16 +64,17 @@ namespace WindowsIsland
             SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOOWNERZORDER);
         }
 
-        // Looks at the foreground window on the primary monitor, where the island lives.
+        // Looks at the foreground window, but only when it is on the same monitor as this island.
         public static ScreenState GetScreenState(IntPtr self)
         {
             ScreenState state = new ScreenState();
             IntPtr foreground = GetForegroundWindow();
             if (foreground == IntPtr.Zero || foreground == self || IsDesktop(foreground)) return state;
 
+            IntPtr monitor = MonitorFromWindow(foreground, MONITOR_DEFAULTTONEAREST);
+            if (self != IntPtr.Zero && monitor != MonitorFromWindow(self, MONITOR_DEFAULTTONEAREST)) return state;
             MONITORINFO info = new MONITORINFO { cbSize = Marshal.SizeOf<MONITORINFO>() };
-            if (!GetMonitorInfo(MonitorFromWindow(foreground, MONITOR_DEFAULTTONEAREST), ref info)) return state;
-            if ((info.dwFlags & MONITORINFOF_PRIMARY) == 0) return state;
+            if (!GetMonitorInfo(monitor, ref info)) return state;
 
             state.Maximized = IsZoomed(foreground);
 

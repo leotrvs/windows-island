@@ -67,6 +67,7 @@ To try it without installing, run `WindowsIsland.exe --portable`.
 | Expand on hover | Expands when the mouse rests on the island. When off, click it |
 | Hide in fullscreen | Hides the island during games, videos and presentations |
 | Position | Top of the screen, or just above the taskbar |
+| Monitor | The primary monitor, a specific one, all of them, or the one with the mouse |
 | Collapsed size, expanded size | 80% to 130%, set apart for each state |
 | Distance from the edge, horizontal position | Moves the island down from the edge or to the side |
 | Auto-hide when idle | Hides the island after it has shown nothing for a while. It comes back with new activity, or when you move the mouse to its spot |
@@ -106,7 +107,7 @@ Contributors should read [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Roadmap
 
-Planned next: monitor settings, and Codex usage. The full list is in [docs/ROADMAP.md](docs/ROADMAP.md).
+Planned next: Codex usage, a smaller download and more live activities. The full list is in [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## License
 

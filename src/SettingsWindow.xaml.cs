@@ -64,6 +64,7 @@ namespace WindowsIsland
             Segmented(Strings.MenuPosition, new[] { Strings.MenuTop, Strings.MenuBottom },
                 () => string.Equals(settings.Position, "Bottom", StringComparison.OrdinalIgnoreCase) ? 1 : 0,
                 i => settings.Position = i == 1 ? "Bottom" : "Top");
+            MonitorRow();
             SliderRow(Strings.CollapsedSize, Settings.MinScale, Settings.MaxScale, 0.05, Percent, () => settings.CollapsedScale, v => settings.CollapsedScale = v, false);
             SliderRow(Strings.ExpandedSize, Settings.MinScale, Settings.MaxScale, 0.05, Percent, () => settings.ExpandedScale, v => settings.ExpandedScale = v, true);
             SliderRow(Strings.DistanceFromEdge, Settings.MinOffsetY, Settings.MaxOffsetY, 1, Pixels, () => settings.OffsetY, v => settings.OffsetY = v, false);
@@ -203,6 +204,21 @@ namespace WindowsIsland
             for (int i = 0; i < seconds.Length; i++) names[i] = Strings.Duration(seconds[i], zeroIsNever);
             int current = Array.IndexOf(seconds, get());
             Row(label, hint, null, SegmentBar(names, current, i => set(seconds[i])));
+        }
+
+        // Primary, the one with the mouse, all, then each other monitor by the number Windows gives it.
+        void MonitorRow()
+        {
+            System.Collections.Generic.List<string> values = new System.Collections.Generic.List<string> { "Primary", "Active", "All" };
+            System.Collections.Generic.List<string> names = new System.Collections.Generic.List<string> { Strings.MonitorPrimary, Strings.MonitorActive, Strings.MonitorAll };
+            foreach (Display display in Displays.All())
+            {
+                if (display.Primary) continue;
+                values.Add(display.Id);
+                names.Add(Strings.MonitorNumber(display.Number));
+            }
+            int current = values.FindIndex(v => string.Equals(v, settings.Monitor, StringComparison.OrdinalIgnoreCase));
+            Row(Strings.MonitorLabel, Strings.HintMonitor, null, SegmentBar(names.ToArray(), Math.Max(0, current), i => settings.Monitor = values[i]));
         }
 
         void Segmented(string label, string[] names, Func<int> get, Action<int> set)

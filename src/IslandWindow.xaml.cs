@@ -127,8 +127,8 @@ namespace WindowsIsland
             pollTimer.Tick += (s, e) => Poll();
             revealTimer.Tick += (s, e) => CheckReveal();
 
-            media.Changed += () => { UpdateMusic(); Recompute(); };
-            claude.Changed += () => { UpdateClaude(); Recompute(); };
+            media.Changed += OnMediaChanged;
+            claude.Changed += OnClaudeChanged;
             claude.Alert += ShowBanner;
 
             SourceInitialized += (s, e) =>
@@ -146,7 +146,36 @@ namespace WindowsIsland
                 StartLoop();
                 pollTimer.Start();
             };
-            SystemEvents.DisplaySettingsChanged += (s, e) => Dispatcher.BeginInvoke(new Action(PlaceWindow));
+        }
+
+        void OnMediaChanged() { UpdateMusic(); Recompute(); }
+        void OnClaudeChanged() { UpdateClaude(); Recompute(); }
+
+        // The monitor this island lives on. Null means the primary monitor.
+        internal Display Target { get; private set; }
+
+        // Moves the island to another monitor. With animate, it pops in there like at startup.
+        internal void MoveTo(Display display, bool animate)
+        {
+            Target = display;
+            if (!IsLoaded) return;
+            if (animate) shown.Snap(0);
+            PlaceWindow();
+            Recompute();
+            StartLoop();
+        }
+
+        // Called before the island is closed for good, so the shared services no longer reach it.
+        internal void Detach()
+        {
+            media.Changed -= OnMediaChanged;
+            claude.Changed -= OnClaudeChanged;
+            claude.Alert -= ShowBanner;
+            enterTimer.Stop();
+            leaveTimer.Stop();
+            pollTimer.Stop();
+            revealTimer.Stop();
+            StopLoop();
         }
 
         bool IsBottom
@@ -500,15 +529,16 @@ namespace WindowsIsland
 
         void PlaceWindow()
         {
-            Rect work = SystemParameters.WorkArea;
+            Display display = Target ?? Displays.Primary();
+            Rect screen = display.Bounds;
+            Rect work = display.WorkArea;
             bool bottom = IsBottom;
-            double screen = SystemParameters.PrimaryScreenWidth;
 
             // Room for the largest state at the user's sizes, plus the bubble and the shadow.
             double largest = Math.Max(settings.ExpandedScale, settings.CollapsedScale);
             Width = Math.Max(520, 372 * largest + 140);
             Height = Math.Max(Sizes[View.MusicExpanded].Height * settings.ExpandedScale, 34 * settings.CollapsedScale) + settings.OffsetY + 44;
-            Left = Math.Clamp((screen - Width) / 2 + settings.OffsetX, 0, Math.Max(0, screen - Width));
+            Left = Math.Clamp(screen.Left + (screen.Width - Width) / 2 + settings.OffsetX, screen.Left, Math.Max(screen.Left, screen.Right - Width));
             Top = bottom ? work.Bottom - Height : work.Top;
 
             VerticalAlignment align = bottom ? VerticalAlignment.Bottom : VerticalAlignment.Top;

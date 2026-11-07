@@ -67,6 +67,7 @@ Para testar sem instalar, rode `WindowsIsland.exe --portable`.
 | Expandir ao passar o mouse | Expande quando o mouse para sobre a ilha. Desligado, é preciso clicar |
 | Esconder em tela cheia | Esconde a ilha em jogos, vídeos e apresentações |
 | Posição | Topo da tela, ou logo acima da barra de tarefas |
+| Monitor | O principal, um específico, todos, ou o que está com o mouse |
 | Tamanho recolhida, tamanho expandida | De 80% a 130%, separado para cada estado |
 | Distância da borda, posição horizontal | Afasta a ilha da borda ou move para o lado |
 | Esconder sozinha quando ociosa | Esconde a ilha depois de um tempo sem mostrar nada. Ela volta com uma atividade nova ou quando você leva o mouse até o lugar dela |
@@ -106,7 +107,7 @@ Para contribuir, leia o [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Próximos passos
 
-Planejado: escolha de monitor, e uso do Codex. A lista completa está em [docs/ROADMAP.md](docs/ROADMAP.md).
+Planejado: uso do Codex, download menor e mais atividades ao vivo. A lista completa está em [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Licença
 

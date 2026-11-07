@@ -66,6 +66,12 @@ namespace WindowsIsland
         public static string HintNotifications => T("Reads the text of new notifications to show them here", "Lê o texto das notificações novas para mostrá-las aqui");
         public static string HintEmptyIsland => T("Stays a plain pill; hover to see activities", "Fica só a pílula; passe o mouse para ver as atividades");
         public static string HintAutoHide => T("Comes back with new activity or when the mouse reaches its spot", "Volta com uma atividade nova ou quando o mouse chega ao lugar dela");
+        public static string MonitorLabel => T("Monitor", "Monitor");
+        public static string HintMonitor => T("With the mouse: the island moves to the screen the cursor is on", "Com o mouse: a ilha vai para a tela onde está o cursor");
+        public static string MonitorPrimary => T("Primary", "Principal");
+        public static string MonitorActive => T("With the mouse", "Com o mouse");
+        public static string MonitorAll => T("All", "Todos");
+        public static string MonitorNumber(int number) => T("Screen ", "Tela ") + number;
         public static string CollapsedSize => T("Collapsed size", "Tamanho recolhida");
         public static string ExpandedSize => T("Expanded size", "Tamanho expandida");
         public static string DistanceFromEdge => T("Distance from the edge", "Distância da borda");

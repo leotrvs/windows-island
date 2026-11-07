@@ -67,6 +67,7 @@ Para probarla sin instalar, ejecuta `WindowsIsland.exe --portable`.
 | Expand on hover | Expande al dejar el ratón sobre la isla. Si está desactivado, haz clic |
 | Hide in fullscreen | Oculta la isla en juegos, vídeos y presentaciones |
 | Position | Parte superior de la pantalla, o justo encima de la barra de tareas |
+| Monitor | El principal, uno concreto, todos o el que tiene el ratón |
 | Collapsed size, Expanded size | De 80% a 130%, por separado para cada estado |
 | Distance from the edge, Horizontal position | Aleja la isla del borde o la mueve hacia un lado |
 | Auto-hide when idle | Oculta la isla cuando lleva un rato sin mostrar nada. Vuelve con una actividad nueva o al llevar el ratón a su lugar |
@@ -108,7 +109,7 @@ Si quieres contribuir, lee [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Próximos pasos
 
-Planeado: elegir el monitor, y el uso de Codex. La lista completa está en [docs/ROADMAP.md](docs/ROADMAP.md).
+Planeado: el uso de Codex, una descarga más pequeña y más actividades en vivo. La lista completa está en [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Licencia
 
