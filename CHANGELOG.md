@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.7.3
+
+- Fixed the island briefly showing Claude as working, with a timer, every time the limits were read. The short-lived Claude Code started for the `/usage` read no longer counts as a chat
+
 ## 1.7.2
 
 - The Codex section of the Claude panel now shows only while Codex is working, instead of whenever its files exist on the PC

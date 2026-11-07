@@ -243,6 +243,24 @@ namespace WindowsIsland
             Changed?.Invoke();
         }
 
+        static readonly string TempFolder = Path.GetFullPath(Path.GetTempPath()).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+
+        // Reading the limits starts a short-lived Claude Code in the temp folder; it must not look like a chat.
+        static bool IsProbeFolder(string cwd)
+        {
+            if (string.IsNullOrEmpty(cwd)) return false;
+            try
+            {
+                string full = Path.GetFullPath(cwd).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                return full.Equals(TempFolder, StringComparison.OrdinalIgnoreCase) ||
+                       full.StartsWith(TempFolder + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
         static List<SessionInfo> ReadSessions()
         {
             List<SessionInfo> sessions = new List<SessionInfo>();
@@ -257,6 +275,7 @@ namespace WindowsIsland
                     {
                         JsonElement root = document.RootElement;
                         if (Text(root, "kind") != "interactive") continue; // Background reads are not sessions.
+                        if (IsProbeFolder(Text(root, "cwd"))) continue; // The /usage reads (ours and other tools') run in the temp folder.
 
                         JsonElement pid;
                         int processId;
