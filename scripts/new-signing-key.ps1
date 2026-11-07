@@ -1,6 +1,7 @@
-# Creates the update signing key. Run once per project (forks need their own key).
+# Creates an update signing key. Only forks need this: Windows Island shares its maintainer's key with
+# Claude Usage Taskbar, so the default path refuses to run while that key exists.
 # The private key is written outside the repository; only the public key goes into src\UpdateKey.cs.
-param([string]$KeyPath = (Join-Path $HOME '.windows-island-signing\update-signing-key.xml'))
+param([string]$KeyPath = (Join-Path $HOME '.claude-usage-taskbar-signing\update-signing-key.xml'))
 
 $ErrorActionPreference = 'Stop'
 if (Test-Path $KeyPath) { throw "A key already exists at $KeyPath. Replacing it would break updates for installed copies." }

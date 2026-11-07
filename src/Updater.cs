@@ -107,6 +107,12 @@ namespace WindowsIsland
 
                 using (JsonDocument manifest = JsonDocument.Parse(Encoding.UTF8.GetString(manifestBytes)))
                 {
+                    // The signing key is shared with Claude Usage Taskbar, so a valid signature alone is not
+                    // enough: the manifest must name this app.
+                    JsonElement app;
+                    if (!manifest.RootElement.TryGetProperty("app", out app) || app.GetString() != Installer.Id)
+                        return Tuple.Create(UpdateResult.Failed, (UpdateInfo)null);
+
                     string version = manifest.RootElement.GetProperty("version").GetString();
                     string sha256 = manifest.RootElement.GetProperty("sha256").GetString();
                     if (new Version(version) <= new Version(Installer.Version))

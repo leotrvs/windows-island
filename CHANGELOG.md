@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.1
+
+- Updates are signed with the same key as Claude Usage Taskbar. Each update file now names its app, and the island rejects any file meant for another app
+- Copies of 1.0.0 cannot update to this version by themselves: download it once from this release
+
 ## 1.0.0
 
 First release.

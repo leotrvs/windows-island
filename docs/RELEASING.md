@@ -2,17 +2,15 @@
 
 Automatic updates need a **public** repository, because the app downloads release files without signing in. While the repository is private, installed copies simply find no update.
 
-## First time
+## Signing key
 
-```powershell
-pwsh -File scripts/new-signing-key.ps1
-```
+Windows Island shares its update signing key with [Claude Usage Taskbar](https://github.com/leotrvs/claude-usage-taskbar). The private key lives at `~\.claude-usage-taskbar-signing\update-signing-key.xml`, outside both repositories, and its public half is in `src\UpdateKey.cs`.
 
-This writes the private key to `~\.windows-island-signing\update-signing-key.xml` and the public key to `src\UpdateKey.cs`. Commit `UpdateKey.cs`, and back up the private key somewhere safe, such as a password manager.
+Each manifest names its app (`"app": "WindowsIsland"`), and the island rejects a manifest for any other app, so a file signed for the taskbar can never be taken as an island update. The two apps also download only from their own repository's releases.
 
-**Never commit the private key.** If it is lost, installed copies can no longer update automatically and users must reinstall once. If it leaks, remove every release signed with it, publish a new key in a new version, and tell users to reinstall.
+**Never commit the private key.** If it is lost, installed copies of both apps can no longer update automatically and users must reinstall once. If it leaks, remove every release of both apps signed with it, publish a new key in new versions, and tell users to reinstall.
 
-Forks must create their own key and change `BaseUrl` in `src\Updater.cs`.
+Forks must create their own key with `scripts/new-signing-key.ps1 -KeyPath <a path outside the repository>` and change `BaseUrl` in `src\Updater.cs`.
 
 ## Each release
 
