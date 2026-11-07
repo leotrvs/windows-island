@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.4.1
+
+- Fixed the **With the mouse** monitor mode: after moving to another screen the island flashed and then stayed invisible on every screen
+- Arriving on a new screen counts as activity, so auto-hide waits its full time there
+
 ## 1.4.0
 
 - **Monitor** in Settings: show the island on the primary monitor, on a specific one, on all of them at once, or on the one with the mouse, where it hops over as the cursor moves

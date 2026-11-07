@@ -159,9 +159,15 @@ namespace WindowsIsland
         {
             Target = display;
             if (!IsLoaded) return;
-            if (animate) shown.Snap(0);
+            if (animate)
+            {
+                shown.Value = 0; // Pops in from nothing; the target stays where the state puts it
+                shown.Velocity = 0;
+                lastActive = DateTime.Now; // Arriving on a screen counts as activity, so auto-hide waits its full time
+            }
             PlaceWindow();
             Recompute();
+            ApplyTargets();
             StartLoop();
         }
 
