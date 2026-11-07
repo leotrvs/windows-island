@@ -1,51 +1,41 @@
 using System;
-using System.Diagnostics;
-using System.IO;
 using Drawing = System.Drawing;
 using Forms = System.Windows.Forms;
 
 namespace WindowsIsland
 {
-    // The tray icon is the only way back to the settings while the island is hidden.
+    // The tray icon is the way back to the island's settings, even while the island is hidden.
+    // A click opens the settings window; the right-click menu keeps only the quick actions.
     sealed class Tray : IDisposable
     {
         readonly Forms.NotifyIcon icon;
         readonly Settings settings;
         readonly Action changed;
 
-        public Tray(Settings settings, Action changed, Action checkForUpdates, Action quit)
+        public Tray(Settings settings, Action changed, Action openSettings, Action checkForUpdates, Action quit)
         {
             this.settings = settings;
             this.changed = changed;
 
             Forms.ContextMenuStrip menu = new Forms.ContextMenuStrip();
-            menu.Items.Add(Toggle(Strings.MenuMusic, () => settings.ShowMusic, v => settings.ShowMusic = v));
-            menu.Items.Add(Toggle(Strings.MenuClaude, () => settings.ShowClaude, v => settings.ShowClaude = v));
-            menu.Items.Add(Toggle(Strings.MenuBanners, () => settings.ClaudeBanners, v => settings.ClaudeBanners = v));
-            menu.Items.Add(Toggle(Strings.MenuNotifications, () => settings.ShowNotifications, v => settings.ShowNotifications = v));
+            Forms.ToolStripMenuItem open = new Forms.ToolStripMenuItem(Strings.MenuSettings, null, (s, e) => openSettings());
+            open.Font = new Drawing.Font(open.Font, Drawing.FontStyle.Bold);
+            menu.Items.Add(open);
+            Forms.ToolStripMenuItem empty = Toggle(Strings.MenuEmptyIsland, () => settings.EmptyIsland, v => settings.EmptyIsland = v);
+            menu.Items.Add(empty);
             menu.Items.Add(new Forms.ToolStripSeparator());
-            menu.Items.Add(Toggle(Strings.MenuEmptyIsland, () => settings.EmptyIsland, v => settings.EmptyIsland = v));
-            menu.Items.Add(Toggle(Strings.MenuIdlePill, () => settings.ShowIdlePill, v => settings.ShowIdlePill = v));
-            menu.Items.Add(Toggle(Strings.MenuHover, () => settings.ExpandOnHover, v => settings.ExpandOnHover = v));
-            menu.Items.Add(Toggle(Strings.MenuFullscreen, () => settings.HideInFullscreen, v => settings.HideInFullscreen = v));
-            menu.Items.Add(PositionMenu());
-            menu.Items.Add(Choice(Strings.MenuAutoHide, new[] { 0, 5, 10, 30, 60, 300 }, () => settings.AutoHideSeconds, v => settings.AutoHideSeconds = v));
-            menu.Items.Add(Choice(Strings.MenuAlertDuration, new[] { 3, 5, 8, 12, 20 }, () => settings.AlertSeconds, v => settings.AlertSeconds = v));
-            menu.Items.Add(Choice(Strings.MenuPausedMusic, new[] { 0, 2, 5, 15, 30, 60 }, () => settings.PausedMusicSeconds, v => settings.PausedMusicSeconds = v));
-            menu.Items.Add(new Forms.ToolStripSeparator());
-            menu.Items.Add(Toggle(Strings.MenuStartup, () => settings.StartWithWindows, v => settings.StartWithWindows = v));
-            menu.Items.Add(Toggle(Strings.MenuAutoUpdate, () => settings.AutoUpdate, v => settings.AutoUpdate = v));
             menu.Items.Add(Strings.MenuCheckUpdates, null, (s, e) => checkForUpdates());
-            menu.Items.Add(Strings.MenuOpenSettings, null, (s, e) => OpenSettingsFile());
             menu.Items.Add(Strings.MenuQuit, null, (s, e) => quit());
+            menu.Opening += (s, e) => empty.Checked = settings.EmptyIsland; // It can change in the settings window
 
             icon = new Forms.NotifyIcon
             {
                 Icon = MakeIcon(),
-                Text = "Windows Island",
+                Text = Installer.Name,
                 ContextMenuStrip = menu,
                 Visible = true,
             };
+            icon.MouseClick += (s, e) => { if (e.Button == Forms.MouseButtons.Left) openSettings(); };
         }
 
         Forms.ToolStripMenuItem Toggle(string text, Func<bool> get, Action<bool> set)
@@ -53,58 +43,12 @@ namespace WindowsIsland
             Forms.ToolStripMenuItem item = new Forms.ToolStripMenuItem(text) { CheckOnClick = true, Checked = get() };
             item.CheckedChanged += (s, e) =>
             {
+                if (item.Checked == get()) return; // Only a refresh from the settings window
                 set(item.Checked);
                 settings.Save();
                 changed();
             };
             return item;
-        }
-
-        // A submenu of durations with the current one checked. 0 reads as "Never" or "At once".
-        Forms.ToolStripMenuItem Choice(string text, int[] seconds, Func<int> get, Action<int> set)
-        {
-            Forms.ToolStripMenuItem parent = new Forms.ToolStripMenuItem(text);
-            foreach (int value in seconds)
-            {
-                int chosen = value;
-                Forms.ToolStripMenuItem item = new Forms.ToolStripMenuItem(Strings.Duration(chosen, text == Strings.MenuAutoHide));
-                item.Click += (s, e) =>
-                {
-                    set(chosen);
-                    settings.Save();
-                    foreach (Forms.ToolStripMenuItem sibling in parent.DropDownItems) sibling.Checked = sibling == item;
-                    changed();
-                };
-                item.Checked = get() == chosen;
-                parent.DropDownItems.Add(item);
-            }
-            return parent;
-        }
-
-        Forms.ToolStripMenuItem PositionMenu()
-        {
-            Forms.ToolStripMenuItem parent = new Forms.ToolStripMenuItem(Strings.MenuPosition);
-            Forms.ToolStripMenuItem top = new Forms.ToolStripMenuItem(Strings.MenuTop);
-            Forms.ToolStripMenuItem bottom = new Forms.ToolStripMenuItem(Strings.MenuBottom);
-            Action refresh = () =>
-            {
-                bool isBottom = string.Equals(settings.Position, "Bottom", StringComparison.OrdinalIgnoreCase);
-                top.Checked = !isBottom;
-                bottom.Checked = isBottom;
-            };
-            top.Click += (s, e) => { settings.Position = "Top"; settings.Save(); refresh(); changed(); };
-            bottom.Click += (s, e) => { settings.Position = "Bottom"; settings.Save(); refresh(); changed(); };
-            parent.DropDownItems.Add(top);
-            parent.DropDownItems.Add(bottom);
-            refresh();
-            return parent;
-        }
-
-        void OpenSettingsFile()
-        {
-            if (!File.Exists(Settings.FilePath)) settings.Save();
-            try { Process.Start(new ProcessStartInfo(Settings.FilePath) { UseShellExecute = true }); }
-            catch (Exception) { }
         }
 
         // A small dark pill with a light outline, readable on both light and dark taskbars.

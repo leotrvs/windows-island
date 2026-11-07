@@ -24,6 +24,9 @@ namespace WindowsIsland
         IslandWindow window;
         DispatcherTimer updateTimer;
         bool updating;
+        SettingsWindow settingsWindow;
+        EventWaitHandle showSettings;
+        const string ShowSettingsEvent = @"Local\WindowsIsland.ShowSettings";
 
         // Arguments:
         //   --preview=<State>   shows one state with sample data (Idle, MusicCompact, ClaudeExpanded...)
@@ -78,6 +81,14 @@ namespace WindowsIsland
             if (!ownsMutex && afterUpdate) ownsMutex = WaitForPreviousVersion();
             if (!ownsMutex)
             {
+                // Opening the shortcut while the island runs brings up its settings.
+                try
+                {
+                    using (EventWaitHandle show = EventWaitHandle.OpenExisting(ShowSettingsEvent)) show.Set();
+                }
+                catch (Exception)
+                {
+                }
                 Shutdown();
                 return;
             }
@@ -101,6 +112,8 @@ namespace WindowsIsland
                 {
                     string suffix = "-" + CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
                     window.RenderStates(render, suffix);
+                    SettingsWindow page = new SettingsWindow(new Settings(), () => { }, () => { }, () => { });
+                    page.SaveSnapshot(System.IO.Path.Combine(render, "settings" + suffix + ".png"));
                     Shutdown();
                 }));
                 window.Show();
@@ -117,8 +130,24 @@ namespace WindowsIsland
                 else notifications.Stop();
             };
 
-            tray = new Tray(settings, applySettings, () => _ = CheckForUpdatesAsync(true), () => Shutdown());
+            Action openSettings = () =>
+            {
+                if (settingsWindow == null)
+                {
+                    settingsWindow = new SettingsWindow(settings, applySettings, () => _ = CheckForUpdatesAsync(true), window.PeekExpanded);
+                    settingsWindow.Closed += (s, a) => settingsWindow = null;
+                    settingsWindow.Show();
+                }
+                if (settingsWindow.WindowState == WindowState.Minimized) settingsWindow.WindowState = WindowState.Normal;
+                settingsWindow.Activate();
+            };
+
+            tray = new Tray(settings, applySettings, openSettings, () => _ = CheckForUpdatesAsync(true), () => Shutdown());
             if (sample) return;
+
+            showSettings = new EventWaitHandle(false, EventResetMode.AutoReset, ShowSettingsEvent);
+            ThreadPool.RegisterWaitForSingleObject(showSettings,
+                (state, timedOut) => Dispatcher.BeginInvoke(openSettings), null, Timeout.Infinite, false);
 
             _ = media.StartAsync();
             claude.Start();

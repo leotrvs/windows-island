@@ -51,6 +51,7 @@ namespace WindowsIsland
         readonly Spring width = new Spring(112, 0.05, 280, 0.72);
         readonly Spring height = new Spring(30, 0.05, 280, 0.72);
         readonly Spring shown = new Spring(0, 0.002, 200, 0.7);
+        readonly Spring stateScale = new Spring(1, 0.001, 280, 0.72); // The user's size for the current state
         readonly Spring bubbleShift = new Spring(20, 0.05, 260, 0.7);
         readonly Spring bubbleScale = new Spring(0.4, 0.002, 260, 0.6);
         readonly Spring bubbleOpacity = new Spring(0, 0.002, 320, 1);
@@ -75,6 +76,7 @@ namespace WindowsIsland
         Activity bubble = Activity.None;
         bool hovering, fullscreen, maximized, rendering, autoHidden;
         DateTime lastActive = DateTime.Now;
+        DateTime peekUntil = DateTime.MinValue;
         readonly DispatcherTimer revealTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(120) };
         DateTime bannerUntil = DateTime.MinValue;
         TimeSpan lastFrame;
@@ -214,7 +216,7 @@ namespace WindowsIsland
 
         void SnapAll()
         {
-            foreach (Spring spring in new[] { width, height, shown, bubbleScale, bubbleOpacity, sessionArc, weeklyArc })
+            foreach (Spring spring in new[] { width, height, shown, stateScale, bubbleScale, bubbleOpacity, sessionArc, weeklyArc })
                 spring.Snap(spring.Target);
             foreach (Spring spring in presence.Values) spring.Snap(spring.Target);
         }
@@ -255,6 +257,15 @@ namespace WindowsIsland
             UpdateMusic();
             UpdateClaude();
             Recompute();
+            ApplyTargets(); // Sizes may have changed even when the state did not
+            StartLoop();
+        }
+
+        // Opens the island for a moment, so a change to the expanded size can be seen while it is made.
+        internal void PeekExpanded()
+        {
+            peekUntil = DateTime.Now.AddSeconds(1.8);
+            Recompute();
         }
 
         // ---------- State ----------
@@ -271,7 +282,7 @@ namespace WindowsIsland
             View next;
             if (forced.HasValue) next = forced.Value;
             else if (fullscreen && settings.HideInFullscreen) next = View.Hidden;
-            else if (hovering)
+            else if (hovering || DateTime.Now < peekUntil)
                 next = primary == Activity.Music ? View.MusicExpanded
                      : settings.ShowClaude ? View.ClaudeExpanded
                      : settings.ShowMusic && media.HasSession ? View.MusicExpanded
@@ -311,6 +322,7 @@ namespace WindowsIsland
             width.Target = size.Width;
             height.Target = size.Height;
             shown.Target = view == View.Hidden ? 0 : 1;
+            stateScale.Target = IsExpandedView(view) ? settings.ExpandedScale : settings.CollapsedScale;
             Pill.IsHitTestVisible = view != View.Hidden;
             if (view == View.ClaudeExpanded && forced == null) claude.RefreshUsage();
 
@@ -459,7 +471,7 @@ namespace WindowsIsland
             Point cursor = source.CompositionTarget.TransformFromDevice.Transform(Native.CursorPosition());
             if (double.IsNaN(cursor.X)) return;
 
-            const double halfWidth = 150, reach = 36;
+            double halfWidth = 150 * settings.CollapsedScale, reach = 36 * settings.CollapsedScale;
             double center = Left + Width / 2;
             double edge = IsBottom ? Top + Height : Top;
             double depth = settings.OffsetY + reach;
@@ -481,11 +493,22 @@ namespace WindowsIsland
             Recompute();
         }
 
+        static bool IsExpandedView(View value)
+        {
+            return value == View.MusicExpanded || value == View.ClaudeExpanded || value == View.Banner;
+        }
+
         void PlaceWindow()
         {
             Rect work = SystemParameters.WorkArea;
             bool bottom = IsBottom;
-            Left = (SystemParameters.PrimaryScreenWidth - Width) / 2;
+            double screen = SystemParameters.PrimaryScreenWidth;
+
+            // Room for the largest state at the user's sizes, plus the bubble and the shadow.
+            double largest = Math.Max(settings.ExpandedScale, settings.CollapsedScale);
+            Width = Math.Max(520, 372 * largest + 140);
+            Height = Math.Max(Sizes[View.MusicExpanded].Height * settings.ExpandedScale, 34 * settings.CollapsedScale) + settings.OffsetY + 44;
+            Left = Math.Clamp((screen - Width) / 2 + settings.OffsetX, 0, Math.Max(0, screen - Width));
             Top = bottom ? work.Bottom - Height : work.Top;
 
             VerticalAlignment align = bottom ? VerticalAlignment.Bottom : VerticalAlignment.Top;
@@ -625,6 +648,7 @@ namespace WindowsIsland
             moving |= width.Step(dt);
             moving |= height.Step(dt);
             moving |= shown.Step(dt);
+            moving |= stateScale.Step(dt);
             moving |= bubbleShift.Step(dt);
             moving |= bubbleScale.Step(dt);
             moving |= bubbleOpacity.Step(dt);
@@ -653,7 +677,8 @@ namespace WindowsIsland
 
             double visible = Math.Clamp(shown.Value, 0, 1);
             Pill.Opacity = visible;
-            PillScale.ScaleX = PillScale.ScaleY = Math.Max(0, 0.7 + 0.3 * shown.Value);
+            double s = stateScale.Value;
+            PillScale.ScaleX = PillScale.ScaleY = Math.Max(0, (0.7 + 0.3 * shown.Value) * s);
 
             // A soft shadow only while expanded; a compact island has none, so clicks around it pass through.
             double expansion = Math.Clamp((h - 44) / 60, 0, 1) * visible;
@@ -703,9 +728,11 @@ namespace WindowsIsland
             }
 
             // The bubble follows the island's edge, sliding out from behind it.
-            bubbleShift.Target = bubble != Activity.None ? w / 2 + BubbleGap + BubbleSize / 2 : w / 2 - BubbleSize / 2 - 2;
+            // Everything is measured at size 100% and multiplied by the user's size.
+            bubbleShift.Target = (bubble != Activity.None ? w / 2 + BubbleGap + BubbleSize / 2 : w / 2 - BubbleSize / 2 - 2) * s;
             BubbleShift.X = bubbleShift.Value;
-            BubbleScale.ScaleX = BubbleScale.ScaleY = Math.Max(0, bubbleScale.Value);
+            BubbleShift.Y = (bottom ? -1 : 1) * BubbleSize / 2 * (s - 1); // Keeps it level with the scaled island
+            BubbleScale.ScaleX = BubbleScale.ScaleY = Math.Max(0, bubbleScale.Value * s);
             Bubble.Opacity = Math.Clamp(bubbleOpacity.Value, 0, 1) * visible;
 
             if (Math.Abs(sessionArc.Value - drawnSessionArc) > 0.05)

@@ -9,6 +9,9 @@ namespace WindowsIsland
     {
         public string Position { get; set; } = "Top"; // Top or Bottom
         public double OffsetY { get; set; } = 8;
+        public double OffsetX { get; set; } = 0;             // From the screen's center, in DIPs
+        public double CollapsedScale { get; set; } = 1.0;    // Idle and compact island
+        public double ExpandedScale { get; set; } = 1.0;     // Expanded island and alerts
         public bool ShowIdlePill { get; set; } = true;
         public bool EmptyIsland { get; set; } = false; // Plain pill only; activities show when it expands
         public int AlertSeconds { get; set; } = 5;       // Claude alerts, notifications and app messages
@@ -56,8 +59,23 @@ namespace WindowsIsland
             AlertSeconds = Math.Clamp(AlertSeconds, 1, 60);
             PausedMusicSeconds = Math.Clamp(PausedMusicSeconds, 0, 600);
             AutoHideSeconds = Math.Clamp(AutoHideSeconds, 0, 3600);
-            OffsetY = Math.Clamp(OffsetY, 0, 200);
+            OffsetY = Math.Clamp(OffsetY, MinOffsetY, MaxOffsetY);
+            OffsetX = Math.Clamp(OffsetX, -MaxOffsetX, MaxOffsetX);
+            CollapsedScale = Math.Clamp(CollapsedScale, MinScale, MaxScale);
+            ExpandedScale = Math.Clamp(ExpandedScale, MinScale, MaxScale);
             return this;
+        }
+
+        public const double MinScale = 0.8, MaxScale = 1.3;
+        public const double MinOffsetY = 0, MaxOffsetY = 40;
+        public const double MaxOffsetX = 600;
+
+        public void ResetAppearance()
+        {
+            OffsetY = 8;
+            OffsetX = 0;
+            CollapsedScale = 1.0;
+            ExpandedScale = 1.0;
         }
 
         public void Save()

@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.3.0
+
+- **Settings window** in the style of iOS Settings, with every option. Click the tray icon, choose **Settings…**, or open the shortcut while the island runs
+- **Size:** separate sizes for the collapsed and the expanded island, from 80% to 130%
+- **Position:** distance from the edge and horizontal position
+- The tray menu keeps only the quick actions
+
 ## 1.2.0
 
 - **Auto-hide when idle:** the island hides after it has shown nothing for 5 seconds to 5 minutes, and comes back with new activity or when the mouse reaches its spot. Off by default

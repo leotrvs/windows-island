@@ -56,6 +56,23 @@ namespace WindowsIsland
         public static string MenuClaude => T("Show Claude", "Mostrar Claude");
         public static string MenuBanners => T("Claude alerts", "Avisos do Claude");
         public static string MenuNotifications => T("Show Windows notifications", "Mostrar notificações do Windows");
+        // Settings window
+        public static string MenuSettings => T("Settings…", "Ajustes…");
+        public static string SettingsTitle => T("Settings", "Ajustes");
+        public static string SectionActivities => T("Activities", "Atividades");
+        public static string SectionBehavior => T("Behavior", "Comportamento");
+        public static string SectionAppearance => T("Appearance", "Aparência");
+        public static string SectionSystem => T("System", "Sistema");
+        public static string HintNotifications => T("Reads the text of new notifications to show them here", "Lê o texto das notificações novas para mostrá-las aqui");
+        public static string HintEmptyIsland => T("Stays a plain pill; hover to see activities", "Fica só a pílula; passe o mouse para ver as atividades");
+        public static string HintAutoHide => T("Comes back with new activity or when the mouse reaches its spot", "Volta com uma atividade nova ou quando o mouse chega ao lugar dela");
+        public static string CollapsedSize => T("Collapsed size", "Tamanho recolhida");
+        public static string ExpandedSize => T("Expanded size", "Tamanho expandida");
+        public static string DistanceFromEdge => T("Distance from the edge", "Distância da borda");
+        public static string HorizontalPosition => T("Horizontal position", "Posição horizontal");
+        public static string Centered => T("Centered", "Centralizada");
+        public static string ResetAppearance => T("Reset appearance", "Restaurar aparência");
+
         public static string MenuAutoHide => T("Auto-hide when idle", "Esconder sozinha quando ociosa");
         public static string MenuAlertDuration => T("Alert duration", "Duração dos avisos");
         public static string MenuPausedMusic => T("Hide paused music after", "Esconder música pausada após");
