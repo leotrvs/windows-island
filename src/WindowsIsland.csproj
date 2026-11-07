@@ -12,7 +12,7 @@
     <AssemblyName>WindowsIsland</AssemblyName>
     <Product>Windows Island</Product>
     <ApplicationIcon>Assets/app.ico</ApplicationIcon>
-    <Version>1.10.0</Version>
+    <Version>1.10.1</Version>
     <!-- A small always-on overlay: favor a low memory footprint over GC throughput -->
     <ConcurrentGarbageCollection>false</ConcurrentGarbageCollection>
     <TieredPGO>false</TieredPGO>

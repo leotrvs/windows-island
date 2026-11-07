@@ -38,6 +38,7 @@ namespace WindowsIsland
 
         // Arguments:
         //   --preview=<State>   shows one state with sample data (Idle, MusicCompact, ClaudeExpanded...)
+        //   --frames <folder>   writes the README animation as numbered PNG frames with sample data, then quits
         //   --render <folder>   writes every state to PNG files with sample data, then quits
         //   --lang=en|pt        forces the language
         //   --portable          runs without installing
@@ -50,20 +51,21 @@ namespace WindowsIsland
             // that a Direct3D device takes. Measured: 166 MB private memory with GPU, 43 MB without.
             System.Windows.Media.RenderOptions.ProcessRenderMode = System.Windows.Interop.RenderMode.SoftwareOnly;
 
-            string preview = null, render = null;
+            string preview = null, render = null, frames = null;
             bool portable = false, uninstall = false, afterUpdate = false;
             for (int i = 0; i < e.Args.Length; i++)
             {
                 string arg = e.Args[i];
                 if (arg.StartsWith("--preview=", StringComparison.OrdinalIgnoreCase)) preview = arg.Substring(10);
                 else if (arg.Equals("--render", StringComparison.OrdinalIgnoreCase) && i + 1 < e.Args.Length) render = e.Args[++i];
+                else if (arg.Equals("--frames", StringComparison.OrdinalIgnoreCase) && i + 1 < e.Args.Length) frames = e.Args[++i];
                 else if (arg.Equals("--portable", StringComparison.OrdinalIgnoreCase)) portable = true;
                 else if (arg.Equals("--uninstall", StringComparison.OrdinalIgnoreCase)) uninstall = true;
                 else if (arg.Equals("--after-update", StringComparison.OrdinalIgnoreCase)) afterUpdate = true;
                 else if (arg.StartsWith("--lang=", StringComparison.OrdinalIgnoreCase))
                     CultureInfo.CurrentUICulture = CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo(arg.Substring(7));
             }
-            bool sample = preview != null || render != null;
+            bool sample = preview != null || render != null || frames != null;
 
             int diagnose = Array.IndexOf(e.Args, "--diagnose-codex");
             if (diagnose >= 0 && diagnose + 1 < e.Args.Length)
@@ -128,6 +130,18 @@ namespace WindowsIsland
                 IslandWindow window = new IslandWindow(settings, media, claude, codex, timer, privacy);
                 islands.Add(window);
                 if (preview != null) window.Preview(preview);
+                if (frames != null)
+                {
+                    settings.OffsetY = 28;
+                    window.Opacity = 0;
+                    window.Loaded += (s, a) => Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() =>
+                    {
+                        window.RenderAnimation(frames);
+                        Shutdown();
+                    }));
+                    window.Show();
+                    return;
+                }
                 if (render != null)
                 {
                     settings.OffsetY = 28; // Even padding around the island in the images

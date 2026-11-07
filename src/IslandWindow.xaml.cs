@@ -405,6 +405,64 @@ namespace WindowsIsland
             foreach (Spring spring in presence.Values) spring.Snap(spring.Target);
         }
 
+        // Records the README animation: the island going through its states, one PNG per frame, from sample data.
+        public void RenderAnimation(string folder)
+        {
+            Directory.CreateDirectory(folder);
+            BannerTitle.Text = Strings.ClaudeDone;
+            BannerSubtitle.Text = Strings.SampleSession;
+            const int fps = 20, substeps = 3;
+            (View view, double seconds)[] script =
+            {
+                (View.Idle, 0.8), (View.MusicCompact, 2.2), (View.MusicExpanded, 2.4), (View.ClaudeExpanded, 2.6),
+                (View.TimerExpanded, 1.8), (View.ClaudeCompact, 2.4), (View.Banner, 2.4), (View.Idle, 1.0),
+            };
+            forced = View.Idle;
+            Recompute();
+            SnapAll();
+            ApplyFrame();
+            Root.UpdateLayout();
+            int frame = 0;
+            foreach ((View view, double seconds) step in script)
+            {
+                forced = step.view;
+                Recompute();
+                int count = (int)Math.Round(step.seconds * fps);
+                for (int i = 0; i < count; i++)
+                {
+                    for (int k = 0; k < substeps; k++)
+                    {
+                        bool moving, continuous;
+                        Advance(1.0 / (fps * substeps), out moving, out continuous);
+                    }
+                    Root.UpdateLayout();
+                    SaveFrame(System.IO.Path.Combine(folder, "frame" + frame++.ToString("0000") + ".png"));
+                }
+            }
+            StopLoop();
+        }
+
+        // A fixed window around the island, so every frame has the same size.
+        void SaveFrame(string file)
+        {
+            const double scale = 1.25, width = 460, height = 300;
+            RenderTargetBitmap full = new RenderTargetBitmap((int)(Root.ActualWidth * scale), (int)(Root.ActualHeight * scale), 96 * scale, 96 * scale, PixelFormats.Pbgra32);
+            full.Render(Root);
+            Int32Rect crop = new Int32Rect((int)((Root.ActualWidth - width) / 2 * scale), 0, (int)(width * scale), (int)(height * scale));
+            DrawingVisual card = new DrawingVisual();
+            using (DrawingContext context = card.RenderOpen())
+            {
+                Rect area = new Rect(0, 0, crop.Width, crop.Height);
+                context.DrawRectangle(new LinearGradientBrush(Color.FromRgb(0xEE, 0xEC, 0xF6), Color.FromRgb(0xD5, 0xD9, 0xEA), 90), null, area);
+                context.DrawImage(new CroppedBitmap(full, crop), area);
+            }
+            RenderTargetBitmap output = new RenderTargetBitmap(crop.Width, crop.Height, 96, 96, PixelFormats.Pbgra32);
+            output.Render(card);
+            PngBitmapEncoder encoder = new PngBitmapEncoder();
+            encoder.Frames.Add(BitmapFrame.Create(output));
+            using (FileStream stream = File.Create(file)) encoder.Save(stream);
+        }
+
         void SaveSnapshot(string file)
         {
             const double scale = 2, padding = 28;
@@ -922,9 +980,17 @@ namespace WindowsIsland
             double dt = lastFrame == TimeSpan.Zero ? 1 / 60.0 : (time - lastFrame).TotalSeconds;
             lastFrame = time;
             dt = Math.Min(dt, 1 / 24.0);
-            clock += dt;
 
-            bool moving = false;
+            bool moving, continuous;
+            Advance(dt, out moving, out continuous);
+            if (!moving && !continuous) StopLoop();
+        }
+
+        // One step of the animation: every spring, the frame, and the live parts.
+        void Advance(double dt, out bool moving, out bool continuous)
+        {
+            clock += dt;
+            moving = false;
             moving |= width.Step(dt);
             moving |= height.Step(dt);
             moving |= shown.Step(dt);
@@ -939,8 +1005,7 @@ namespace WindowsIsland
             foreach (Spring spring in presence.Values) moving |= spring.Step(dt);
 
             ApplyFrame();
-            bool continuous = AnimateLive(dt);
-            if (!moving && !continuous) StopLoop();
+            continuous = AnimateLive(dt);
         }
 
         void ApplyFrame()

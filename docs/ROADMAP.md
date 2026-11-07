@@ -4,7 +4,6 @@ Ideas planned for upcoming releases, in the order they are expected to land. Not
 
 ## Next
 
-- An animated GIF at the top of the README showing the island in motion (collapsed, expanding, switching pages, a banner), recorded from sample data only, never from a real screen
 - Names of the apps using the microphone or camera, shown when you hover the dots
 - Battery percentage as a live activity while charging
 - Choose which pages appear, and their order
@@ -23,6 +22,7 @@ Ideas planned for upcoming releases, in the order they are expected to land. Not
 
 ## Done
 
+- Animated README GIF from sample data, and Settings that opens like a tray flyout (1.10.1)
 - Codex icon, usage ring colors, black Settings header, narrower music view (1.10.0)
 - Pages in the island, timer page with pause and custom length, shorter music view (1.9.0)
 - App icon, Settings with tabs near the tray, discreet and more reliable microphone dots (1.8.0)

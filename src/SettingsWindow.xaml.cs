@@ -14,6 +14,7 @@ namespace WindowsIsland
     public partial class SettingsWindow : Window
     {
         const int DWMWA_USE_IMMERSIVE_DARK_MODE = 20;
+        [DllImport("user32.dll")] static extern bool SetForegroundWindow(IntPtr hwnd);
         [DllImport("dwmapi.dll")] static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int size);
 
         readonly Settings settings;
@@ -22,6 +23,7 @@ namespace WindowsIsland
         readonly Action peekExpanded;
         readonly DispatcherTimer saveTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(400) };
         StackPanel card;
+        double restingTop;
 
         internal SettingsWindow(Settings settings, Action changed, Action checkForUpdates, Action peekExpanded)
         {
@@ -46,6 +48,27 @@ namespace WindowsIsland
                 DwmSetWindowAttribute(handle, 34, ref border, sizeof(int));
             };
             Closed += (s, e) => { if (saveTimer.IsEnabled) { saveTimer.Stop(); settings.Save(); } };
+            // Like a tray flyout: it takes the focus (which closes the hidden-icons panel), slides up into the
+            // corner, stays above other windows until you click elsewhere, and Esc closes it.
+            Topmost = true;
+            ContentRendered += (s, e) =>
+            {
+                SetForegroundWindow(new WindowInteropHelper(this).Handle);
+                Activate();
+                double slide = SystemParameters.ClientAreaAnimation ? 22 : 0;
+                if (slide > 0)
+                {
+                    System.Windows.Media.Animation.DoubleAnimation up = new System.Windows.Media.Animation.DoubleAnimation(restingTop + slide, restingTop, TimeSpan.FromMilliseconds(220))
+                    {
+                        EasingFunction = new System.Windows.Media.Animation.CubicEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut },
+                    };
+                    up.Completed += (a, b) => { BeginAnimation(TopProperty, null); Top = restingTop; }; // Let the window be dragged afterwards
+                    BeginAnimation(TopProperty, up);
+                }
+            };
+            Deactivated += (s, e) => Topmost = false;
+            Activated += (s, e) => Topmost = true;
+            KeyDown += (s, e) => { if (e.Key == System.Windows.Input.Key.Escape) Close(); };
             CloseButton.MouseEnter += (s, e) => CloseButton.Background = new SolidColorBrush(Color.FromRgb(0x2C, 0x2C, 0x2E));
             CloseButton.MouseLeave += (s, e) => CloseButton.Background = Brushes.Transparent;
             CloseButton.MouseLeftButtonUp += (s, e) => Close();
@@ -66,8 +89,8 @@ namespace WindowsIsland
             Height = Math.Min(Height, Math.Max(MinHeight, work.Height - 24));
             bool taskbarLeft = work.Left > bounds.Left + 1, taskbarTop = work.Top > bounds.Top + 1;
             Left = taskbarLeft ? work.Left + 12 : work.Right - Width - 12;
-// Left well above the taskbar: the hidden-icons flyout opens right there and would cover the window.
-            Top = taskbarTop ? work.Top + 12 : Math.Max(work.Top + 12, work.Bottom - Height - 250);
+Top = taskbarTop ? work.Top + 12 : work.Bottom - Height - 12;
+            restingTop = Top;
         }
 
         void BuildTabs()

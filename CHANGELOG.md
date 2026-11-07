@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.10.1
+
+- The Settings window now behaves like a tray flyout: it takes the focus (which closes the hidden-icons panel), slides up into the corner by the taskbar, stays above other windows until you click elsewhere, and Esc closes it
+- Animated GIF at the top of the README, recorded from sample data (`scripts/render-gif.ps1`)
+
 ## 1.10.0
 
 - **Codex icon:** the Codex logo replaces the old prompt symbol in the island

@@ -5,7 +5,7 @@
 Dynamic Island для Windows. Музыка, Claude Code, его лимиты использования и ваши уведомления живут в маленькой капсуле в верхней части экрана — в стиле iPhone и с пружинными анимациями.
 
 <p align="center">
-<img src="docs/images/hero-en.png" alt="Windows Island в свёрнутом и развёрнутом состояниях" width="760">
+<img src="docs/images/demo-en.gif" alt="Windows Island в движении: свёрнутый вид, раскрытие, музыка, Claude, таймер и оповещение" width="575">
 </p>
 
 <p align="center">

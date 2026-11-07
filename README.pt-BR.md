@@ -5,7 +5,7 @@
 Uma Dynamic Island para o Windows. Música, Claude Code, os limites de uso e suas notificações ficam numa pequena pílula no topo da tela, com o visual do iPhone e animações de mola.
 
 <p align="center">
-<img src="docs/images/hero-pt.png" alt="Windows Island nos estados recolhido e expandido" width="760">
+<img src="docs/images/demo-pt.gif" alt="Windows Island animada: recolhida, expandindo, música, Claude, timer e um aviso" width="575">
 </p>
 
 <p align="center">

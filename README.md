@@ -5,7 +5,7 @@
 A Dynamic Island for Windows. Music, Claude Code, its usage limits and your notifications live in a small pill at the top of your screen, with iPhone-style looks and spring animations.
 
 <p align="center">
-<img src="docs/images/hero-en.png" alt="Windows Island in its collapsed and expanded states" width="760">
+<img src="docs/images/demo-en.gif" alt="Windows Island animated: collapsed, expanding, music, Claude, timer and an alert" width="575">
 </p>
 
 <p align="center">
