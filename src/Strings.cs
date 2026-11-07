@@ -56,6 +56,7 @@ namespace WindowsIsland
         public static string MenuClaude => T("Show Claude", "Mostrar Claude");
         public static string MenuBanners => T("Claude alerts", "Avisos do Claude");
         public static string MenuNotifications => T("Show Windows notifications", "Mostrar notificações do Windows");
+        public static string MenuEmptyIsland => T("Empty island (no live activities)", "Ilha vazia (sem atividades)");
         public static string MenuIdlePill => T("Show pill when idle", "Mostrar pílula ociosa");
         public static string MenuHover => T("Expand on hover", "Expandir ao passar o mouse");
         public static string MenuFullscreen => T("Hide in fullscreen", "Esconder em tela cheia");

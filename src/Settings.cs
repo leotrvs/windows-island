@@ -10,6 +10,7 @@ namespace WindowsIsland
         public string Position { get; set; } = "Top"; // Top or Bottom
         public double OffsetY { get; set; } = 8;
         public bool ShowIdlePill { get; set; } = true;
+        public bool EmptyIsland { get; set; } = false; // Plain pill only; activities show when it expands
         public bool ExpandOnHover { get; set; } = true;
         public bool ShowMusic { get; set; } = true;
         public bool ShowClaude { get; set; } = true;

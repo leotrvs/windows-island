@@ -6,7 +6,6 @@ Ideas planned for upcoming releases. Nothing here is promised for a specific ver
 
 - **How long it stays open:** configurable time for alerts, notifications and the expanded island
 - **Auto-hide:** the island hides itself after some idle time and comes back on new activity or when the mouse reaches the edge
-- **Empty island mode:** only the plain pill, with no activities shown. Today a working Claude session makes it grow, which can feel too big
 - **Size and position:** set the size of the collapsed and the expanded island, and nudge its position, separately for each state
 
 ## Monitors
@@ -28,6 +27,7 @@ Ideas planned for upcoming releases. Nothing here is promised for a specific ver
 
 ## Done
 
+- Empty island mode (1.1.0)
 - Signed automatic updates from GitHub releases (1.0.0)
 - Start menu and Desktop shortcuts, created by the installer (0.2.0)
 - Reading Claude's limits without Claude Usage Taskbar (0.2.0)

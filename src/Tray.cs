@@ -24,6 +24,7 @@ namespace WindowsIsland
             menu.Items.Add(Toggle(Strings.MenuBanners, () => settings.ClaudeBanners, v => settings.ClaudeBanners = v));
             menu.Items.Add(Toggle(Strings.MenuNotifications, () => settings.ShowNotifications, v => settings.ShowNotifications = v));
             menu.Items.Add(new Forms.ToolStripSeparator());
+            menu.Items.Add(Toggle(Strings.MenuEmptyIsland, () => settings.EmptyIsland, v => settings.EmptyIsland = v));
             menu.Items.Add(Toggle(Strings.MenuIdlePill, () => settings.ShowIdlePill, v => settings.ShowIdlePill = v));
             menu.Items.Add(Toggle(Strings.MenuHover, () => settings.ExpandOnHover, v => settings.ExpandOnHover = v));
             menu.Items.Add(Toggle(Strings.MenuFullscreen, () => settings.HideInFullscreen, v => settings.HideInFullscreen = v));

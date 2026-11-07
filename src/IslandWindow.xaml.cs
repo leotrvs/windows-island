@@ -275,8 +275,9 @@ namespace WindowsIsland
                      : settings.ShowMusic && media.HasSession ? View.MusicExpanded
                      : View.Idle;
             else if (DateTime.Now < bannerUntil) next = View.Banner;
-            else if (primary == Activity.Music) next = View.MusicCompact;
-            else if (primary == Activity.Claude) next = View.ClaudeCompact;
+            // Empty island: the collapsed island stays a plain pill. Activities only show when it expands.
+            else if (primary == Activity.Music && !settings.EmptyIsland) next = View.MusicCompact;
+            else if (primary == Activity.Claude && !settings.EmptyIsland) next = View.ClaudeCompact;
             else if (!settings.ShowIdlePill) next = View.Hidden;
             else if (maximized && !IsBottom) next = View.Minimal; // Stay out of the way of tab strips
             else next = View.Idle;

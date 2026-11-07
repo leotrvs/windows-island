@@ -60,6 +60,7 @@ To try it without installing, run `WindowsIsland.exe --portable`.
 | Show Claude | Shows Claude Code activity and limits |
 | Claude alerts | Expands the island when Claude finishes or needs you |
 | Show Windows notifications | Shows new notifications in the island. Off by default |
+| Empty island | Keeps the collapsed island a plain pill, with no live activities. Hover or click to see them |
 | Show pill when idle | Keeps the small pill on screen when nothing is happening |
 | Expand on hover | Expands when the mouse rests on the island. When off, click it |
 | Hide in fullscreen | Hides the island during games, videos and presentations |
@@ -98,7 +99,7 @@ Contributors should read [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Roadmap
 
-Planned next: auto-hide and how long the island stays open, an empty island mode, size, position and monitor settings, and Codex usage. The full list is in [docs/ROADMAP.md](docs/ROADMAP.md).
+Planned next: auto-hide and how long the island stays open, size, position and monitor settings, and Codex usage. The full list is in [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## License
 

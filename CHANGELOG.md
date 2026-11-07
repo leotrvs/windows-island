@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.0
+
+- **Empty island** in the tray menu: the collapsed island stays a plain pill and no longer grows while music plays or Claude works. Hover or click it to see the activities. Alerts and notifications keep following their own options
+
 ## 1.0.2
 
 - Notification text is read more defensively: XML definitions (DTDs) are refused, and oversized notifications and texts are cut, since any app or website can send a notification

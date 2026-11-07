@@ -60,6 +60,7 @@ Para probarla sin instalar, ejecuta `WindowsIsland.exe --portable`.
 | Show Claude | Muestra la actividad y los límites de Claude Code |
 | Claude alerts | Expande la isla cuando Claude termina o te necesita |
 | Show Windows notifications | Muestra las notificaciones nuevas en la isla. Desactivado por defecto |
+| Empty island | Mantiene la isla contraída como una píldora simple, sin actividades. Pasa el ratón o haz clic para verlas |
 | Show pill when idle | Mantiene la píldora en pantalla cuando no pasa nada |
 | Expand on hover | Expande al dejar el ratón sobre la isla. Si está desactivado, haz clic |
 | Hide in fullscreen | Oculta la isla en juegos, vídeos y presentaciones |
@@ -100,7 +101,7 @@ Si quieres contribuir, lee [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Próximos pasos
 
-Planeado: ocultarse sola y cuánto tiempo queda abierta, un modo de isla vacía, ajustes de tamaño, posición y monitor, y el uso de Codex. La lista completa está en [docs/ROADMAP.md](docs/ROADMAP.md).
+Planeado: ocultarse sola y cuánto tiempo queda abierta, ajustes de tamaño, posición y monitor, y el uso de Codex. La lista completa está en [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Licencia
 
