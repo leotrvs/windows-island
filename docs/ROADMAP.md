@@ -2,10 +2,25 @@
 
 Ideas planned for upcoming releases, in the order they are expected to land. Nothing here is promised for a specific version.
 
-## Next
+## Next: polish (1.8)
 
-- Pause and resume for the timer, and a custom duration
-- Names of the apps using the microphone or camera, shown when you hover the dots
+- **App icon:** a proper icon for the exe, the shortcuts, the Settings window and the installer, instead of the default Windows one
+- **Settings window:**
+  - opens next to the tray corner instead of the middle of the screen, and can be moved
+  - tabs at the top (Activities, Behavior, Appearance, System) so there is much less scrolling
+  - a thinner scroll bar and smaller switches
+- **Microphone and camera dots:** more discreet (smaller, softer color), and a more reliable detection through Windows' audio sessions, which also gives the app name. The current detection misses some apps, such as Claude's dictation
+
+## Then: pages in the island (1.9)
+
+- Move between activities inside the island (scroll or arrows), so music and Claude's limits and sessions can both be seen without pausing anything
+- A smaller expanded music view, with less empty space in the middle
+- Timer and stopwatch controls inside the island (start, pause, resume, custom duration), not only in the tray menu
+
+## Ideas, not scheduled
+
+- Windows focus sessions and Do Not Disturb: show when they are on. Windows has no official way to read the Clock app's timer or focus session, so this would only follow the focus state
+- Names of the apps using the microphone or camera, shown when hovering the dots
 - Battery percentage as a live activity while charging
 
 ## Later
