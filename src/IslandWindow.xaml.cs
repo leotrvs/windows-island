@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -17,7 +18,7 @@ namespace WindowsIsland
 {
     public partial class IslandWindow : Window
     {
-        enum View { Hidden, Minimal, Idle, MusicCompact, ClaudeCompact, CodexCompact, TimerCompact, MusicExpanded, ClaudeExpanded, Banner }
+        enum View { Hidden, Minimal, Idle, MusicCompact, ClaudeCompact, CodexCompact, TimerCompact, MusicExpanded, ClaudeExpanded, TimerExpanded, Banner }
         enum Activity { None, Music, Claude, Codex, Timer }
 
         static readonly Dictionary<View, Size> Sizes = new Dictionary<View, Size>
@@ -26,10 +27,11 @@ namespace WindowsIsland
             [View.Minimal] = new Size(76, 6),
             [View.Idle] = new Size(112, 30),
             [View.MusicCompact] = new Size(236, 34),
-            [View.ClaudeCompact] = new Size(204, 34),
-            [View.CodexCompact] = new Size(204, 34),
+            [View.ClaudeCompact] = new Size(176, 34),
+            [View.CodexCompact] = new Size(176, 34),
             [View.TimerCompact] = new Size(150, 34),
-            [View.MusicExpanded] = new Size(372, 172),
+            [View.MusicExpanded] = new Size(372, 152),
+            [View.TimerExpanded] = new Size(372, 150),
             [View.ClaudeExpanded] = new Size(372, 156),
             [View.Banner] = new Size(352, 74),
         };
@@ -108,6 +110,7 @@ namespace WindowsIsland
             panels[View.ClaudeCompact] = ClaudeCompact;
             panels[View.CodexCompact] = CodexCompact;
             panels[View.TimerCompact] = TimerCompact;
+            panels[View.TimerExpanded] = TimerExpanded;
             panels[View.MusicExpanded] = MusicExpanded;
             panels[View.ClaudeExpanded] = ClaudeExpanded;
             panels[View.Banner] = Banner;
@@ -126,6 +129,16 @@ namespace WindowsIsland
             SetupButton(PreviousButton, media.Previous);
             SetupButton(PlayButton, media.TogglePlayPause);
             SetupButton(NextButton, media.Next);
+            SetupButton(BtnMinus, () => timer.Nudge(-1));
+            SetupButton(BtnPlus, () => timer.Nudge(1));
+            SetupButton(BtnStart, () => timer.StartCountdown(timer.ChosenMinutes));
+            SetupButton(BtnWatch, timer.StartStopwatch);
+            SetupButton(BtnPause, timer.PauseOrResume);
+            SetupButton(BtnStop, timer.Stop);
+            BtnStartText.Text = Strings.TimerStart;
+            BtnWatchText.Text = Strings.MenuStopwatch;
+            BtnStopText.Text = Strings.MenuStopTimer;
+            Pill.MouseWheel += OnPillWheel;
             ProgressHit.MouseLeftButtonUp += Seek;
             ProgressHit.MouseLeftButtonDown += (s, e) => e.Handled = true;
 
@@ -161,7 +174,7 @@ namespace WindowsIsland
                 UpdateClaude();
                 UpdateCodex();
                 UpdatePrivacy();
-                UpdateTimerLive();
+                UpdateTimerPage();
                 shown.Target = 1;
                 Recompute();
                 StartLoop();
@@ -172,7 +185,7 @@ namespace WindowsIsland
         void OnMediaChanged() { UpdateMusic(); Recompute(); }
         void OnClaudeChanged() { UpdateClaude(); Recompute(); }
 
-        void OnTimerChanged() { UpdateTimerLive(); Recompute(); }
+        void OnTimerChanged() { UpdateTimerPage(); Recompute(); }
         void OnPrivacyChanged() { UpdatePrivacy(); Recompute(); }
 
         bool PrivacyOn { get { return settings.ShowPrivacyDots && (privacy.Microphone || privacy.Camera); } }
@@ -189,12 +202,30 @@ namespace WindowsIsland
         string lastTimerText;
         void UpdateTimerLive()
         {
-            string text = TimerService.Format(timer.Shown);
+            string text = TimerService.Format(timer.Running ? timer.Shown : TimeSpan.FromMinutes(timer.ChosenMinutes));
             if (text != lastTimerText)
             {
                 lastTimerText = text;
                 TimerCompactText.Text = text;
+                TimerBig.Text = text;
             }
+            TimerCompactText.Opacity = timer.Paused ? 0.5 : 1;
+        }
+
+        // What the timer page offers: choose a length and start, or pause and stop what is running.
+        void UpdateTimerPage()
+        {
+            bool running = timer.Running;
+            TimerHeader.Text = !running ? Strings.TimerPickLength
+                             : (timer.Mode == TimerService.Kind.Countdown ? Strings.TimerLabel : Strings.StopwatchLabel)
+                               + (timer.Paused ? " · " + Strings.TimerPaused : "");
+            BtnMinus.Visibility = BtnPlus.Visibility = running ? Visibility.Hidden : Visibility.Visible;
+            BtnStart.Visibility = BtnWatch.Visibility = running ? Visibility.Collapsed : Visibility.Visible;
+            BtnPause.Visibility = BtnStop.Visibility = running ? Visibility.Visible : Visibility.Collapsed;
+            BtnPauseText.Text = timer.Paused ? Strings.TimerResume : Strings.TimerPause;
+            TimerBig.Opacity = timer.Paused ? 0.5 : 1;
+            lastTimerText = null;
+            UpdateTimerLive();
         }
 
         void OnCodexChanged()
@@ -333,7 +364,7 @@ namespace WindowsIsland
         public void RenderStates(string folder, string suffix)
         {
             Directory.CreateDirectory(folder);
-            View[] states = { View.Idle, View.MusicCompact, View.ClaudeCompact, View.CodexCompact, View.MusicExpanded, View.ClaudeExpanded, View.Banner };
+            View[] states = { View.Idle, View.MusicCompact, View.ClaudeCompact, View.CodexCompact, View.MusicExpanded, View.ClaudeExpanded, View.TimerExpanded, View.Banner };
             double[] levels = { 0.55, 0.95, 0.4, 0.75 };
             Array.Copy(levels, eqLevel, levels.Length);
             BannerTitle.Text = Strings.ClaudeDone;
@@ -442,10 +473,11 @@ namespace WindowsIsland
             if (forced.HasValue) next = forced.Value;
             else if (fullscreen && settings.HideInFullscreen) next = View.Hidden;
             else if (hovering || DateTime.Now < peekUntil)
-                next = primary == Activity.Music ? View.MusicExpanded
+                next = PickedPage() ?? (primary == Activity.Music ? View.MusicExpanded
+                     : primary == Activity.Timer ? View.TimerExpanded
                      : settings.ShowClaude || CodexSectionVisible ? View.ClaudeExpanded
                      : settings.ShowMusic && media.HasSession ? View.MusicExpanded
-                     : View.Idle;
+                     : View.Idle);
             else if (DateTime.Now < bannerUntil) next = View.Banner;
             // Empty island: the collapsed island stays a plain pill. Activities only show when it expands.
             else if (primary == Activity.Music && !settings.EmptyIsland) next = View.MusicCompact;
@@ -483,6 +515,7 @@ namespace WindowsIsland
 
         void ApplyTargets()
         {
+            UpdateDots();
             Size size = SizeOf(view);
             width.Target = size.Width;
             height.Target = size.Height;
@@ -513,10 +546,82 @@ namespace WindowsIsland
             bubbleScale.Target = hasBubble ? 1 : 0.4;
         }
 
+        // ---------- Pages ----------
+
+        Activity? page; // The page picked with the wheel or the dots; null = the default one
+
+        List<Activity> Pages()
+        {
+            List<Activity> pages = new List<Activity>();
+            if (settings.ShowMusic && media.HasSession) pages.Add(Activity.Music);
+            if (settings.ShowClaude || CodexSectionVisible) pages.Add(Activity.Claude);
+            pages.Add(Activity.Timer);
+            return pages;
+        }
+
+        static View ExpandedFor(Activity activity)
+        {
+            return activity == Activity.Music ? View.MusicExpanded : activity == Activity.Timer ? View.TimerExpanded : View.ClaudeExpanded;
+        }
+
+        static Activity ActivityOf(View value)
+        {
+            return value == View.MusicExpanded ? Activity.Music : value == View.TimerExpanded ? Activity.Timer : Activity.Claude;
+        }
+
+        View? PickedPage()
+        {
+            if (!page.HasValue || !Pages().Contains(page.Value)) return null;
+            return ExpandedFor(page.Value);
+        }
+
+        DateTime lastWheel;
+        void OnPillWheel(object sender, MouseWheelEventArgs e)
+        {
+            if (!IsExpandedView(view) || view == View.Banner) return;
+            e.Handled = true;
+            if (DateTime.Now - lastWheel < TimeSpan.FromMilliseconds(280)) return; // A touchpad sends a burst
+            lastWheel = DateTime.Now;
+            List<Activity> pages = Pages();
+            int index = pages.IndexOf(ActivityOf(view));
+            page = pages[((index < 0 ? 0 : index) + (e.Delta < 0 ? 1 : -1) + pages.Count) % pages.Count];
+            Recompute();
+        }
+
+        // One dot per page under the content, the open one lit. A click on a dot opens that page.
+        List<Activity> drawnPages;
+        Activity drawnCurrent;
+        void UpdateDots()
+        {
+            List<Activity> pages = Pages();
+            bool show = IsExpandedView(view) && view != View.Banner && pages.Count > 1;
+            PageDots.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
+            if (!show) return;
+            Activity current = ActivityOf(view);
+            if (drawnPages != null && drawnPages.SequenceEqual(pages) && drawnCurrent == current) return;
+            drawnPages = pages;
+            drawnCurrent = current;
+            PageDots.Children.Clear();
+            foreach (Activity activity in pages)
+            {
+                Activity target = activity;
+                Border dot = new Border
+                {
+                    Width = 18, Height = 14, Background = Brushes.Transparent, Cursor = Cursors.Hand,
+                    Child = new Ellipse { Width = 5, Height = 5, Fill = activity == current ? White : DimDot },
+                };
+                dot.MouseLeftButtonUp += (s, e) => { e.Handled = true; page = target; Recompute(); };
+                dot.MouseLeftButtonDown += (s, e) => e.Handled = true;
+                PageDots.Children.Add(dot);
+            }
+        }
+        static readonly Brush DimDot = Freeze(new SolidColorBrush(Color.FromArgb(0x59, 0xFF, 0xFF, 0xFF)));
+
         void SetHovering(bool value)
         {
             if (hovering == value) return;
             hovering = value;
+            if (!value) page = null; // The next visit starts on the default page again
             Recompute();
         }
 
@@ -597,7 +702,7 @@ namespace WindowsIsland
         // True while the user is looking at or using the island, so an update restart waits.
         internal bool IsBusy
         {
-            get { return hovering || view == View.Banner || view == View.MusicExpanded || view == View.ClaudeExpanded; }
+            get { return hovering || view == View.Banner || view == View.MusicExpanded || view == View.ClaudeExpanded || view == View.TimerExpanded; }
         }
 
         void Enqueue(BannerItem item)
@@ -664,7 +769,7 @@ namespace WindowsIsland
 
         static bool IsExpandedView(View value)
         {
-            return value == View.MusicExpanded || value == View.ClaudeExpanded || value == View.Banner;
+            return value == View.MusicExpanded || value == View.ClaudeExpanded || value == View.TimerExpanded || value == View.Banner;
         }
 
         void PlaceWindow()
@@ -677,7 +782,7 @@ namespace WindowsIsland
             // Room for the largest state at the user's sizes, plus the bubble and the shadow.
             double largest = Math.Max(settings.ExpandedScale, settings.CollapsedScale);
             Width = Math.Max(520, 372 * largest + 140);
-            double tallest = Math.Max(Sizes[View.MusicExpanded].Height, ClaudePanelHeight);
+            double tallest = Math.Max(Math.Max(Sizes[View.MusicExpanded].Height, Sizes[View.TimerExpanded].Height), ClaudePanelHeight);
             Height = Math.Max(tallest * settings.ExpandedScale, 34 * settings.CollapsedScale) + settings.OffsetY + 44;
             Left = Math.Clamp(screen.Left + (screen.Width - Width) / 2 + settings.OffsetX, screen.Left, Math.Max(screen.Left, screen.Right - Width));
             Top = bottom ? work.Bottom - Height : work.Top;
@@ -915,6 +1020,13 @@ namespace WindowsIsland
             PrivacyShift.Y = (bottom ? -1 : 1) * (Math.Min(h, 34) * s - PrivacyDots.Height) / 2; // Level with a compact island
             PrivacyDots.Opacity = Math.Clamp(privacyOpacity.Value, 0, 1) * visible;
 
+            if (PageDots.Visibility == Visibility.Visible)
+            {
+                Canvas.SetLeft(PageDots, (w - PageDots.Children.Count * 18) / 2);
+                Canvas.SetTop(PageDots, h - 15);
+                PageDots.Opacity = Math.Clamp((h - 110) / 30, 0, 1);
+            }
+
             if (Math.Abs(sessionArc.Value - drawnSessionArc) > 0.05)
             {
                 drawnSessionArc = sessionArc.Value;
@@ -940,10 +1052,10 @@ namespace WindowsIsland
                 keepGoing |= media.IsPlaying;
             }
 
-            if (presence[TimerCompact].Value > 0.01 && timer.Running)
+            if ((presence[TimerCompact].Value > 0.01 || presence[TimerExpanded].Value > 0.01) && timer.Running)
             {
                 UpdateTimerLive();
-                keepGoing = true;
+                keepGoing |= !timer.Paused;
             }
 
             // Codex: the prompt's cursor blinks softly and the timer counts while it works.

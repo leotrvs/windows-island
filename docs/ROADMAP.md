@@ -2,17 +2,15 @@
 
 Ideas planned for upcoming releases, in the order they are expected to land. Nothing here is promised for a specific version.
 
-## Next: pages in the island (1.9)
+## Next
 
-- Move between activities inside the island (scroll or arrows), so music and Claude's limits and sessions can both be seen without pausing anything
-- A smaller expanded music view, with less empty space in the middle
-- Timer and stopwatch controls inside the island (start, pause, resume, custom duration), not only in the tray menu
+- Names of the apps using the microphone or camera, shown when you hover the dots
+- Battery percentage as a live activity while charging
+- Choose which pages appear, and their order
 
 ## Ideas, not scheduled
 
 - Windows focus sessions and Do Not Disturb: show when they are on. Windows has no official way to read the Clock app's timer or focus session, so this would only follow the focus state
-- Names of the apps using the microphone or camera, shown when hovering the dots
-- Battery percentage as a live activity while charging
 
 ## Later
 
@@ -24,6 +22,7 @@ Ideas planned for upcoming releases, in the order they are expected to land. Not
 
 ## Done
 
+- Pages in the island, timer page with pause and custom length, shorter music view (1.9.0)
 - App icon, Settings with tabs near the tray, discreet and more reliable microphone dots (1.8.0)
 - Timer and stopwatch, microphone and camera dots, battery alerts (1.7.0)
 - Lighter app: no Windows Forms, about 10 MB smaller (1.6.0)

@@ -10,11 +10,17 @@ namespace WindowsIsland
     {
         public enum Kind { None, Countdown, Stopwatch }
 
+        // The lengths offered by the - and + buttons in the island, in minutes.
+        public static readonly int[] Steps = { 1, 2, 3, 5, 10, 15, 20, 25, 30, 45, 60, 90, 120 };
+
         public Kind Mode { get; private set; }
+        public bool Paused { get; private set; }
+        public int ChosenMinutes { get; set; } = 5; // What Start uses
         public event Action Changed;
         public event Action Finished;
 
         DateTime started;
+        TimeSpan before; // Time counted before the last pause
         TimeSpan length;
         readonly DispatcherTimer tick;
 
@@ -23,7 +29,7 @@ namespace WindowsIsland
             tick = new DispatcherTimer(DispatcherPriority.Background, dispatcher) { Interval = TimeSpan.FromMilliseconds(250) };
             tick.Tick += (s, e) =>
             {
-                if (Mode == Kind.Countdown && Remaining <= TimeSpan.Zero)
+                if (Mode == Kind.Countdown && !Paused && length - Elapsed <= TimeSpan.Zero)
                 {
                     Stop();
                     Finished?.Invoke();
@@ -33,33 +39,46 @@ namespace WindowsIsland
 
         public bool Running { get { return Mode != Kind.None; } }
 
+        TimeSpan Elapsed { get { return before + (Paused ? TimeSpan.Zero : DateTime.UtcNow - started); } }
+
         // Time left on a countdown, or time elapsed on a stopwatch.
         public TimeSpan Shown
         {
             get
             {
-                if (Mode == Kind.Countdown) return Remaining < TimeSpan.Zero ? TimeSpan.Zero : Remaining;
-                if (Mode == Kind.Stopwatch) return DateTime.UtcNow - started;
+                if (Mode == Kind.Countdown) { TimeSpan left = length - Elapsed; return left < TimeSpan.Zero ? TimeSpan.Zero : left; }
+                if (Mode == Kind.Stopwatch) return Elapsed;
                 return TimeSpan.Zero;
             }
         }
-
-        TimeSpan Remaining { get { return length - (DateTime.UtcNow - started); } }
 
         public void StartCountdown(int minutes)
         {
             Mode = Kind.Countdown;
             length = TimeSpan.FromMinutes(Math.Clamp(minutes, 1, 600));
-            started = DateTime.UtcNow;
-            tick.Start();
-            Changed?.Invoke();
+            Begin();
         }
 
         public void StartStopwatch()
         {
             Mode = Kind.Stopwatch;
+            Begin();
+        }
+
+        void Begin()
+        {
+            before = TimeSpan.Zero;
+            Paused = false;
             started = DateTime.UtcNow;
             tick.Start();
+            Changed?.Invoke();
+        }
+
+        public void PauseOrResume()
+        {
+            if (Mode == Kind.None) return;
+            if (Paused) { started = DateTime.UtcNow; Paused = false; }
+            else { before = Elapsed; Paused = true; }
             Changed?.Invoke();
         }
 
@@ -67,7 +86,18 @@ namespace WindowsIsland
         {
             if (Mode == Kind.None) return;
             Mode = Kind.None;
+            Paused = false;
             tick.Stop();
+            Changed?.Invoke();
+        }
+
+        // Moves the chosen length to the next or previous step.
+        public void Nudge(int direction)
+        {
+            int index = Array.FindIndex(Steps, m => m >= ChosenMinutes);
+            if (index < 0) index = Steps.Length - 1;
+            if (Steps[index] != ChosenMinutes && direction < 0) direction = 0; // Between steps: snap down
+            ChosenMinutes = Steps[Math.Clamp(index + direction, 0, Steps.Length - 1)];
             Changed?.Invoke();
         }
 

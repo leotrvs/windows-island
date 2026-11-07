@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.9.0
+
+- **Pages in the island:** when it is expanded, scroll the mouse wheel over it or click the dots to move between music, Claude (with Codex) and the timer. You can see Claude's limits and sessions without pausing the music
+- **Timer page:** choose a length with - and +, start a countdown or a stopwatch, pause, resume and stop, all inside the island
+- The expanded music view is shorter, with less empty space
+- The compact Claude and Codex views are a little narrower
+
 ## 1.8.0
 
 - **App icon** for the exe, the shortcuts and the Settings window, instead of the default Windows one

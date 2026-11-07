@@ -18,6 +18,7 @@ A Dynamic Island for Windows. Music, Claude Code, its usage limits and your noti
 - **Claude Code live activity:** the Claude spark thinks while Claude works, with the time so far, and breathes when Claude is waiting for you
 - **Claude usage:** rings for the **5-hour** and **weekly** limits, with reset times
 - **Codex:** a live activity while Codex works, its 5-hour and weekly limits, and an alert when it finishes
+- **Pages:** when the island is expanded, scroll over it or click the dots to switch between music, Claude and the timer, which also has its own buttons there
 - **Timer and stopwatch:** start one from the tray menu; it shows as a live activity and alerts you when the time is up
 - **Microphone and camera dots:** orange while the microphone is in use, green for the camera, like on iPhone
 - **Battery alerts** on laptops: charger connected or removed, low battery and fully charged
