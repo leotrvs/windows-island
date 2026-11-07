@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.0
+
+- **Auto-hide when idle:** the island hides after it has shown nothing for 5 seconds to 5 minutes, and comes back with new activity or when the mouse reaches its spot. Off by default
+- **Alert duration:** choose how long Claude alerts, notifications and app messages stay on screen
+- **Hide paused music after:** choose how long a paused song stays, from at once to a minute
+- Values typed in `settings.json` are kept within sensible bounds
+
 ## 1.1.0
 
 - **Empty island** in the tray menu: the collapsed island stays a plain pill and no longer grows while music plays or Claude works. Hover or click it to see the activities. Alerts and notifications keep following their own options

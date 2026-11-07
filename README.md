@@ -65,6 +65,9 @@ To try it without installing, run `WindowsIsland.exe --portable`.
 | Expand on hover | Expands when the mouse rests on the island. When off, click it |
 | Hide in fullscreen | Hides the island during games, videos and presentations |
 | Position | Top of the screen, or just above the taskbar |
+| Auto-hide when idle | Hides the island after it has shown nothing for a while. It comes back with new activity, or when you move the mouse to its spot |
+| Alert duration | How long Claude alerts and notifications stay on screen |
+| Hide paused music after | How long a paused song stays on the island |
 | Start with Windows | Opens the app when you sign in to Windows |
 | Open settings file | Opens `settings.json`, where `OffsetY` sets the distance from the edge |
 
@@ -99,7 +102,7 @@ Contributors should read [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Roadmap
 
-Planned next: auto-hide and how long the island stays open, size, position and monitor settings, and Codex usage. The full list is in [docs/ROADMAP.md](docs/ROADMAP.md).
+Planned next: a settings window, size, position and monitor settings, and Codex usage. The full list is in [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## License
 

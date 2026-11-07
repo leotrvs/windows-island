@@ -35,7 +35,6 @@ namespace WindowsIsland
         const double MaxRadius = 38;
         const double BubbleSize = 34;
         const double BubbleGap = 7;
-        static readonly TimeSpan PausedMusicLinger = TimeSpan.FromSeconds(5); // Then the island lets go of a paused song
         static readonly Brush White = Freeze(new SolidColorBrush(Colors.White));
         static readonly Brush Orange = Freeze(new SolidColorBrush(Color.FromRgb(0xE8, 0x87, 0x5F)));
         static readonly Brush Green = Freeze(new SolidColorBrush(Color.FromRgb(0x30, 0xD1, 0x58)));
@@ -74,7 +73,9 @@ namespace WindowsIsland
         View view = View.Idle;
         View? forced;
         Activity bubble = Activity.None;
-        bool hovering, fullscreen, maximized, rendering;
+        bool hovering, fullscreen, maximized, rendering, autoHidden;
+        DateTime lastActive = DateTime.Now;
+        readonly DispatcherTimer revealTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(120) };
         DateTime bannerUntil = DateTime.MinValue;
         TimeSpan lastFrame;
         double clock, eqClock;
@@ -122,6 +123,7 @@ namespace WindowsIsland
             enterTimer.Tick += (s, e) => { enterTimer.Stop(); SetHovering(true); };
             leaveTimer.Tick += (s, e) => { leaveTimer.Stop(); SetHovering(false); };
             pollTimer.Tick += (s, e) => Poll();
+            revealTimer.Tick += (s, e) => CheckReveal();
 
             media.Changed += () => { UpdateMusic(); Recompute(); };
             claude.Changed += () => { UpdateClaude(); Recompute(); };
@@ -155,7 +157,7 @@ namespace WindowsIsland
             get
             {
                 return settings.ShowMusic && media.HasSession && !string.IsNullOrEmpty(media.Title) &&
-                       (media.IsPlaying || DateTime.Now - media.LastPlayingAt < PausedMusicLinger);
+                       (media.IsPlaying || DateTime.Now - media.LastPlayingAt < TimeSpan.FromSeconds(settings.PausedMusicSeconds));
             }
         }
 
@@ -282,6 +284,15 @@ namespace WindowsIsland
             else if (maximized && !IsBottom) next = View.Minimal; // Stay out of the way of tab strips
             else next = View.Idle;
 
+            // Auto-hide: an island that has shown nothing for a while steps away until something happens
+            // or the mouse comes to its spot.
+            bool idle = next == View.Idle || next == View.Minimal;
+            if (!idle || hovering) lastActive = DateTime.Now;
+            autoHidden = idle && !forced.HasValue && settings.AutoHideSeconds > 0 &&
+                         DateTime.Now - lastActive > TimeSpan.FromSeconds(settings.AutoHideSeconds);
+            if (autoHidden) next = View.Hidden;
+            if (autoHidden != revealTimer.IsEnabled) revealTimer.IsEnabled = autoHidden;
+
             Activity shownActivity = next == View.MusicCompact ? Activity.Music : next == View.ClaudeCompact ? Activity.Claude : Activity.None;
             Activity other = primary == shownActivity ? second : primary;
             Activity nextBubble = shownActivity != Activity.None && other != shownActivity ? other : Activity.None;
@@ -379,7 +390,7 @@ namespace WindowsIsland
                 FromClaude = true,
                 Title = waiting ? Strings.ClaudeNeedsYou : Strings.ClaudeDone,
                 Subtitle = name,
-                Seconds = waiting ? 6 : 4.5,
+                Seconds = settings.AlertSeconds + (waiting ? 1 : 0), // A question waits a little longer
             });
         }
 
@@ -393,14 +404,14 @@ namespace WindowsIsland
                 App = notification.App,
                 Title = notification.Title,
                 Subtitle = notification.Body,
-                Seconds = 5,
+                Seconds = settings.AlertSeconds,
             });
         }
 
         // Messages from the app itself, such as update results. Not gated by the notifications option.
         internal void ShowSystemBanner(string title, string body)
         {
-            Enqueue(new BannerItem { App = Installer.Name, Title = title, Subtitle = body, Seconds = 5 });
+            Enqueue(new BannerItem { App = Installer.Name, Title = title, Subtitle = body, Seconds = settings.AlertSeconds });
         }
 
         // True while the user is looking at or using the island, so an update restart waits.
@@ -437,6 +448,26 @@ namespace WindowsIsland
             BannerSubtitle.Visibility = string.IsNullOrEmpty(item.Subtitle) ? Visibility.Collapsed : Visibility.Visible;
 
             bannerUntil = DateTime.Now.AddSeconds(item.Seconds);
+            Recompute();
+        }
+
+        // While auto-hidden, bringing the mouse to the island's spot brings it back.
+        void CheckReveal()
+        {
+            PresentationSource source = PresentationSource.FromVisual(this);
+            if (source?.CompositionTarget == null) return;
+            Point cursor = source.CompositionTarget.TransformFromDevice.Transform(Native.CursorPosition());
+            if (double.IsNaN(cursor.X)) return;
+
+            const double halfWidth = 150, reach = 36;
+            double center = Left + Width / 2;
+            double edge = IsBottom ? Top + Height : Top;
+            double depth = settings.OffsetY + reach;
+            bool insideX = Math.Abs(cursor.X - center) <= halfWidth;
+            bool insideY = IsBottom ? cursor.Y >= edge - depth && cursor.Y <= edge : cursor.Y >= edge && cursor.Y <= edge + depth;
+            if (!insideX || !insideY) return;
+
+            lastActive = DateTime.Now;
             Recompute();
         }
 

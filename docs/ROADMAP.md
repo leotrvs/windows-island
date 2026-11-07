@@ -4,8 +4,7 @@ Ideas planned for upcoming releases. Nothing here is promised for a specific ver
 
 ## Behavior
 
-- **How long it stays open:** configurable time for alerts, notifications and the expanded island
-- **Auto-hide:** the island hides itself after some idle time and comes back on new activity or when the mouse reaches the edge
+- **Settings window:** an iOS-style window for every option, since the tray menu is getting long
 - **Size and position:** set the size of the collapsed and the expanded island, and nudge its position, separately for each state
 
 ## Monitors
@@ -27,6 +26,7 @@ Ideas planned for upcoming releases. Nothing here is promised for a specific ver
 
 ## Done
 
+- Configurable alert and paused-music durations, and auto-hide (1.2.0)
 - Empty island mode (1.1.0)
 - Signed automatic updates from GitHub releases (1.0.0)
 - Start menu and Desktop shortcuts, created by the installer (0.2.0)

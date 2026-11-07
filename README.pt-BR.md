@@ -65,6 +65,9 @@ Para testar sem instalar, rode `WindowsIsland.exe --portable`.
 | Expandir ao passar o mouse | Expande quando o mouse para sobre a ilha. Desligado, é preciso clicar |
 | Esconder em tela cheia | Esconde a ilha em jogos, vídeos e apresentações |
 | Posição | Topo da tela, ou logo acima da barra de tarefas |
+| Esconder sozinha quando ociosa | Esconde a ilha depois de um tempo sem mostrar nada. Ela volta com uma atividade nova ou quando você leva o mouse até o lugar dela |
+| Duração dos avisos | Quanto tempo os avisos do Claude e as notificações ficam na tela |
+| Esconder música pausada após | Quanto tempo uma música pausada fica na ilha |
 | Iniciar com o Windows | Abre o app quando você entra no Windows |
 | Abrir arquivo de configurações | Abre o `settings.json`, onde `OffsetY` define a distância da borda |
 
@@ -99,7 +102,7 @@ Para contribuir, leia o [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Próximos passos
 
-Planejado: esconder sozinha e quanto tempo a ilha fica aberta, ajustes de tamanho, posição e monitor, e uso do Codex. A lista completa está em [docs/ROADMAP.md](docs/ROADMAP.md).
+Planejado: janela de configurações, ajustes de tamanho, posição e monitor, e uso do Codex. A lista completa está em [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Licença
 

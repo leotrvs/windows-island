@@ -39,6 +39,17 @@ namespace WindowsIsland
         [DllImport("user32.dll")] static extern bool GetMonitorInfo(IntPtr monitor, ref MONITORINFO info);
         [DllImport("user32.dll", CharSet = CharSet.Unicode)] static extern int GetClassName(IntPtr hWnd, StringBuilder name, int max);
         [DllImport("shell32.dll")] static extern int SHQueryUserNotificationState(out int state);
+        [DllImport("user32.dll")] static extern bool GetCursorPos(out POINT point);
+
+        [StructLayout(LayoutKind.Sequential)]
+        struct POINT { public int X, Y; }
+
+        // The cursor in physical screen pixels.
+        public static System.Windows.Point CursorPosition()
+        {
+            POINT point;
+            return GetCursorPos(out point) ? new System.Windows.Point(point.X, point.Y) : new System.Windows.Point(double.NaN, double.NaN);
+        }
 
         // Keeps the island out of Alt+Tab and the taskbar, and stops clicks on it from stealing focus.
         public static void MakeOverlay(IntPtr hwnd)

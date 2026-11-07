@@ -29,6 +29,9 @@ namespace WindowsIsland
             menu.Items.Add(Toggle(Strings.MenuHover, () => settings.ExpandOnHover, v => settings.ExpandOnHover = v));
             menu.Items.Add(Toggle(Strings.MenuFullscreen, () => settings.HideInFullscreen, v => settings.HideInFullscreen = v));
             menu.Items.Add(PositionMenu());
+            menu.Items.Add(Choice(Strings.MenuAutoHide, new[] { 0, 5, 10, 30, 60, 300 }, () => settings.AutoHideSeconds, v => settings.AutoHideSeconds = v));
+            menu.Items.Add(Choice(Strings.MenuAlertDuration, new[] { 3, 5, 8, 12, 20 }, () => settings.AlertSeconds, v => settings.AlertSeconds = v));
+            menu.Items.Add(Choice(Strings.MenuPausedMusic, new[] { 0, 2, 5, 15, 30, 60 }, () => settings.PausedMusicSeconds, v => settings.PausedMusicSeconds = v));
             menu.Items.Add(new Forms.ToolStripSeparator());
             menu.Items.Add(Toggle(Strings.MenuStartup, () => settings.StartWithWindows, v => settings.StartWithWindows = v));
             menu.Items.Add(Toggle(Strings.MenuAutoUpdate, () => settings.AutoUpdate, v => settings.AutoUpdate = v));
@@ -55,6 +58,27 @@ namespace WindowsIsland
                 changed();
             };
             return item;
+        }
+
+        // A submenu of durations with the current one checked. 0 reads as "Never" or "At once".
+        Forms.ToolStripMenuItem Choice(string text, int[] seconds, Func<int> get, Action<int> set)
+        {
+            Forms.ToolStripMenuItem parent = new Forms.ToolStripMenuItem(text);
+            foreach (int value in seconds)
+            {
+                int chosen = value;
+                Forms.ToolStripMenuItem item = new Forms.ToolStripMenuItem(Strings.Duration(chosen, text == Strings.MenuAutoHide));
+                item.Click += (s, e) =>
+                {
+                    set(chosen);
+                    settings.Save();
+                    foreach (Forms.ToolStripMenuItem sibling in parent.DropDownItems) sibling.Checked = sibling == item;
+                    changed();
+                };
+                item.Checked = get() == chosen;
+                parent.DropDownItems.Add(item);
+            }
+            return parent;
         }
 
         Forms.ToolStripMenuItem PositionMenu()

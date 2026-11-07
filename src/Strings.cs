@@ -56,6 +56,18 @@ namespace WindowsIsland
         public static string MenuClaude => T("Show Claude", "Mostrar Claude");
         public static string MenuBanners => T("Claude alerts", "Avisos do Claude");
         public static string MenuNotifications => T("Show Windows notifications", "Mostrar notificações do Windows");
+        public static string MenuAutoHide => T("Auto-hide when idle", "Esconder sozinha quando ociosa");
+        public static string MenuAlertDuration => T("Alert duration", "Duração dos avisos");
+        public static string MenuPausedMusic => T("Hide paused music after", "Esconder música pausada após");
+
+        // 0 means "never" for auto-hide and "at once" for the others.
+        public static string Duration(int seconds, bool zeroIsNever)
+        {
+            if (seconds == 0) return zeroIsNever ? T("Never", "Nunca") : T("At once", "Na hora");
+            if (seconds >= 60 && seconds % 60 == 0) return (seconds / 60) + " min";
+            return seconds + " s";
+        }
+
         public static string MenuEmptyIsland => T("Empty island (no live activities)", "Ilha vazia (sem atividades)");
         public static string MenuIdlePill => T("Show pill when idle", "Mostrar pílula ociosa");
         public static string MenuHover => T("Expand on hover", "Expandir ao passar o mouse");

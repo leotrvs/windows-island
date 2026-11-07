@@ -11,6 +11,9 @@ namespace WindowsIsland
         public double OffsetY { get; set; } = 8;
         public bool ShowIdlePill { get; set; } = true;
         public bool EmptyIsland { get; set; } = false; // Plain pill only; activities show when it expands
+        public int AlertSeconds { get; set; } = 5;       // Claude alerts, notifications and app messages
+        public int PausedMusicSeconds { get; set; } = 5; // How long a paused song stays on the island
+        public int AutoHideSeconds { get; set; } = 0;    // Hide the idle island after this long; 0 = never
         public bool ExpandOnHover { get; set; } = true;
         public bool ShowMusic { get; set; } = true;
         public bool ShowClaude { get; set; } = true;
@@ -38,13 +41,23 @@ namespace WindowsIsland
             try
             {
                 if (File.Exists(FilePath))
-                    return JsonSerializer.Deserialize<Settings>(File.ReadAllText(FilePath)) ?? new Settings();
+                    return (JsonSerializer.Deserialize<Settings>(File.ReadAllText(FilePath)) ?? new Settings()).Sanitized();
             }
             catch (Exception)
             {
                 // A broken file falls back to the defaults instead of stopping the app.
             }
             return new Settings();
+        }
+
+        // The file is hand-editable, so values are kept within sensible bounds.
+        Settings Sanitized()
+        {
+            AlertSeconds = Math.Clamp(AlertSeconds, 1, 60);
+            PausedMusicSeconds = Math.Clamp(PausedMusicSeconds, 0, 600);
+            AutoHideSeconds = Math.Clamp(AutoHideSeconds, 0, 3600);
+            OffsetY = Math.Clamp(OffsetY, 0, 200);
+            return this;
         }
 
         public void Save()

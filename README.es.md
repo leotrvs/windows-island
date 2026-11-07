@@ -65,6 +65,9 @@ Para probarla sin instalar, ejecuta `WindowsIsland.exe --portable`.
 | Expand on hover | Expande al dejar el ratón sobre la isla. Si está desactivado, haz clic |
 | Hide in fullscreen | Oculta la isla en juegos, vídeos y presentaciones |
 | Position | Parte superior de la pantalla, o justo encima de la barra de tareas |
+| Auto-hide when idle | Oculta la isla cuando lleva un rato sin mostrar nada. Vuelve con una actividad nueva o al llevar el ratón a su lugar |
+| Alert duration | Cuánto tiempo quedan en pantalla los avisos de Claude y las notificaciones |
+| Hide paused music after | Cuánto tiempo queda en la isla una canción en pausa |
 | Start with Windows | Abre la app al iniciar sesión en Windows |
 | Open settings file | Abre `settings.json`, donde `OffsetY` define la distancia al borde |
 
@@ -101,7 +104,7 @@ Si quieres contribuir, lee [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Próximos pasos
 
-Planeado: ocultarse sola y cuánto tiempo queda abierta, ajustes de tamaño, posición y monitor, y el uso de Codex. La lista completa está en [docs/ROADMAP.md](docs/ROADMAP.md).
+Planeado: una ventana de ajustes, ajustes de tamaño, posición y monitor, y el uso de Codex. La lista completa está en [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Licencia
 
