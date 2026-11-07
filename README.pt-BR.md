@@ -66,7 +66,7 @@ Para testar sem instalar, rode `WindowsIsland.exe --portable`.
 | Mostrar música | Mostra o que está tocando |
 | Mostrar Claude | Mostra a atividade e os limites do Claude Code |
 | Avisos do Claude | Expande a ilha quando o Claude termina ou precisa de você |
-| Mostrar Codex, Avisos do Codex | Atividade e limites do Codex, e o aviso quando ele termina. Só aparecem com o Codex instalado |
+| Mostrar Codex, Avisos do Codex | Atividade e limites do Codex, e o aviso quando ele termina. Só aparecem enquanto o Codex está trabalhando |
 | Pontos de microfone e câmera | Mostra um pontinho ao lado da ilha enquanto um app usa o microfone (laranja) ou a câmera (verde) |
 | Avisos de bateria | Carregador conectado ou removido, bateria baixa e carregada. Só em notebooks |
 | Mostrar notificações do Windows | Mostra as notificações novas na ilha. Vem desligado |

@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.7.2
+
+- The Codex section of the Claude panel now shows only while Codex is working, instead of whenever its files exist on the PC
+
 ## 1.7.1
 
 - Fixed the expanded Claude panel cutting off the Codex section at the bottom

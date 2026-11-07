@@ -215,10 +215,10 @@ namespace WindowsIsland
             get { return settings.ShowCodex && codex.Working; }
         }
 
-        // The Codex part of the expanded panel shows once Codex is installed and turned on.
+        // The Codex part of the expanded panel shows only while Codex is working (and turned on).
         bool CodexSectionVisible
         {
-            get { return settings.ShowCodex && codex.Installed; }
+            get { return settings.ShowCodex && codex.Working; }
         }
 
         Size SizeOf(View value)
