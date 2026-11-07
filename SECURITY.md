@@ -8,18 +8,23 @@
 |---|---|---|
 | Windows media controls | Reads the title, artist, artwork, position and playback state of the current player. Sends play, pause, next, previous and seek when you click them | Shows and controls music |
 | `~/.claude/sessions` | Reads the kind, process ID, status, name and status time of each session, every second | Shows whether Claude Code is working or waiting for you. Nothing is stored. |
-| `%LOCALAPPDATA%\ClaudeUsageTaskbar\usage.json` | Reads it when it changes | Shows the 5-hour and weekly limits that Claude Usage Taskbar saved |
+| Claude Code's `/usage` command | Runs it every 2 minutes and when you open the Claude panel | Keeps only the limit percentages and reset times, in memory. It makes no model call and spends no tokens. |
+| `%LOCALAPPDATA%\ClaudeUsageTaskbar\usage.json` | Reads it when it changes, if it exists | Uses Claude Usage Taskbar's limits when they are fresher |
+| `%LOCALAPPDATA%\Microsoft\Windows\Notifications\wpndatabase.db` | Reads it, read-only, every 1.5 seconds, only when **Show Windows notifications** is on | Shows the app name, title and text of notifications that arrive while the island runs. Nothing is stored. |
 | `%APPDATA%\WindowsIsland\settings.json` | Reads and writes | Stores preferences |
-| Windows Run key | Writes only when you turn on **Start with Windows** | Opens the app when you sign in |
+| `%LOCALAPPDATA%\Programs\WindowsIsland` | Reads and writes | Holds the installed app |
+| Windows Run key, Apps list, shortcuts | Reads and writes | Start with Windows, uninstall entry, and Start menu and Desktop shortcuts |
 
 ## What the app never does
 
 - Read `~/.claude/.credentials.json` or any other Claude login, token or cookie
 - Call Anthropic's APIs or connect to the internet at all
 - Store prompts, responses, session names or project paths
-- Read the content of your notifications or other windows
+- Read your notifications unless you turn them on, or read the content of other windows
 - Send analytics or telemetry
 - Require administrator rights
+
+The `/usage` command is part of Claude Code, which connects to Anthropic with your own login. The island never sees that login.
 
 ## Report a vulnerability
 

@@ -28,7 +28,8 @@ namespace WindowsIsland
     }
 
     // Follows Claude Code without ever touching its login: the status of running sessions comes from the
-    // small files Claude Code keeps per session, and the limits from the file Claude Usage Taskbar saves.
+    // small files Claude Code keeps per session, and the limits from Claude Code's own /usage command.
+    // When Claude Usage Taskbar is installed and has fresher numbers, its file is used instead.
     sealed class ClaudeService
     {
         sealed class SessionInfo
@@ -39,11 +40,6 @@ namespace WindowsIsland
             public DateTime StatusSince;
         }
 
-        sealed class UsagePair
-        {
-            public UsageWindow Session;
-            public UsageWindow Weekly;
-        }
 
         sealed class Seen
         {
@@ -73,6 +69,18 @@ namespace WindowsIsland
         string signature;
         DateTime usageWrite = DateTime.MinValue;
         int usageVersion;
+        long usageTakenTicks;  // When the numbers on screen were read (UTC)
+        long lastProbeTicks;
+        int probing;
+
+        static readonly TimeSpan ProbeInterval = TimeSpan.FromMinutes(2);
+        static readonly TimeSpan ProbeWhenLooking = TimeSpan.FromSeconds(45);
+        static readonly TimeSpan ProbeFloor = TimeSpan.FromSeconds(20);
+
+        public bool ClaudeFound
+        {
+            get { return UsageProbe.ClaudeFound; }
+        }
 
         public ClaudeService(Dispatcher dispatcher)
         {
@@ -121,8 +129,9 @@ namespace WindowsIsland
             try
             {
                 List<SessionInfo> sessions = ReadSessions();
-                UsagePair usage = ReadUsage();
+                UsageSnapshot usage = ReadUsage();
                 dispatcher.BeginInvoke(new Action(() => Apply(sessions, usage)));
+                MaybeProbe(ProbeInterval, ProbeInterval);
             }
             catch (Exception)
             {
@@ -134,7 +143,7 @@ namespace WindowsIsland
             }
         }
 
-        void Apply(List<SessionInfo> sessions, UsagePair usage)
+        void Apply(List<SessionInfo> sessions, UsageSnapshot usage)
         {
             int busy = 0, waiting = 0;
             DateTime? busySince = null;
@@ -182,16 +191,55 @@ namespace WindowsIsland
             BusySince = busySince;
             BusyName = busyName;
             WaitingName = waitingName;
-            if (usage != null)
-            {
-                Session = usage.Session;
-                Weekly = usage.Weekly;
-                usageVersion++;
-            }
+            if (usage != null) TakeUsage(usage);
 
             string next = Running + "|" + busy + "|" + waiting + "|" + busySince + "|" + busyName + "|" + waitingName + "|" + usageVersion;
             if (next == signature) return;
             signature = next;
+            Changed?.Invoke();
+        }
+
+        // Called when the user opens the Claude panel, so the limits are fresh when someone looks.
+        public void RefreshUsage()
+        {
+            MaybeProbe(ProbeWhenLooking, ProbeFloor);
+        }
+
+        void MaybeProbe(TimeSpan maxAge, TimeSpan minGap)
+        {
+            long now = DateTime.UtcNow.Ticks;
+            if (now - Interlocked.Read(ref usageTakenTicks) < maxAge.Ticks) return;
+            if (now - Interlocked.Read(ref lastProbeTicks) < minGap.Ticks) return;
+            if (Interlocked.Exchange(ref probing, 1) == 1) return;
+
+            Interlocked.Exchange(ref lastProbeTicks, now);
+            System.Threading.Tasks.Task.Run(() =>
+            {
+                try
+                {
+                    UsageSnapshot snapshot = UsageProbe.Run();
+                    dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        if (snapshot != null) TakeUsage(snapshot);
+                        else Changed?.Invoke(); // Lets the panel explain when Claude Code is missing
+                    }));
+                }
+                finally
+                {
+                    Interlocked.Exchange(ref probing, 0);
+                }
+            });
+        }
+
+        // Keeps whichever reading is newest: our own /usage run or Claude Usage Taskbar's file.
+        void TakeUsage(UsageSnapshot usage)
+        {
+            if (usage.TakenUtc.Ticks <= Interlocked.Read(ref usageTakenTicks)) return;
+            Interlocked.Exchange(ref usageTakenTicks, usage.TakenUtc.Ticks);
+            Session = usage.Session;
+            Weekly = usage.Weekly;
+            usageVersion++;
+            signature = null;
             Changed?.Invoke();
         }
 
@@ -236,7 +284,7 @@ namespace WindowsIsland
             return sessions;
         }
 
-        UsagePair ReadUsage()
+        UsageSnapshot ReadUsage()
         {
             try
             {
@@ -247,9 +295,10 @@ namespace WindowsIsland
 
                 using (JsonDocument document = JsonDocument.Parse(ReadShared(path)))
                 {
-                    UsagePair pair = new UsagePair();
+                    UsageSnapshot pair = new UsageSnapshot();
                     pair.Session = Window(document.RootElement, "five_hour");
                     pair.Weekly = Window(document.RootElement, "seven_day");
+                    pair.TakenUtc = write;
                     usageWrite = write;
                     return pair;
                 }

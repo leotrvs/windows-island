@@ -14,6 +14,7 @@ namespace WindowsIsland
         public bool ShowMusic { get; set; } = true;
         public bool ShowClaude { get; set; } = true;
         public bool ClaudeBanners { get; set; } = true;
+        public bool ShowNotifications { get; set; } = false; // Reads notification content, so it is opt-in
         public bool HideInFullscreen { get; set; } = true;
         public bool StartWithWindows { get; set; } = false;
 
@@ -59,16 +60,38 @@ namespace WindowsIsland
 
         void ApplyStartup()
         {
+            if (!StartWithWindows)
+            {
+                RemoveStartup();
+                return;
+            }
             try
             {
                 using (RegistryKey key = Registry.CurrentUser.OpenSubKey(RunKey, true))
-                {
-                    if (key == null) return;
-                    if (StartWithWindows && Environment.ProcessPath != null)
-                        key.SetValue(RunValue, "\"" + Environment.ProcessPath + "\"");
-                    else
-                        key.DeleteValue(RunValue, false);
-                }
+                    key?.SetValue(RunValue, "\"" + Installer.StartupTarget + "\"");
+            }
+            catch (Exception)
+            {
+            }
+        }
+
+        public static void RemoveStartup()
+        {
+            try
+            {
+                using (RegistryKey key = Registry.CurrentUser.OpenSubKey(RunKey, true))
+                    key?.DeleteValue(RunValue, false);
+            }
+            catch (Exception)
+            {
+            }
+        }
+
+        public static void DeleteAll()
+        {
+            try
+            {
+                if (Directory.Exists(Folder)) Directory.Delete(Folder, true);
             }
             catch (Exception)
             {

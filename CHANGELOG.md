@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.0
+
+- Reads Claude's limits by itself through Claude Code's `/usage` command, so Claude Usage Taskbar is no longer needed. Its numbers are still used when they are fresher
+- Windows notifications in the island, off by default. The Claude app's own toasts are skipped while the island's Claude alerts are on
+- The Claude spark plays a smooth thinking animation while Claude works
+- Installer: Start menu and Desktop shortcuts, start with Windows, an entry in Windows' app list and an uninstaller. `--portable` runs without installing
+- The exe runs without .NET installed
+- About 40 MB of memory instead of 166 MB, by drawing the island on the CPU
+- Roadmap in `docs/ROADMAP.md`
+
 ## 0.1.0
 
 First preview.

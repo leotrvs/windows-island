@@ -41,6 +41,8 @@ namespace WindowsIsland
         static readonly Brush Green = Freeze(new SolidColorBrush(Color.FromRgb(0x30, 0xD1, 0x58)));
         static readonly Brush Amber = Freeze(new SolidColorBrush(Color.FromRgb(0xFF, 0x9F, 0x0A)));
         static readonly Brush Red = Freeze(new SolidColorBrush(Color.FromRgb(0xFF, 0x45, 0x3A)));
+        static readonly Brush ClaudeTint = Freeze(new SolidColorBrush(Color.FromArgb(0x29, 0xE8, 0x87, 0x5F)));
+        static readonly Brush NotificationTint = Freeze(new SolidColorBrush(Color.FromArgb(0x33, 0xFF, 0xFF, 0xFF)));
 
         readonly Settings settings;
         readonly MediaService media;
@@ -75,7 +77,7 @@ namespace WindowsIsland
         bool hovering, fullscreen, maximized, rendering;
         DateTime bannerUntil = DateTime.MinValue;
         TimeSpan lastFrame;
-        double clock, eqClock, spin;
+        double clock, eqClock;
         double drawnSessionArc = -1, drawnWeeklyArc = -1;
         string lastElapsed, lastRemaining, lastCompactText, lastStatus;
         IntPtr hwnd;
@@ -113,7 +115,6 @@ namespace WindowsIsland
 
             SessionLabel.Text = Strings.Session5h;
             WeeklyLabel.Text = Strings.Weekly;
-            NoUsageText.Text = Strings.NoUsage;
 
             Pill.MouseEnter += OnPillEnter;
             Pill.MouseLeave += OnPillLeave;
@@ -192,13 +193,21 @@ namespace WindowsIsland
                 bubbleShift.Snap(bubbleShift.Target);
                 LayoutBars(compactBars, CompactEq.Height);
                 LayoutBars(expandedBars, ExpandedEq.Height);
-                CompactSparkSpin.Angle = ExpandedSparkSpin.Angle = BubbleSparkSpin.Angle = 0;
+                CompactSpark.Thinking = ExpandedSpark.Thinking = BubbleSpark.Thinking = false;
                 Root.UpdateLayout();
                 UpdateProgress();
                 ApplyFrame();
                 Root.UpdateLayout();
                 SaveSnapshot(System.IO.Path.Combine(folder, state.ToString().ToLowerInvariant() + suffix + ".png"));
             }
+
+            // A made-up Windows notification on the same banner
+            banners.Enqueue(new BannerItem { App = "Mail", Title = Strings.SampleNotificationTitle, Subtitle = Strings.SampleNotificationBody, Seconds = 5 });
+            NextBanner();
+            forced = View.Banner;
+            Root.UpdateLayout();
+            ApplyFrame();
+            SaveSnapshot(System.IO.Path.Combine(folder, "notification" + suffix + ".png"));
         }
 
         void SnapAll()
@@ -291,6 +300,7 @@ namespace WindowsIsland
             height.Target = size.Height;
             shown.Target = view == View.Hidden ? 0 : 1;
             Pill.IsHitTestVisible = view != View.Hidden;
+            if (view == View.ClaudeExpanded && forced == null) claude.RefreshUsage();
 
             foreach (KeyValuePair<View, FrameworkElement> pair in panels)
             {
@@ -334,16 +344,86 @@ namespace WindowsIsland
         void OnPillClick(object sender, MouseButtonEventArgs e)
         {
             enterTimer.Stop();
-            if (view == View.Banner) bannerUntil = DateTime.MinValue;
-            SetHovering(!hovering || view == View.Banner);
+            if (view == View.Banner)
+            {
+                bool fromClaude = currentBanner == null || currentBanner.FromClaude;
+                bannerUntil = DateTime.MinValue;
+                if (banners.Count > 0) { NextBanner(); return; }
+                if (!fromClaude) { Recompute(); return; } // A notification click just dismisses it
+                SetHovering(true);
+                return;
+            }
+            SetHovering(!hovering);
         }
+
+        // ---------- Banners ----------
+
+        sealed class BannerItem
+        {
+            public bool FromClaude;
+            public string App;
+            public string Title;
+            public string Subtitle;
+            public double Seconds;
+        }
+
+        readonly Queue<BannerItem> banners = new Queue<BannerItem>();
+        BannerItem currentBanner;
 
         void ShowBanner(bool waiting, string name)
         {
             if (!settings.ShowClaude || !settings.ClaudeBanners) return;
-            BannerTitle.Text = waiting ? Strings.ClaudeNeedsYou : Strings.ClaudeDone;
-            BannerSubtitle.Text = name;
-            bannerUntil = DateTime.Now.AddSeconds(waiting ? 6 : 4.5);
+            Enqueue(new BannerItem
+            {
+                FromClaude = true,
+                Title = waiting ? Strings.ClaudeNeedsYou : Strings.ClaudeDone,
+                Subtitle = name,
+                Seconds = waiting ? 6 : 4.5,
+            });
+        }
+
+        internal void ShowNotification(IslandNotification notification)
+        {
+            if (!settings.ShowNotifications) return;
+            // The island already announces Claude itself, so the Claude app's own toasts would repeat it.
+            if (settings.ShowClaude && settings.ClaudeBanners && notification.App == "Claude") return;
+            Enqueue(new BannerItem
+            {
+                App = notification.App,
+                Title = notification.Title,
+                Subtitle = notification.Body,
+                Seconds = 5,
+            });
+        }
+
+        void Enqueue(BannerItem item)
+        {
+            if (fullscreen && settings.HideInFullscreen) return;
+            if (banners.Count >= 5) banners.Dequeue(); // A burst of notifications never piles up for minutes
+            banners.Enqueue(item);
+            if (DateTime.Now >= bannerUntil) NextBanner();
+        }
+
+        void NextBanner()
+        {
+            if (banners.Count == 0)
+            {
+                currentBanner = null;
+                return;
+            }
+            BannerItem item = banners.Dequeue();
+            currentBanner = item;
+
+            BannerSpark.Visibility = item.FromClaude ? Visibility.Visible : Visibility.Collapsed;
+            BannerBell.Visibility = item.FromClaude ? Visibility.Collapsed : Visibility.Visible;
+            BannerIcon.Background = item.FromClaude ? ClaudeTint : NotificationTint;
+            BannerApp.Text = item.App ?? "";
+            BannerApp.Visibility = item.FromClaude || string.IsNullOrEmpty(item.App) ? Visibility.Collapsed : Visibility.Visible;
+            BannerTitle.Text = item.Title;
+            BannerSubtitle.Text = item.Subtitle ?? "";
+            BannerSubtitle.Visibility = string.IsNullOrEmpty(item.Subtitle) ? Visibility.Collapsed : Visibility.Visible;
+
+            bannerUntil = DateTime.Now.AddSeconds(item.Seconds);
             Recompute();
         }
 
@@ -353,6 +433,7 @@ namespace WindowsIsland
             fullscreen = state.Fullscreen;
             maximized = state.Maximized;
             if (view != View.Hidden) Native.KeepTopmost(hwnd);
+            if (DateTime.Now >= bannerUntil && banners.Count > 0 && !hovering) NextBanner();
             Recompute();
         }
 
@@ -402,7 +483,11 @@ namespace WindowsIsland
             bool hasUsage = session != null && session.Percent.HasValue;
             UsageRow.Visibility = hasUsage ? Visibility.Visible : Visibility.Collapsed;
             NoUsageText.Visibility = hasUsage ? Visibility.Collapsed : Visibility.Visible;
-            if (!hasUsage) return;
+            if (!hasUsage)
+            {
+                NoUsageText.Text = claude.ClaudeFound ? Strings.ReadingUsage : Strings.ClaudeNotFound;
+                return;
+            }
 
             UsageWindow weekly = claude.Weekly ?? new UsageWindow();
             int sessionPercent = session.EffectivePercent;
@@ -606,21 +691,23 @@ namespace WindowsIsland
 
             bool claudeVisible = presence[ClaudeCompact].Value > 0.01 || presence[ClaudeExpanded].Value > 0.01 ||
                                  (bubble == Activity.Claude && bubbleOpacity.Value > 0.01);
+            bool thinking = claudeVisible && claude.Busy > 0 && claude.Waiting == 0;
+            CompactSpark.Thinking = ExpandedSpark.Thinking = BubbleSpark.Thinking = thinking;
             if (claudeVisible && (claude.Busy > 0 || claude.Waiting > 0))
             {
                 double sparkOpacity = 1;
                 if (claude.Waiting > 0)
-                {
                     sparkOpacity = 0.45 + 0.55 * (0.5 + 0.5 * Math.Cos(clock * 4.5)); // Breathing: needs attention
-                }
-                else
-                {
-                    spin = (spin + dt * (110 + 70 * Math.Sin(clock * 2.2))) % 360;
-                }
-                CompactSparkSpin.Angle = ExpandedSparkSpin.Angle = BubbleSparkSpin.Angle = spin;
+                if (presence[ClaudeCompact].Value > 0.01) CompactSpark.Advance(dt);
+                if (presence[ClaudeExpanded].Value > 0.01) ExpandedSpark.Advance(dt);
+                if (bubble == Activity.Claude) BubbleSpark.Advance(dt);
                 CompactSpark.Opacity = ExpandedSpark.Opacity = BubbleSpark.Opacity = sparkOpacity;
                 UpdateClaudeLive();
                 keepGoing = true;
+            }
+            else
+            {
+                CompactSpark.Opacity = ExpandedSpark.Opacity = BubbleSpark.Opacity = 1;
             }
             return keepGoing;
         }

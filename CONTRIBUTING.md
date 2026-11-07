@@ -9,15 +9,16 @@ git clone https://github.com/leotrvs/windows-island.git
 cd windows-island
 git config core.hooksPath .githooks
 pwsh -File scripts/build.ps1
-.\bin\WindowsIsland.exe
+.\bin\WindowsIsland.exe --portable
 ```
 
-The hooks stop commits and pushes that contain secrets or personal data. To add your own terms, such as your name, list them one per line in `.git\info\leak-patterns.txt`. That file is never committed.
+`--portable` runs it without the install prompt. The hooks stop commits and pushes that contain secrets or personal data. To add your own terms, such as your name, list them one per line in `.git\info\leak-patterns.txt`. That file is never committed.
 
 ## Rules
 
-- **Never read Claude credentials or call Anthropic's private endpoints.** Claude data comes only from the session status files Claude Code keeps and from the limits file Claude Usage Taskbar saves. Pull requests that change this will be declined.
+- **Never read Claude credentials or call Anthropic's private endpoints.** Claude data comes only from the session status files Claude Code keeps, Claude Code's own `/usage` command and the limits file Claude Usage Taskbar saves. Pull requests that change this will be declined.
 - **No network access.** The island works entirely on your computer.
+- **Privacy-sensitive features are opt-in.** Reading notifications stays off until the user turns it on.
 - **Add every user-visible text in both English and Portuguese** in `src\Strings.cs`.
 - **Keep it light.** The island is always on screen: the render loop must stop when nothing moves, and nothing should allocate per frame without need.
 - **Do not use real screenshots.** Generate documentation images from sample data:
@@ -36,9 +37,15 @@ The hooks stop commits and pushes that contain secrets or personal data. To add 
 | `src\IslandWindow.xaml.cs` | Which state to show, the spring animations and the live parts |
 | `src\Spring.cs` | The damped spring behind every animation |
 | `src\MediaService.cs` | What is playing, from the Windows media controls |
-| `src\ClaudeService.cs` | Claude Code session status and usage limits |
+| `src\ClaudeService.cs` | Claude Code session status, alerts and when to read the limits |
+| `src\UsageProbe.cs` | Reads the limits from Claude Code's `/usage` command |
+| `src\ClaudeSpark.cs` | The Claude spark and its thinking animation, from `src\Assets\thinking.png` |
+| `src\NotificationService.cs` | New Windows notifications, read-only, through the SQLite that ships with Windows |
+| `src\Installer.cs` | Install, shortcuts and uninstall |
 | `src\Native.cs` | Overlay window style, fullscreen and maximized detection |
 | `src\Tray.cs` | The tray icon and its menu |
 | `src\Settings.cs` | Preferences, saved as JSON |
 | `src\Strings.cs` | English and Portuguese texts |
 | `scripts\` | Build, README images and leak checks |
+
+Planned work is in [docs/ROADMAP.md](docs/ROADMAP.md).

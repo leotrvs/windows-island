@@ -1,6 +1,7 @@
 <Window x:Class="WindowsIsland.IslandWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:WindowsIsland"
         Title="Windows Island" Width="520" Height="240"
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
         ResizeMode="NoResize" ShowInTaskbar="False" Topmost="True" ShowActivated="False"
@@ -12,10 +13,11 @@
         <SolidColorBrush x:Key="Track" Color="#33FFFFFF"/>
         <SolidColorBrush x:Key="ClaudeOrange" Color="#FFE8875F"/>
 
-        <Geometry x:Key="SparkGlyph">M 12,0 C 12.8,6.6 17.4,11.2 24,12 C 17.4,12.8 12.8,17.4 12,24 C 11.2,17.4 6.6,12.8 0,12 C 6.6,11.2 11.2,6.6 12,0 Z</Geometry>
         <Geometry x:Key="PlayGlyph">M 2,1.6 C 2,0.4 3.3,-0.3 4.3,0.3 L 16.6,7.8 C 17.6,8.4 17.6,9.6 16.6,10.2 L 4.3,17.7 C 3.3,18.3 2,17.6 2,16.4 Z</Geometry>
         <Geometry x:Key="PauseGlyph">M 1.6,0 H 4.9 Q 6.5,0 6.5,1.6 V 16.4 Q 6.5,18 4.9,18 H 1.6 Q 0,18 0,16.4 V 1.6 Q 0,0 1.6,0 Z M 12.1,0 H 15.4 Q 17,0 17,1.6 V 16.4 Q 17,18 15.4,18 H 12.1 Q 10.5,18 10.5,16.4 V 1.6 Q 10.5,0 12.1,0 Z</Geometry>
         <Geometry x:Key="SkipGlyph">M 0,1.3 C 0,0.3 1.1,-0.3 1.9,0.3 L 10,6.1 C 10.7,6.6 10.7,7.4 10,7.9 L 1.9,13.7 C 1.1,14.3 0,13.7 0,12.7 Z M 10.6,1.3 C 10.6,0.3 11.7,-0.3 12.5,0.3 L 20.6,6.1 C 21.3,6.6 21.3,7.4 20.6,7.9 L 12.5,13.7 C 11.7,14.3 10.6,13.7 10.6,12.7 Z</Geometry>
+
+        <Geometry x:Key="BellGlyph">M 12,2 C 8.1,2 6,4.9 6,8.5 V 13 L 4,16 V 17 H 20 V 16 L 18,13 V 8.5 C 18,4.9 15.9,2 12,2 Z M 9.5,18.5 C 9.8,20 10.8,21 12,21 C 13.2,21 14.2,20 14.5,18.5 Z</Geometry>
 
         <LinearGradientBrush x:Key="ArtPlaceholder" StartPoint="0,0" EndPoint="1,1">
             <GradientStop Color="#FF48484A" Offset="0"/>
@@ -46,10 +48,7 @@
                 </TransformGroup>
             </Border.RenderTransform>
             <Grid>
-                <Path x:Name="BubbleSpark" Data="{StaticResource SparkGlyph}" Fill="{StaticResource ClaudeOrange}"
-                      Width="15" Height="15" Stretch="Uniform" RenderTransformOrigin="0.5,0.5">
-                    <Path.RenderTransform><RotateTransform x:Name="BubbleSparkSpin"/></Path.RenderTransform>
-                </Path>
+                <local:ClaudeSpark x:Name="BubbleSpark" Width="20" Height="20"/>
                 <Ellipse x:Name="BubbleArt" Width="22" Height="22" Visibility="Collapsed"/>
             </Grid>
         </Border>
@@ -70,11 +69,7 @@
 
                 <!-- Claude, compact -->
                 <Grid x:Name="ClaudeCompact" Width="204" Height="34">
-                    <Path x:Name="CompactSpark" Data="{StaticResource SparkGlyph}" Fill="{StaticResource ClaudeOrange}"
-                          Width="16" Height="16" Stretch="Uniform" HorizontalAlignment="Left" Margin="11,0,0,0"
-                          RenderTransformOrigin="0.5,0.5">
-                        <Path.RenderTransform><RotateTransform x:Name="CompactSparkSpin"/></Path.RenderTransform>
-                    </Path>
+                    <local:ClaudeSpark x:Name="CompactSpark" Width="20" Height="20" HorizontalAlignment="Left" Margin="9,0,0,0"/>
                     <TextBlock x:Name="ClaudeCompactText" HorizontalAlignment="Right" VerticalAlignment="Center"
                                Margin="0,0,13,0" FontSize="13" FontWeight="SemiBold" Typography.NumeralAlignment="Tabular"/>
                 </Grid>
@@ -152,10 +147,7 @@
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
                             <Border Width="38" Height="38" CornerRadius="19" Background="#29E8875F">
-                                <Path x:Name="ExpandedSpark" Data="{StaticResource SparkGlyph}" Fill="{StaticResource ClaudeOrange}"
-                                      Width="18" Height="18" Stretch="Uniform" RenderTransformOrigin="0.5,0.5">
-                                    <Path.RenderTransform><RotateTransform x:Name="ExpandedSparkSpin"/></Path.RenderTransform>
-                                </Path>
+                                <local:ClaudeSpark x:Name="ExpandedSpark" Width="24" Height="24"/>
                             </Border>
                             <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
                                 <TextBlock Text="Claude Code" FontSize="15" FontWeight="SemiBold"/>
@@ -201,18 +193,22 @@
                     </Grid>
                 </Grid>
 
-                <!-- Claude alert banner -->
+                <!-- Alert banner: Claude alerts and Windows notifications -->
                 <Grid x:Name="Banner" Width="352" Height="74">
                     <Grid Margin="16,0,22,0" VerticalAlignment="Center">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <Border Width="42" Height="42" CornerRadius="21" Background="#29E8875F">
-                            <Path Data="{StaticResource SparkGlyph}" Fill="{StaticResource ClaudeOrange}"
-                                  Width="19" Height="19" Stretch="Uniform"/>
+                        <Border x:Name="BannerIcon" Width="42" Height="42" CornerRadius="21" Background="#29E8875F">
+                            <Grid>
+                                <local:ClaudeSpark x:Name="BannerSpark" Width="26" Height="26"/>
+                                <Path x:Name="BannerBell" Data="{StaticResource BellGlyph}" Fill="White" Width="18" Height="19"
+                                      Stretch="Uniform" Visibility="Collapsed"/>
+                            </Grid>
                         </Border>
                         <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                            <TextBlock x:Name="BannerApp" Style="{StaticResource Caption}" FontSize="11" Visibility="Collapsed"/>
                             <TextBlock x:Name="BannerTitle" FontSize="15" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
                             <TextBlock x:Name="BannerSubtitle" Style="{StaticResource Caption}" FontSize="13" Margin="0,1,0,0"/>
                         </StackPanel>

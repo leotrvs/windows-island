@@ -12,11 +12,15 @@
     <RootNamespace>WindowsIsland</RootNamespace>
     <AssemblyName>WindowsIsland</AssemblyName>
     <Product>Windows Island</Product>
-    <Version>0.1.0</Version>
+    <Version>0.2.0</Version>
     <!-- A small always-on overlay: favor a low memory footprint over GC throughput -->
     <ConcurrentGarbageCollection>false</ConcurrentGarbageCollection>
     <TieredPGO>false</TieredPGO>
     <UseSystemResourceKeys>true</UseSystemResourceKeys>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\thinking.png" />
+  </ItemGroup>
 
 </Project>
