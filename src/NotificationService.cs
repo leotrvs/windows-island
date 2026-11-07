@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Windows.Threading;
+using System.Xml;
 using System.Xml.Linq;
 
 namespace WindowsIsland
@@ -25,6 +26,8 @@ namespace WindowsIsland
     {
         const int SQLITE_OK = 0, SQLITE_ROW = 100, SQLITE_OPEN_READONLY = 1;
         const int PollMs = 1500;
+        const int MaxPayloadBytes = 64 * 1024;
+        const int MaxTextLength = 300;
 
         [DllImport("winsqlite3.dll", EntryPoint = "sqlite3_open_v2")] static extern int Open(byte[] path, out IntPtr db, int flags, IntPtr vfs);
         [DllImport("winsqlite3.dll", EntryPoint = "sqlite3_close")] static extern int Close(IntPtr db);
@@ -151,7 +154,7 @@ namespace WindowsIsland
         static string ReadPayload(IntPtr stmt, int column)
         {
             int length = ColumnBytes(stmt, column);
-            if (length <= 0) return null;
+            if (length <= 0 || length > MaxPayloadBytes) return null; // Real toasts are a few KB
             byte[] bytes = new byte[length];
             Marshal.Copy(ColumnBlob(stmt, column), bytes, 0, length);
             return Encoding.UTF8.GetString(bytes);
@@ -162,7 +165,17 @@ namespace WindowsIsland
             if (string.IsNullOrEmpty(payload)) return null;
             try
             {
-                XDocument xml = XDocument.Parse(payload);
+                // Toast text can come from any app or website, so the XML is read with DTDs off and a size cap.
+                XmlReaderSettings settings = new XmlReaderSettings
+                {
+                    DtdProcessing = DtdProcessing.Prohibit,
+                    XmlResolver = null,
+                    MaxCharactersInDocument = MaxPayloadBytes,
+                };
+                XDocument xml;
+                using (StringReader text = new StringReader(payload))
+                using (XmlReader reader = XmlReader.Create(text, settings))
+                    xml = XDocument.Load(reader);
                 List<string> texts = xml.Descendants("text")
                     .Where(t => (string)t.Attribute("placement") != "attribution")
                     .Select(t => t.Value.Trim())
@@ -171,15 +184,20 @@ namespace WindowsIsland
                 if (texts.Count == 0) return null;
                 return new IslandNotification
                 {
-                    App = FriendlyName(handler),
-                    Title = texts[0],
-                    Body = texts.Count > 1 ? string.Join(" ", texts.Skip(1)) : "",
+                    App = Shorten(FriendlyName(handler), 60),
+                    Title = Shorten(texts[0], MaxTextLength),
+                    Body = texts.Count > 1 ? Shorten(string.Join(" ", texts.Skip(1)), MaxTextLength) : "",
                 };
             }
             catch (Exception)
             {
                 return null;
             }
+        }
+
+        static string Shorten(string text, int max)
+        {
+            return text.Length <= max ? text : text.Substring(0, max);
         }
 
         // "Microsoft.WindowsStore_8wekyb3d8bbwe!App" -> "WindowsStore"; "com.squirrel.Discord.Discord" -> "Discord".

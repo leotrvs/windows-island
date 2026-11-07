@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.2
+
+- Notification text is read more defensively: XML definitions (DTDs) are refused, and oversized notifications and texts are cut, since any app or website can send a notification
+
 ## 1.0.1
 
 - Updates are signed with the same key as Claude Usage Taskbar. Each update file now names its app, and the island rejects any file meant for another app
