@@ -11,7 +11,7 @@
     <RootNamespace>WindowsIsland</RootNamespace>
     <AssemblyName>WindowsIsland</AssemblyName>
     <Product>Windows Island</Product>
-    <Version>1.7.0</Version>
+    <Version>1.7.1</Version>
     <!-- A small always-on overlay: favor a low memory footprint over GC throughput -->
     <ConcurrentGarbageCollection>false</ConcurrentGarbageCollection>
     <TieredPGO>false</TieredPGO>

@@ -229,7 +229,7 @@ namespace WindowsIsland
 
         double ClaudePanelHeight
         {
-            get { return CodexSectionVisible ? 230 : 156; }
+            get { return CodexSectionVisible ? 248 : 156; }
         }
 
         void UpdateCodex()

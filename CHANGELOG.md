@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.7.1
+
+- Fixed the expanded Claude panel cutting off the Codex section at the bottom
+
 ## 1.7.0
 
 - **Timer and stopwatch** from the tray menu (**Timer**): a live activity in the island, with an alert when the countdown ends
