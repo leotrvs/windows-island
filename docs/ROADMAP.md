@@ -2,12 +2,7 @@
 
 Ideas planned for upcoming releases, in the order they are expected to land. Nothing here is promised for a specific version.
 
-## Next: lighter app (1.6)
-
-- A smaller download: today the self-contained exe is about 78 MB. Replacing Windows Forms (used for the tray icon and the monitor list) with direct Windows calls should cut it down
-- Measure and trim memory use when one island runs on every monitor
-
-## Then: more live activities (1.7)
+## Next: more live activities (1.7)
 
 - Timer and stopwatch
 - Battery and charging, on laptops
@@ -23,6 +18,7 @@ Ideas planned for upcoming releases, in the order they are expected to land. Not
 
 ## Done
 
+- Lighter app: no Windows Forms, about 10 MB smaller (1.6.0)
 - Codex activity, limits and alerts (1.5.0)
 - Choosing the monitor: primary, a specific one, all, or the one with the mouse (1.4.0)
 - Settings window, and the size and position of the island (1.3.0)

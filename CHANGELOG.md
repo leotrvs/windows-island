@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.6.0
+
+- **Lighter app:** the tray icon and the monitor list now use Windows directly instead of Windows Forms. The download is about 10 MB smaller (78 MB to 68 MB) and the behavior is the same
+- Memory stays around 40 MB, also with one island on each of three monitors
+
 ## 1.5.0
 
 - **Codex** joins the island: a live activity with a timer while Codex works, its 5-hour and weekly limits under Claude's in the expanded panel, and a **Codex finished** alert. Read from the session files Codex keeps, without touching its login

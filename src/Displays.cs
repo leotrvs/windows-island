@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Windows;
-using Forms = System.Windows.Forms;
 
 namespace WindowsIsland
 {
@@ -20,25 +20,62 @@ namespace WindowsIsland
     {
         static readonly Regex Digits = new Regex(@"(\d+)$");
 
+        const uint MONITOR_DEFAULTTONEAREST = 2;
+        const uint MONITORINFOF_PRIMARY = 1;
+
+        [StructLayout(LayoutKind.Sequential)]
+        struct RECT { public int Left, Top, Right, Bottom; }
+
+        [StructLayout(LayoutKind.Sequential)]
+        struct POINT { public int X, Y; }
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+        struct MONITORINFOEX
+        {
+            public int cbSize;
+            public RECT rcMonitor;
+            public RECT rcWork;
+            public uint dwFlags;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)] public string szDevice;
+        }
+
+        delegate bool MonitorEnumProc(IntPtr monitor, IntPtr dc, IntPtr rect, IntPtr data);
+
+        [DllImport("user32.dll")] static extern bool EnumDisplayMonitors(IntPtr dc, IntPtr clip, MonitorEnumProc callback, IntPtr data);
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)] static extern bool GetMonitorInfo(IntPtr monitor, ref MONITORINFOEX info);
+        [DllImport("user32.dll")] static extern IntPtr MonitorFromPoint(POINT point, uint flags);
+        [DllImport("user32.dll")] static extern bool GetCursorPos(out POINT point);
+
         public static List<Display> All()
         {
-            // WPF positions windows in DIPs at the system DPI; screens report physical pixels.
-            Forms.Screen primaryScreen = Forms.Screen.PrimaryScreen;
-            double toDip = primaryScreen != null && primaryScreen.Bounds.Width > 0
-                ? SystemParameters.PrimaryScreenWidth / primaryScreen.Bounds.Width
-                : 1;
+            // Monitors report physical pixels; WPF positions windows in DIPs at the system DPI.
+            List<MONITORINFOEX> found = new List<MONITORINFOEX>();
+            EnumDisplayMonitors(IntPtr.Zero, IntPtr.Zero, (monitor, dc, rect, data) =>
+            {
+                MONITORINFOEX info = new MONITORINFOEX { cbSize = Marshal.SizeOf<MONITORINFOEX>() };
+                if (GetMonitorInfo(monitor, ref info)) found.Add(info);
+                return true;
+            }, IntPtr.Zero);
+
+            double toDip = 1;
+            foreach (MONITORINFOEX info in found)
+            {
+                int width = info.rcMonitor.Right - info.rcMonitor.Left;
+                if ((info.dwFlags & MONITORINFOF_PRIMARY) != 0 && width > 0)
+                    toDip = SystemParameters.PrimaryScreenWidth / width;
+            }
 
             List<Display> displays = new List<Display>();
-            foreach (Forms.Screen screen in Forms.Screen.AllScreens)
+            foreach (MONITORINFOEX info in found)
             {
-                Match number = Digits.Match(screen.DeviceName ?? "");
+                Match number = Digits.Match(info.szDevice ?? "");
                 displays.Add(new Display
                 {
-                    Id = screen.DeviceName,
+                    Id = info.szDevice,
                     Number = number.Success ? int.Parse(number.Value) : displays.Count + 1,
-                    Primary = screen.Primary,
-                    Bounds = Scale(screen.Bounds, toDip),
-                    WorkArea = Scale(screen.WorkingArea, toDip),
+                    Primary = (info.dwFlags & MONITORINFOF_PRIMARY) != 0,
+                    Bounds = Scale(info.rcMonitor, toDip),
+                    WorkArea = Scale(info.rcWork, toDip),
                 });
             }
             displays.Sort((a, b) => a.Primary != b.Primary ? (a.Primary ? -1 : 1) : a.Number.CompareTo(b.Number));
@@ -68,13 +105,16 @@ namespace WindowsIsland
         // The monitor under the mouse cursor.
         public static Display UnderCursor()
         {
-            Forms.Screen screen = Forms.Screen.FromPoint(Forms.Cursor.Position);
-            return ById(screen?.DeviceName) ?? Primary();
+            POINT cursor;
+            if (!GetCursorPos(out cursor)) return Primary();
+            IntPtr monitor = MonitorFromPoint(cursor, MONITOR_DEFAULTTONEAREST);
+            MONITORINFOEX info = new MONITORINFOEX { cbSize = Marshal.SizeOf<MONITORINFOEX>() };
+            return monitor != IntPtr.Zero && GetMonitorInfo(monitor, ref info) ? ById(info.szDevice) ?? Primary() : Primary();
         }
 
-        static Rect Scale(System.Drawing.Rectangle r, double factor)
+        static Rect Scale(RECT r, double factor)
         {
-            return new Rect(r.X * factor, r.Y * factor, r.Width * factor, r.Height * factor);
+            return new Rect(r.Left * factor, r.Top * factor, (r.Right - r.Left) * factor, (r.Bottom - r.Top) * factor);
         }
     }
 }
