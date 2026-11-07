@@ -182,7 +182,7 @@ namespace WindowsIsland
             bool mic = privacy.Microphone && settings.ShowPrivacyDots, cam = privacy.Camera && settings.ShowPrivacyDots;
             MicDot.Visibility = mic ? Visibility.Visible : Visibility.Collapsed;
             CamDot.Visibility = cam ? Visibility.Visible : Visibility.Collapsed;
-            PrivacyDots.Width = mic && cam ? 40 : 26;
+            PrivacyDots.Width = mic && cam ? 30 : 20;
             privacyOpacity.Target = mic || cam ? 1 : 0;
         }
 

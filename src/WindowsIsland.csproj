@@ -11,7 +11,8 @@
     <RootNamespace>WindowsIsland</RootNamespace>
     <AssemblyName>WindowsIsland</AssemblyName>
     <Product>Windows Island</Product>
-    <Version>1.7.3</Version>
+    <ApplicationIcon>Assets/app.ico</ApplicationIcon>
+    <Version>1.8.0</Version>
     <!-- A small always-on overlay: favor a low memory footprint over GC throughput -->
     <ConcurrentGarbageCollection>false</ConcurrentGarbageCollection>
     <TieredPGO>false</TieredPGO>
@@ -20,6 +21,7 @@
 
   <ItemGroup>
     <Resource Include="Assets\thinking.png" />
+    <Resource Include="Assets\app.ico" />
   </ItemGroup>
 
 </Project>

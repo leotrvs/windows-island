@@ -1,8 +1,8 @@
 <Window x:Class="WindowsIsland.SettingsWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Width="460" Height="720" MinWidth="400" MinHeight="420"
-        WindowStartupLocation="CenterScreen" ResizeMode="CanResize"
+        Width="420" Height="600" MinWidth="380" MinHeight="360"
+        WindowStartupLocation="Manual" ResizeMode="CanResize" Icon="Assets/app.ico"
         Background="#FF000000" Foreground="White"
         FontFamily="Segoe UI Variable Text, Segoe UI" FontSize="14"
         TextOptions.TextRenderingMode="Grayscale" UseLayoutRounding="True">
@@ -23,8 +23,8 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="CheckBox">
                         <!-- Colors and knob position are set from code: at once on load, animated on a click -->
-                        <Border x:Name="Track" Width="46" Height="28" CornerRadius="14" Background="#FF39393D">
-                            <Ellipse x:Name="Knob" Width="24" Height="24" Fill="White" HorizontalAlignment="Left" Margin="2,0,0,0">
+                        <Border x:Name="Track" Width="38" Height="23" CornerRadius="11.5" Background="#FF39393D">
+                            <Ellipse x:Name="Knob" Width="19" Height="19" Fill="White" HorizontalAlignment="Left" Margin="2,0,0,0">
                                 <Ellipse.RenderTransform><TranslateTransform/></Ellipse.RenderTransform>
                                 <Ellipse.Effect><DropShadowEffect BlurRadius="6" ShadowDepth="1" Opacity="0.3"/></Ellipse.Effect>
                             </Ellipse>
@@ -84,7 +84,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Thumb">
-                        <Ellipse Width="24" Height="24" Fill="White">
+                        <Ellipse Width="20" Height="20" Fill="White">
                             <Ellipse.Effect><DropShadowEffect BlurRadius="6" ShadowDepth="1" Opacity="0.35"/></Ellipse.Effect>
                         </Ellipse>
                     </ControlTemplate>
@@ -136,7 +136,7 @@
 
         <!-- A scrollbar that stays out of the way: thin, rounded, no arrows -->
         <Style TargetType="ScrollBar">
-            <Setter Property="Width" Value="8"/>
+            <Setter Property="Width" Value="5"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ScrollBar">
@@ -145,7 +145,7 @@
                                 <Thumb>
                                     <Thumb.Template>
                                         <ControlTemplate TargetType="Thumb">
-                                            <Border CornerRadius="3" Background="#55FFFFFF" Margin="1,2"/>
+                                            <Border CornerRadius="2" Background="#40FFFFFF" Margin="0,2"/>
                                         </ControlTemplate>
                                     </Thumb.Template>
                                 </Thumb>
@@ -157,9 +157,17 @@
         </Style>
     </Window.Resources>
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto" Focusable="False">
-        <StackPanel x:Name="Content" Margin="20,18,20,28">
-            <TextBlock x:Name="Heading" FontFamily="Segoe UI Variable Display, Segoe UI" FontSize="30" FontWeight="Bold" Margin="4,0,0,14"/>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <StackPanel Grid.Row="0" Margin="20,14,20,6">
+            <TextBlock x:Name="Heading" FontFamily="Segoe UI Variable Display, Segoe UI" FontSize="24" FontWeight="Bold" Margin="4,0,0,10"/>
+            <ContentControl x:Name="TabBar"/>
         </StackPanel>
-    </ScrollViewer>
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Focusable="False">
+            <StackPanel x:Name="Content" Margin="20,0,16,22"/>
+        </ScrollViewer>
+    </Grid>
 </Window>

@@ -13,6 +13,7 @@
 | `%LOCALAPPDATA%\Microsoft\Windows\Notifications\wpndatabase.db` | Reads it, read-only, every 1.5 seconds, only when **Show Windows notifications** is on | Shows the app name, title and text of notifications that arrive while the island runs. Nothing is stored. |
 | `~/.codex/sessions` | Reads the end of the newest session file every 2 seconds, while **Show Codex** is on | Takes only whether the last task started or finished and the rate-limit percentages and reset times. Nothing is stored. |
 | `HKCU\...\CapabilityAccessManager\ConsentStore` | Reads two timestamps per app (last start and stop of microphone and camera use) every 2 seconds, while **Microphone and camera dots** is on | Shows the dots. It never records or listens to audio or video, and does not read which app it is |
+| Windows audio sessions (Core Audio) | Asks every 2 seconds whether any microphone has an active recording session, while **Microphone and camera dots** is on | Shows the dot. It reads only the active/inactive state and the process number: no audio is opened or heard, and no app name is kept |
 | `%APPDATA%\WindowsIsland\settings.json` | Reads and writes | Stores preferences |
 | `%LOCALAPPDATA%\Programs\WindowsIsland` | Reads and writes | Holds the installed app |
 | Windows Run key, Apps list, shortcuts | Reads and writes | Start with Windows, uninstall entry, and Start menu and Desktop shortcuts |

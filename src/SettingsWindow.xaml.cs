@@ -33,6 +33,7 @@ namespace WindowsIsland
 
             Title = Installer.Name + " – " + Strings.SettingsTitle;
             Heading.Text = Strings.SettingsTitle;
+            FontSize = 13;
             saveTimer.Tick += (s, e) => { saveTimer.Stop(); settings.Save(); };
             SourceInitialized += (s, e) =>
             {
@@ -40,10 +41,61 @@ namespace WindowsIsland
                 DwmSetWindowAttribute(new WindowInteropHelper(this).Handle, DWMWA_USE_IMMERSIVE_DARK_MODE, ref on, sizeof(int));
             };
             Closed += (s, e) => { if (saveTimer.IsEnabled) { saveTimer.Stop(); settings.Save(); } };
-            Build();
+            PlaceNearTray();
+            BuildTabs();
+            Build(tab);
         }
 
-        void Build()
+        static int tab; // Remembered while the app runs
+        bool showTitles;
+        const int AllTabs = -1;
+
+        // Opens in the corner by the taskbar, where the tray icon is, and can be moved like any window.
+        void PlaceNearTray()
+        {
+            Display display = Displays.Primary();
+            Rect work = display.WorkArea, bounds = display.Bounds;
+            Height = Math.Min(Height, Math.Max(MinHeight, work.Height - 24));
+            bool taskbarLeft = work.Left > bounds.Left + 1, taskbarTop = work.Top > bounds.Top + 1;
+            Left = taskbarLeft ? work.Left + 12 : work.Right - Width - 12;
+            Top = taskbarTop ? work.Top + 12 : work.Bottom - Height - 12;
+        }
+
+        void BuildTabs()
+        {
+            string[] names = { Strings.SectionActivities, Strings.SectionBehavior, Strings.SectionAppearance, Strings.SectionSystem };
+            StackPanel items = new StackPanel { Orientation = Orientation.Horizontal };
+            string group = Guid.NewGuid().ToString();
+            for (int i = 0; i < names.Length; i++)
+            {
+                int index = i;
+                RadioButton item = new RadioButton { Content = names[i], GroupName = group, Style = (Style)FindResource("Segment"), IsChecked = i == tab };
+                item.Checked += (s, e) => { tab = index; Rebuild(); };
+                items.Children.Add(item);
+            }
+            TabBar.Content = new Border
+            {
+                Background = new SolidColorBrush(Color.FromRgb(0x1C, 0x1C, 0x1E)),
+                CornerRadius = new CornerRadius(9),
+                Padding = new Thickness(1),
+                HorizontalAlignment = HorizontalAlignment.Left,
+                Child = items,
+            };
+        }
+
+        void Build(int only)
+        {
+            bool all = only == AllTabs;
+            showTitles = all;
+            if (all)
+                Content.Children.Add(new TextBlock { Text = Strings.SettingsTitle, FontFamily = new FontFamily("Segoe UI Variable Display, Segoe UI"), FontSize = 30, FontWeight = FontWeights.Bold, Margin = new Thickness(4, 0, 0, 14) });
+            if (all || only == 0) BuildActivities();
+            if (all || only == 1) BuildBehavior();
+            if (all || only == 2) BuildAppearance();
+            if (all || only == 3) BuildSystem();
+        }
+
+        void BuildActivities()
         {
             Section(Strings.SectionActivities);
             Toggle(Strings.MenuMusic, null, () => settings.ShowMusic, v => settings.ShowMusic = v);
@@ -54,7 +106,10 @@ namespace WindowsIsland
             Toggle(Strings.MenuPrivacyDots, Strings.HintPrivacyDots, () => settings.ShowPrivacyDots, v => settings.ShowPrivacyDots = v);
             Toggle(Strings.MenuBatteryAlerts, Strings.HintBatteryAlerts, () => settings.BatteryAlerts, v => settings.BatteryAlerts = v);
             Toggle(Strings.MenuNotifications, Strings.HintNotifications, () => settings.ShowNotifications, v => settings.ShowNotifications = v);
+        }
 
+        void BuildBehavior()
+        {
             Section(Strings.SectionBehavior);
             Toggle(Strings.MenuEmptyIsland, Strings.HintEmptyIsland, () => settings.EmptyIsland, v => settings.EmptyIsland = v);
             Toggle(Strings.MenuIdlePill, null, () => settings.ShowIdlePill, v => settings.ShowIdlePill = v);
@@ -63,7 +118,10 @@ namespace WindowsIsland
             Choice(Strings.MenuAutoHide, Strings.HintAutoHide, new[] { 0, 5, 10, 30, 60, 300 }, true, () => settings.AutoHideSeconds, v => settings.AutoHideSeconds = v);
             Choice(Strings.MenuAlertDuration, null, new[] { 3, 5, 8, 12, 20 }, false, () => settings.AlertSeconds, v => settings.AlertSeconds = v);
             Choice(Strings.MenuPausedMusic, null, new[] { 0, 2, 5, 15, 30, 60 }, false, () => settings.PausedMusicSeconds, v => settings.PausedMusicSeconds = v);
+        }
 
+        void BuildAppearance()
+        {
             Section(Strings.SectionAppearance);
             Segmented(Strings.MenuPosition, new[] { Strings.MenuTop, Strings.MenuBottom },
                 () => string.Equals(settings.Position, "Bottom", StringComparison.OrdinalIgnoreCase) ? 1 : 0,
@@ -79,7 +137,10 @@ namespace WindowsIsland
                 Apply();
                 Rebuild();
             });
+        }
 
+        void BuildSystem()
+        {
             Section(Strings.SectionSystem);
             Toggle(Strings.MenuStartup, null, () => settings.StartWithWindows, v => settings.StartWithWindows = v);
             Toggle(Strings.MenuAutoUpdate, null, () => settings.AutoUpdate, v => settings.AutoUpdate = v);
@@ -104,8 +165,8 @@ namespace WindowsIsland
 
         void Rebuild()
         {
-            while (Content.Children.Count > 1) Content.Children.RemoveAt(1); // Keep the heading
-            Build();
+            Content.Children.Clear();
+            Build(tab);
         }
 
         void Apply()
@@ -119,13 +180,14 @@ namespace WindowsIsland
 
         void Section(string title)
         {
-            Content.Children.Add(new TextBlock
-            {
-                Text = title.ToUpper(CultureInfo.CurrentCulture),
-                Foreground = (Brush)FindResource("Secondary"),
-                FontSize = 12,
-                Margin = new Thickness(16, 18, 0, 6),
-            });
+            if (showTitles)
+                Content.Children.Add(new TextBlock
+                {
+                    Text = title.ToUpper(CultureInfo.CurrentCulture),
+                    Foreground = (Brush)FindResource("Secondary"),
+                    FontSize = 12,
+                    Margin = new Thickness(16, 18, 0, 6),
+                });
             card = new StackPanel();
             Content.Children.Add(new Border
             {
@@ -188,7 +250,7 @@ namespace WindowsIsland
 
         static readonly Color SwitchOn = Color.FromRgb(0x30, 0xD1, 0x58);
         static readonly Color SwitchOff = Color.FromRgb(0x39, 0x39, 0x3D);
-        const double KnobTravel = 18;
+        const double KnobTravel = 15;
 
         static void AnimateSwitch(SolidColorBrush color, TranslateTransform knob, bool on)
         {
@@ -289,6 +351,9 @@ namespace WindowsIsland
         public void SaveSnapshot(string file)
         {
             const double scale = 2, width = 440;
+            Content.Children.Clear();
+            Build(AllTabs);
+            Content.Margin = new Thickness(20, 18, 20, 28);
             Content.Measure(new Size(width, double.PositiveInfinity));
             Size size = new Size(width, Content.DesiredSize.Height);
             Content.Arrange(new Rect(size));

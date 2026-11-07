@@ -2,16 +2,7 @@
 
 Ideas planned for upcoming releases, in the order they are expected to land. Nothing here is promised for a specific version.
 
-## Next: polish (1.8)
-
-- **App icon:** a proper icon for the exe, the shortcuts, the Settings window and the installer, instead of the default Windows one
-- **Settings window:**
-  - opens next to the tray corner instead of the middle of the screen, and can be moved
-  - tabs at the top (Activities, Behavior, Appearance, System) so there is much less scrolling
-  - a thinner scroll bar and smaller switches
-- **Microphone and camera dots:** more discreet (smaller, softer color), and a more reliable detection through Windows' audio sessions, which also gives the app name. The current detection misses some apps, such as Claude's dictation
-
-## Then: pages in the island (1.9)
+## Next: pages in the island (1.9)
 
 - Move between activities inside the island (scroll or arrows), so music and Claude's limits and sessions can both be seen without pausing anything
 - A smaller expanded music view, with less empty space in the middle
@@ -33,6 +24,7 @@ Ideas planned for upcoming releases, in the order they are expected to land. Not
 
 ## Done
 
+- App icon, Settings with tabs near the tray, discreet and more reliable microphone dots (1.8.0)
 - Timer and stopwatch, microphone and camera dots, battery alerts (1.7.0)
 - Lighter app: no Windows Forms, about 10 MB smaller (1.6.0)
 - Codex activity, limits and alerts (1.5.0)

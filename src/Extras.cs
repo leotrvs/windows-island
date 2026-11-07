@@ -117,7 +117,7 @@ namespace WindowsIsland
 
         void Poll()
         {
-            bool mic = InUse("microphone"), cam = InUse("webcam");
+            bool mic = InUse("microphone") || AudioCapture.Active(), cam = InUse("webcam");
             if (mic == Microphone && cam == Camera) return;
             Microphone = mic;
             Camera = cam;
@@ -218,6 +218,111 @@ namespace WindowsIsland
             wasOnAc = onAc;
             wasFull = full;
             lastPercent = percent;
+        }
+    }
+
+    // Whether any app is recording from a microphone right now, asked of Windows' audio sessions. This catches
+    // apps the privacy record in the registry misses (some web and Electron apps). Only the "active" state of
+    // each capture session is read: no audio is opened or heard.
+    static class AudioCapture
+    {
+        const int eCapture = 1, DEVICE_STATE_ACTIVE = 1, AudioSessionStateActive = 1, CLSCTX_ALL = 23;
+
+        [ComImport, Guid("BCDE0395-E52F-467C-8E3D-C4579291692E")] class MMDeviceEnumerator { }
+
+        [ComImport, Guid("A95664D2-9614-4F35-A746-DE8DB63617E6"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+        interface IMMDeviceEnumerator
+        {
+            void EnumAudioEndpoints(int dataFlow, int stateMask, out IMMDeviceCollection devices);
+        }
+
+        [ComImport, Guid("0BD7A1BE-7A1A-44DB-8397-CC5392387B5E"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+        interface IMMDeviceCollection
+        {
+            void GetCount(out int count);
+            void Item(int index, out IMMDevice device);
+        }
+
+        [ComImport, Guid("D666063F-1587-4E43-81F1-B948E807363F"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+        interface IMMDevice
+        {
+            void Activate(ref Guid iid, int clsCtx, IntPtr activationParams, [MarshalAs(UnmanagedType.IUnknown)] out object result);
+        }
+
+        [ComImport, Guid("77AA99A0-1BD6-484F-8BC7-2C654C9A9B6F"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+        interface IAudioSessionManager2
+        {
+            void GetAudioSessionControl_(); // Unused slots keep the vtable order
+            void GetSimpleAudioVolume_();
+            void GetSessionEnumerator(out IAudioSessionEnumerator sessions);
+        }
+
+        [ComImport, Guid("E2F5BB11-0570-40CA-ACDD-3AA01277DEE8"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+        interface IAudioSessionEnumerator
+        {
+            void GetCount(out int count);
+            void GetSession(int index, out IAudioSessionControl2 session);
+        }
+
+        [ComImport, Guid("BFB7FF88-7239-4FC9-8FA2-07C950BE9C6D"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+        interface IAudioSessionControl2
+        {
+            void GetState(out int state);
+            void GetDisplayName_();
+            void SetDisplayName_();
+            void GetIconPath_();
+            void SetIconPath_();
+            void GetGroupingParam_();
+            void SetGroupingParam_();
+            void RegisterAudioSessionNotification_();
+            void UnregisterAudioSessionNotification_();
+            void GetSessionIdentifier_();
+            void GetSessionInstanceIdentifier_();
+            void GetProcessId(out uint processId);
+        }
+
+        public static bool Active()
+        {
+            try
+            {
+                IMMDeviceEnumerator enumerator = (IMMDeviceEnumerator)new MMDeviceEnumerator();
+                IMMDeviceCollection devices;
+                enumerator.EnumAudioEndpoints(eCapture, DEVICE_STATE_ACTIVE, out devices);
+                int count;
+                devices.GetCount(out count);
+                Guid managerId = typeof(IAudioSessionManager2).GUID;
+                for (int i = 0; i < count; i++)
+                {
+                    IMMDevice device;
+                    devices.Item(i, out device);
+                    object manager;
+                    device.Activate(ref managerId, CLSCTX_ALL, IntPtr.Zero, out manager);
+                    IAudioSessionEnumerator sessions;
+                    ((IAudioSessionManager2)manager).GetSessionEnumerator(out sessions);
+                    int sessionCount;
+                    sessions.GetCount(out sessionCount);
+                    for (int j = 0; j < sessionCount; j++)
+                    {
+                        IAudioSessionControl2 session;
+                        sessions.GetSession(j, out session);
+                        int state;
+                        session.GetState(out state);
+                        uint pid;
+                        session.GetProcessId(out pid);
+                        Marshal.ReleaseComObject(session);
+                        if (state == AudioSessionStateActive && pid != 0) return true;
+                    }
+                    Marshal.ReleaseComObject(sessions);
+                    Marshal.ReleaseComObject(manager);
+                    Marshal.ReleaseComObject(device);
+                }
+                Marshal.ReleaseComObject(devices);
+                Marshal.ReleaseComObject(enumerator);
+            }
+            catch (Exception)
+            {
+            }
+            return false;
         }
     }
 }

@@ -13,6 +13,7 @@
 | `%LOCALAPPDATA%\Microsoft\Windows\Notifications\wpndatabase.db` | Lê, somente leitura, a cada 1,5 segundo, só com **Mostrar notificações do Windows** ligado | Mostrar app, título e texto das notificações que chegam com a ilha aberta. Nada é guardado. |
 | `~/.codex/sessions` | Lê o final do arquivo de sessão mais recente a cada 2 segundos, com **Mostrar Codex** ligado | Pega só se a última tarefa começou ou terminou e as porcentagens e horários de renovação dos limites. Nada é guardado. |
 | `HKCU\...\CapabilityAccessManager\ConsentStore` | Lê dois horários por app (último início e fim do uso do microfone e da câmera) a cada 2 segundos, com **Pontos de microfone e câmera** ligado | Mostra os pontos. Nunca grava nem escuta áudio ou vídeo, e não lê qual app é |
+| Sessões de áudio do Windows (Core Audio) | Pergunta a cada 2 segundos se algum microfone tem uma sessão de gravação ativa, com **Pontos de microfone e câmera** ligado | Mostra o ponto. Lê só o estado ativo/inativo e o número do processo: nenhum áudio é aberto ou escutado, e nenhum nome de app é guardado |
 | `%APPDATA%\WindowsIsland\settings.json` | Lê e grava | Guardar as preferências |
 | `%LOCALAPPDATA%\Programs\WindowsIsland` | Lê e grava | Guardar o app instalado |
 | Chave Run do Windows, lista de Aplicativos, atalhos | Lê e grava | Iniciar com o Windows, entrada de desinstalação e atalhos no menu Iniciar e na Área de Trabalho |

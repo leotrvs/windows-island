@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.8.0
+
+- **App icon** for the exe, the shortcuts and the Settings window, instead of the default Windows one
+- **Settings window:** opens in the corner by the taskbar (and can be moved), with tabs on top (Activities, Behavior, Appearance, System) instead of one long page. Thinner scroll bar and smaller switches
+- **Microphone dots:** smaller and softer, and the microphone is now also detected through Windows' audio sessions, which catches apps the previous method missed, such as dictation in some desktop apps
+
 ## 1.7.3
 
 - Fixed the island briefly showing Claude as working, with a timer, every time the limits were read. The short-lived Claude Code started for the `/usage` read no longer counts as a chat

@@ -76,12 +76,12 @@
         </Border>
 
         <!-- Microphone and camera in use, split off to the left of the island -->
-        <Border x:Name="PrivacyDots" Width="40" Height="22" CornerRadius="11" Background="Black"
+        <Border x:Name="PrivacyDots" Width="30" Height="17" CornerRadius="8.5" Background="Black"
                 HorizontalAlignment="Center" VerticalAlignment="Top" Opacity="0" IsHitTestVisible="False">
             <Border.RenderTransform><TranslateTransform x:Name="PrivacyShift"/></Border.RenderTransform>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                <Ellipse x:Name="MicDot" Width="8" Height="8" Fill="#FF9F0A" Margin="3,0"/>
-                <Ellipse x:Name="CamDot" Width="8" Height="8" Fill="#30D158" Margin="3,0"/>
+                <Ellipse x:Name="MicDot" Width="6" Height="6" Fill="#E0922A" Margin="2.5,0"/>
+                <Ellipse x:Name="CamDot" Width="6" Height="6" Fill="#3FBF5F" Margin="2.5,0"/>
             </StackPanel>
         </Border>
 
