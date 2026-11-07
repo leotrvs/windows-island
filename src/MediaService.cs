@@ -1,5 +1,8 @@
 using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -33,6 +36,16 @@ namespace WindowsIsland
         readonly Dispatcher dispatcher;
         GlobalSystemMediaTransportControlsSessionManager manager;
         GlobalSystemMediaTransportControlsSession session;
+        readonly List<GlobalSystemMediaTransportControlsSession> watched = new List<GlobalSystemMediaTransportControlsSession>();
+        string sourceApp = "";
+
+        static readonly string[] Browsers = { "chrome", "msedge", "edge", "brave", "opera", "firefox", "vivaldi", "arc" };
+        static readonly Color[] TileColors =
+        {
+            Color.FromRgb(0x30, 0xD1, 0x58), Color.FromRgb(0x0A, 0x84, 0xFF), Color.FromRgb(0xFF, 0x9F, 0x0A),
+            Color.FromRgb(0xBF, 0x5A, 0xF2), Color.FromRgb(0xFF, 0x37, 0x5F), Color.FromRgb(0x64, 0xD2, 0xFF),
+            Color.FromRgb(0xFF, 0xD6, 0x0A), Color.FromRgb(0x5E, 0x5C, 0xE6),
+        };
 
         public MediaService(Dispatcher dispatcher)
         {
@@ -93,8 +106,63 @@ namespace WindowsIsland
             {
                 return; // No media controls on this system: the island simply never shows music.
             }
-            manager.CurrentSessionChanged += (sender, args) => Post(Attach);
-            Attach();
+            manager.CurrentSessionChanged += (sender, args) => Post(Repick);
+            manager.SessionsChanged += (sender, args) => Post(Rewatch);
+            Rewatch();
+        }
+
+        // Windows keeps calling a paused player "current" for a while after another one starts, so the
+        // island watches every session and follows whichever is actually playing.
+        void Rewatch()
+        {
+            foreach (GlobalSystemMediaTransportControlsSession watchedSession in watched)
+                watchedSession.PlaybackInfoChanged -= OnAnyPlaybackChanged;
+            watched.Clear();
+            try
+            {
+                foreach (GlobalSystemMediaTransportControlsSession candidate in manager.GetSessions())
+                {
+                    candidate.PlaybackInfoChanged += OnAnyPlaybackChanged;
+                    watched.Add(candidate);
+                }
+            }
+            catch (Exception)
+            {
+            }
+            Repick();
+        }
+
+        void OnAnyPlaybackChanged(GlobalSystemMediaTransportControlsSession sender, PlaybackInfoChangedEventArgs args)
+        {
+            Post(Repick);
+        }
+
+        void Repick()
+        {
+            GlobalSystemMediaTransportControlsSession best = PickSession();
+            if (!ReferenceEquals(best, session)) Attach(best);
+        }
+
+        GlobalSystemMediaTransportControlsSession PickSession()
+        {
+            GlobalSystemMediaTransportControlsSession current = null;
+            try { current = manager.GetCurrentSession(); }
+            catch (Exception) { }
+
+            if (current != null && IsPlayingNow(current)) return current;
+            if (session != null && watched.Contains(session) && IsPlayingNow(session)) return session;
+            foreach (GlobalSystemMediaTransportControlsSession candidate in watched)
+                if (IsPlayingNow(candidate)) return candidate;
+
+            // Nothing plays: keep the last one while it exists, so a paused song stays for a moment.
+            if (session != null && watched.Contains(session)) return session;
+            return current ?? (watched.Count > 0 ? watched[0] : null);
+        }
+
+        static bool IsPlayingNow(GlobalSystemMediaTransportControlsSession candidate)
+        {
+            try { return candidate.GetPlaybackInfo().PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing; }
+            catch (Exception) { return false; }
         }
 
         public void TogglePlayPause()
@@ -131,7 +199,7 @@ namespace WindowsIsland
             dispatcher.BeginInvoke(action);
         }
 
-        void Attach()
+        void Attach(GlobalSystemMediaTransportControlsSession next)
         {
             if (session != null)
             {
@@ -141,8 +209,10 @@ namespace WindowsIsland
             }
 
             generation++;
-            try { session = manager.GetCurrentSession(); }
-            catch (Exception) { session = null; }
+            session = next;
+            sourceApp = "";
+            try { if (session != null) sourceApp = session.SourceAppUserModelId ?? ""; }
+            catch (Exception) { }
 
             HasSession = session != null;
             if (session == null)
@@ -225,10 +295,24 @@ namespace WindowsIsland
 
             string title = properties.Title ?? "";
             string artist = string.IsNullOrEmpty(properties.Artist) ? properties.AlbumArtist ?? "" : properties.Artist;
+            bool fromBrowser = IsBrowser(sourceApp);
+            if (fromBrowser) title = UnreadCount.Replace(title, ""); // "(3) WhatsApp" -> "WhatsApp"
             bool trackChanged = title != Title || artist != Artist;
             Title = title;
             Artist = artist;
             Changed?.Invoke();
+
+            // A web page that plays audio without media metadata (a WhatsApp voice message, for example)
+            // has no artist, and the browser hands over its own logo as artwork. Windows does not tell
+            // which tab or site it is, so the island draws a tile with the page's initial instead.
+            if (fromBrowser && string.IsNullOrWhiteSpace(artist))
+            {
+                Color tile = TileColor(title);
+                Art = LetterTile(title, tile);
+                Accent = tile;
+                Changed?.Invoke();
+                return;
+            }
 
             if (!trackChanged && Art != null) return;
             IRandomAccessStreamReference thumbnail = properties.Thumbnail;
@@ -245,6 +329,46 @@ namespace WindowsIsland
             Art = loaded?.Item1;
             Accent = loaded?.Item2 ?? Colors.White;
             Changed?.Invoke();
+        }
+
+        static readonly Regex UnreadCount = new Regex(@"^\(\d+\+?\)\s*");
+
+        static bool IsBrowser(string app)
+        {
+            string lower = (app ?? "").ToLowerInvariant();
+            foreach (string browser in Browsers)
+                if (lower.Contains(browser)) return true;
+            return false;
+        }
+
+        static Color TileColor(string title)
+        {
+            int hash = 17;
+            foreach (char c in title.ToLowerInvariant()) hash = unchecked(hash * 31 + c);
+            return TileColors[(hash & int.MaxValue) % TileColors.Length];
+        }
+
+        static BitmapSource LetterTile(string title, Color color)
+        {
+            string trimmed = title.Trim();
+            string letter = trimmed.Length > 0 ? char.ToUpper(trimmed[0], CultureInfo.CurrentCulture).ToString() : "♪";
+            const double size = 160;
+
+            DrawingVisual visual = new DrawingVisual();
+            using (DrawingContext context = visual.RenderOpen())
+            {
+                Color darker = Color.FromRgb((byte)(color.R * 0.62), (byte)(color.G * 0.62), (byte)(color.B * 0.62));
+                context.DrawRectangle(new LinearGradientBrush(color, darker, 90), null, new System.Windows.Rect(0, 0, size, size));
+                FormattedText text = new FormattedText(letter, CultureInfo.CurrentCulture, System.Windows.FlowDirection.LeftToRight,
+                    new Typeface(new FontFamily("Segoe UI Variable Display, Segoe UI"), System.Windows.FontStyles.Normal,
+                        System.Windows.FontWeights.SemiBold, System.Windows.FontStretches.Normal),
+                    86, Brushes.White, 1);
+                context.DrawText(text, new System.Windows.Point((size - text.Width) / 2, (size - text.Height) / 2));
+            }
+            RenderTargetBitmap bitmap = new RenderTargetBitmap((int)size, (int)size, 96, 96, PixelFormats.Pbgra32);
+            bitmap.Render(visual);
+            bitmap.Freeze();
+            return bitmap;
         }
 
         static async Task<Tuple<BitmapSource, Color>> LoadArtAsync(IRandomAccessStreamReference reference)

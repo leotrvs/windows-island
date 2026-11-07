@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1
+
+- Music follows whichever player is actually playing. Before, a paused player could stay on the island for several seconds after another one started
+- Web pages that play audio without artwork, such as a WhatsApp voice message, show a tile with the page's initial instead of the browser logo
+
 ## 0.2.0
 
 - Reads Claude's limits by itself through Claude Code's `/usage` command, so Claude Usage Taskbar is no longer needed. Its numbers are still used when they are fresher

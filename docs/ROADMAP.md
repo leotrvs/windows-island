@@ -19,6 +19,7 @@ Ideas planned for upcoming releases. Nothing here is promised for a specific ver
 - Timers, battery, and the microphone and camera in use
 - A way for scripts and other apps to show their own live activities
 - App icons on notification banners
+- The real tab icon (favicon) for web audio without artwork. Windows does not report the tab or site, so this needs a small browser extension that tells the island which tab is playing
 - Notifications through the official Windows listener, once the app ships as a signed package
 
 ## Install and updates
