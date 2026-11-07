@@ -1,18 +1,25 @@
 # Roadmap
 
-Ideas planned for upcoming releases. Nothing here is promised for a specific version.
+Ideas planned for upcoming releases, in the order they are expected to land. Nothing here is promised for a specific version.
 
-## Activities
+## Next: lighter app (1.6)
 
-- Timers, battery, and the microphone and camera in use
+- A smaller download: today the self-contained exe is about 78 MB. Replacing Windows Forms (used for the tray icon and the monitor list) with direct Windows calls should cut it down
+- Measure and trim memory use when one island runs on every monitor
+
+## Then: more live activities (1.7)
+
+- Timer and stopwatch
+- Battery and charging, on laptops
+- The microphone and camera in use, like the green and orange dots on iPhone
+
+## Later
+
 - A way for scripts and other apps to show their own live activities
-- App icons on notification banners
 - The real tab icon (favicon) for web audio without artwork. Windows does not report the tab or site, so this needs a small browser extension that tells the island which tab is playing
+- App icons on notification banners
+- Sharp islands on monitors with different display scales (per-monitor DPI)
 - Notifications through the official Windows listener, once the app ships as a signed package
-
-## Install and updates
-
-- A smaller download: today the self-contained exe is about 78 MB. Dropping Windows Forms for the tray icon and trimming the Windows API projections should cut it down
 
 ## Done
 
