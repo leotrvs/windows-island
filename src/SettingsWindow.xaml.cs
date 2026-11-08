@@ -429,15 +429,16 @@ namespace WindowsIsland
                 catch (Exception) { }
             });
 
-            TextBlock version = new TextBlock
-            {
-                Text = Installer.Name + " " + Installer.Version,
-                Foreground = (Brush)FindResource("Secondary"),
-                FontSize = 12,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                Margin = new Thickness(0, 18, 0, 0),
-            };
-            Content.Children.Add(version);
+            // Version on the left, the project's page on the right
+            Grid footer = new Grid { Margin = new Thickness(6, 18, 6, 0) };
+            footer.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            footer.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            footer.Children.Add(new TextBlock { Text = Installer.Name + " v" + Installer.Version, Foreground = (Brush)FindResource("Secondary"), FontSize = 12, VerticalAlignment = VerticalAlignment.Center });
+            Button repo = new Button { Content = "GitHub · @leotrvs/windows-island", Style = (Style)FindResource("LinkButton"), FontSize = 12, HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Center };
+            repo.Click += (s, e) => { try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("https://github.com/leotrvs/windows-island") { UseShellExecute = true }); } catch (Exception) { } };
+            Grid.SetColumn(repo, 1);
+            footer.Children.Add(repo);
+            Content.Children.Add(footer);
         }
 
         void Rebuild()

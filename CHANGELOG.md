@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.3.3
+
+- Settings footer: the version (Windows Island v2.3.3) on the left and a link to the project on GitHub on the right
+
+
 ## 2.3.2
 
 - Resting the mouse on the small second activity beside the island (for example the Claude spark while music plays) opens the island directly on that activity's page
