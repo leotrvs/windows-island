@@ -320,6 +320,7 @@ namespace WindowsIsland
             Toggle("img:claude", Strings.MenuClaude, null, () => settings.ShowClaude, v => settings.ShowClaude = v);
             Toggle("\uEA8F", Strings.MenuBanners, null, () => settings.ClaudeBanners, v => settings.ClaudeBanners = v);
             Toggle("\uE9D9", Strings.MenuLimitAlerts, Strings.HintLimitAlerts, () => settings.ShowLimitAlerts, v => settings.ShowLimitAlerts = v);
+            Toggle("\uE72E", Strings.MenuPermissionPrompts, Strings.HintPermissionPrompts, () => settings.PermissionPrompts, SetPermissionPrompts);
             Toggle("img:codex", Strings.MenuCodex, null, () => settings.ShowCodex, v => settings.ShowCodex = v);
             Toggle("\uEA8F", Strings.MenuCodexBanners, null, () => settings.CodexBanners, v => settings.CodexBanners = v);
             Group("\uE720", Strings.GroupPrivacy, () =>
@@ -348,6 +349,22 @@ namespace WindowsIsland
                 Toggle("\uE767", Strings.MenuLevels, Strings.HintLevels, () => settings.ShowLevels, v => settings.ShowLevels = v);
                 Toggle("\uE74F", Strings.MenuHideOsd, Strings.HintHideOsd, () => settings.HideWindowsOsd, v => settings.HideWindowsOsd = v);
             });
+        }
+
+        // Adds or removes Claude Code's hook that sends permission requests to the island. The hook needs the local API.
+        void SetPermissionPrompts(bool on)
+        {
+            string error;
+            if (!ClaudeHook.Apply(on, out error))
+            {
+                settings.PermissionPrompts = false;
+                MessageBox.Show(Strings.PermissionHookFailed + (error == null ? "" : "\n" + error), Installer.Name, MessageBoxButton.OK, MessageBoxImage.Warning);
+                Dispatcher.BeginInvoke(new Action(Rebuild), DispatcherPriority.Background);
+                return;
+            }
+            settings.PermissionPrompts = on;
+            if (on) settings.ApiEnabled = true;
+            Dispatcher.BeginInvoke(new Action(Rebuild), DispatcherPriority.Background);
         }
 
         void BuildBehavior()

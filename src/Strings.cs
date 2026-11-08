@@ -188,6 +188,16 @@ namespace WindowsIsland
         public static string UpdateFailed => T("Could not check for updates", "Não foi possível procurar atualizações", "No se pudo buscar actualizaciones", "Не удалось проверить обновления");
         public static string UpdatesNeedInstall => T("Updates work in the installed copy", "As atualizações funcionam na cópia instalada", "Las actualizaciones funcionan en la copia instalada", "Обновления работают в установленной копии");
         public static string UpdatedTo(string version) => T("Updated to version ", "Atualizado para a versão ", "Actualizado a la versión ", "Обновлено до версии ") + version;
+        public static string PermissionAsks => T("Claude asks for permission", "Claude pede permissão", "Claude pide permiso", "Claude просит разрешение");
+        public static string Allow => T("Allow", "Permitir", "Permitir", "Разрешить");
+        public static string Deny => T("Deny", "Negar", "Denegar", "Отклонить");
+        public static string PermissionCheck => T("Not sure? Check it in Claude.", "Em dúvida? Confira no Claude.", "¿Dudas? Compruébalo en Claude.", "Не уверены? Проверьте в Claude.");
+        public static string MenuPermissionPrompts => T("Answer permissions on the island", "Responder permissões pela ilha", "Responder permisos en la isla", "Отвечать на разрешения на острове");
+        public static string HintPermissionPrompts => T("Experimental. Adds a hook to Claude Code's settings so its permission requests show Allow and Deny here. Turns on the local API. If you do not click in time, Claude asks as usual",
+                                                        "Experimental. Adiciona um gancho às configurações do Claude Code para que os pedidos de permissão mostrem Permitir e Negar aqui. Liga a API local. Se você não clicar a tempo, o Claude pergunta como sempre",
+                                                        "Experimental. Añade un gancho a la configuración de Claude Code para que sus peticiones de permiso muestren Permitir y Denegar aquí. Activa la API local. Si no haces clic a tiempo, Claude pregunta como siempre",
+                                                        "Экспериментально. Добавляет хук в настройки Claude Code, чтобы запросы разрешений показывали здесь «Разрешить» и «Отклонить». Включает локальный API. Если не нажать вовремя, Claude спросит как обычно");
+        public static string PermissionHookFailed => T("Could not change Claude's settings file; nothing was changed.", "Não consegui alterar o arquivo de configurações do Claude; nada foi alterado.", "No pude cambiar el archivo de configuración de Claude; no se cambió nada.", "Не удалось изменить файл настроек Claude; ничего не изменено.");
         public static string OpenClaude => T("Open Claude", "Abrir o Claude", "Abrir Claude", "Открыть Claude");
         public static string MenuUninstall => T("Uninstall Windows Island", "Desinstalar o Windows Island", "Desinstalar Windows Island", "Удалить Windows Island");
         public static string MenuOpenSettings => T("Open settings file", "Abrir arquivo de configurações", "Abrir archivo de configuración", "Открыть файл настроек");

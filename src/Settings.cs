@@ -22,6 +22,7 @@ namespace WindowsIsland
         public bool ShowMusic { get; set; } = true;
         public bool ShowClaude { get; set; } = true;
         public bool ClaudeBanners { get; set; } = true;
+        public bool PermissionPrompts { get; set; } = false; // Allow or deny Claude's permission requests on the island (installs a hook)
         public bool ShowLimitAlerts { get; set; } = true; // Claude 5-hour and weekly limits at 75, 90 and 100% and when they renew
         public bool ShowCodex { get; set; } = true;     // Only shows anything once Codex is installed
         public bool CodexBanners { get; set; } = true;

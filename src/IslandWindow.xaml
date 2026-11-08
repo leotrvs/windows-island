@@ -470,6 +470,49 @@
                 
                     </Grid></Viewbox>
                 </Grid>
+                <!-- A permission Claude Code asks for, with Allow and Deny -->
+                <Grid x:Name="PermissionPanel" Width="372" Height="138">
+                    <Grid Margin="16,12,16,12">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Width="30" Height="30" CornerRadius="15" Background="#33FF9F0A">
+                                <TextBlock Text="&#xE72E;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="15" Foreground="#FF9F0A"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
+                                <TextBlock x:Name="PermTitle" FontSize="14" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+                                <TextBlock x:Name="PermTool" Style="{StaticResource Caption}" FontSize="12" TextTrimming="CharacterEllipsis"/>
+                            </StackPanel>
+                            <TextBlock x:Name="PermQueue" Grid.Column="2" Style="{StaticResource Caption}" FontSize="12" VerticalAlignment="Center"/>
+                        </Grid>
+                        <Border Grid.Row="1" Margin="0,8,0,8" Padding="9,6" CornerRadius="9" Background="#1FFFFFFF">
+                            <TextBlock x:Name="PermSummary" FontSize="12" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" Foreground="#E6FFFFFF" MaxHeight="34"/>
+                        </Border>
+                        <Grid Grid.Row="2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock x:Name="PermCheck" Style="{StaticResource Caption}" FontSize="11" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                            <Border x:Name="PermDeny" Grid.Column="1" CornerRadius="13" Padding="16,5" Background="#FF3A3A3C" Cursor="Hand" Margin="0,0,8,0">
+                                <TextBlock x:Name="PermDenyText" FontSize="13" FontWeight="SemiBold" Foreground="White"/>
+                            </Border>
+                            <Border x:Name="PermAllow" Grid.Column="2" CornerRadius="13" Padding="16,5" Background="#FF30D158" Cursor="Hand">
+                                <TextBlock x:Name="PermAllowText" FontSize="13" FontWeight="SemiBold" Foreground="Black"/>
+                            </Border>
+                        </Grid>
+                    </Grid>
+                </Grid>
                 <!-- Which page is open, when there is more than one -->
                 <StackPanel x:Name="PageDots" Orientation="Horizontal" Visibility="Collapsed" Background="Transparent"/>
             </Canvas>

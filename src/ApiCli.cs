@@ -14,7 +14,7 @@ namespace WindowsIsland
     // the local API of the running island, so it needs the API turned on in Settings. Runs before any window opens.
     static class ApiCli
     {
-        static readonly string[] Commands = { "show", "done", "end", "alert", "token", "help" };
+        static readonly string[] Commands = { "show", "done", "end", "alert", "token", "help", "permission-hook" };
         const int STD_OUTPUT_HANDLE = -11, STD_ERROR_HANDLE = -12, ATTACH_PARENT_PROCESS = -1;
         const uint GENERIC_READ = 0x80000000, GENERIC_WRITE = 0x40000000, FILE_SHARE_READ = 1, FILE_SHARE_WRITE = 2, OPEN_EXISTING = 3;
         const int ConnectTimeoutMs = 2000, ReplyTimeoutMs = 6000, MaxReplyBytes = 16 * 1024;
@@ -98,6 +98,7 @@ namespace WindowsIsland
         static int Execute(string[] args)
         {
             string command = args[0].ToLowerInvariant();
+            if (command == "permission-hook") return PermissionHook.Run(); // Claude Code's hook: always exit code 0
             if (command == "help")
             {
                 Print(Usage + string.Join(", ", LocalApi.IconNames));
@@ -240,7 +241,7 @@ namespace WindowsIsland
             }
         }
 
-        static bool AnswersAsIsland(TcpClient client, int port)
+        internal static bool AnswersAsIsland(TcpClient client, int port)
         {
             try
             {

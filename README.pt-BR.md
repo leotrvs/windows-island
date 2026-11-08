@@ -37,6 +37,7 @@ Uma Dynamic Island para o Windows. Música, Claude Code, os limites de uso e sua
 - **Duas atividades ao mesmo tempo:** a segunda se separa numa bolha ao lado da ilha
 - **Vários chats do Claude ao mesmo tempo:** a ilha os conta (por exemplo `2 · 0:58`, ou `1/2 · Aguardando` quando um de dois espera você) e a página do Claude lista cada chat com seu estado e tempo
 - **Permissões no Claude Desktop:** um chat do app de desktop do Claude que pede uma permissão ou faz uma pergunta aparece como esperando você, como no terminal A pergunta (quando é curta) aparece no aviso, com um link **Abrir o Claude** na página do Claude que traz o app para a frente para você responder.
+- **Responder permissões pela ilha (experimental, desligado por padrão):** quando o Claude Code vai pedir uma permissão, como ler um banco de dados ou aplicar uma migration, a ilha mostra a ferramenta e o que ela quer fazer com **Permitir** e **Negar**. Usa um gancho que você liga nos Ajustes; se você não clicar a tempo, o Claude pergunta como sempre
 - **Ícones de sites:** com a extensão de navegador, o áudio da web mostra o ícone do próprio site, e as notificações de sites mostram o ícone e o nome do site
 - **Movimento fluido:** forma e conteúdo mudam com molas, nunca com transições de tempo fixo
 - **Discreta:** nunca rouba o foco, cliques ao redor chegam à janela de baixo, vira uma linha fina quando há uma janela maximizada na frente e some em tela cheia
@@ -60,6 +61,7 @@ Uma Dynamic Island para o Windows. Música, Claude Code, os limites de uso e sua
 | Bateria baixa | <img src="docs/images/battery-low-pt.png" alt="Aviso de bateria baixa" width="420"> |
 | Claude expandido, com os limites | <img src="docs/images/claudeexpanded-pt.png" alt="Claude expandido com os anéis de uso" width="460"> |
 | Claude precisa de você (uma permissão ou uma pergunta) | <img src="docs/images/banner-waiting-pt.png" alt="Claude precisa de você (uma permissão ou uma pergunta)" width="420"> |
+| Claude Code pede uma permissão | <img src="docs/images/permission-pt.png" alt="Claude Code pede uma permissão" width="460"> |
 | Limite do Claude em 75% ou 90% | <img src="docs/images/usage-90-pt.png" alt="Limite do Claude em 75% ou 90%" width="420"> |
 | Limite do Claude atingido | <img src="docs/images/usage-100-pt.png" alt="Limite do Claude atingido" width="420"> |
 | Limite do Claude renovado | <img src="docs/images/usage-reset5-pt.png" alt="Limite do Claude renovado" width="420"> |

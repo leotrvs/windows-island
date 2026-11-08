@@ -221,6 +221,7 @@ namespace WindowsIsland
             }
             levels.Changed += (kind, percent, muted) => MainIsland?.ShowLevel(kind, percent, muted);
             claude.LimitAlert += (weekly, level, percent, resets) => MainIsland?.ShowLimitAlert(weekly, level, percent, resets);
+            if (api != null) api.PermissionAsked += p => { if (MainIsland != null) MainIsland.ShowPermission(p); else p.Resolve("none"); };
             screenshots.Taken += () => MainIsland?.ShowToast(Strings.ScreenshotTaken, "\uE722", 2.2);
             battery.Alert += (title, body, kind) => MainIsland?.ShowSystemBanner(title, body, kind);
             Action applySettings = () =>
@@ -288,7 +289,8 @@ namespace WindowsIsland
             osd.Apply(settings.HideWindowsOsd && settings.ShowLevels);
             if (settings.ShowScreenshotAlert) screenshots.Start();
             if (settings.ApiEnabled) api.Start(settings.ApiPort);
-            if (Installer.IsInstalledCopy) { Installer.EnsureCommandShim(); Installer.RefreshAppsEntry(); } // Copies updated from before 2.0 get island.cmd too
+            if (Installer.IsInstalledCopy) { Installer.EnsureCommandShim(); Installer.RefreshAppsEntry(); }
+            if (settings.PermissionPrompts && !dev) { string hookError; ClaudeHook.Apply(true, out hookError); } // Keeps the hook pointing at this exe // Copies updated from before 2.0 get island.cmd too
 
             if (!dev)
             {

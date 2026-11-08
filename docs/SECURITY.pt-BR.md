@@ -30,6 +30,16 @@
 - Enviar análises ou telemetria
 - Pedir direitos de administrador
 
+## Responder as permissões do Claude Code (desligado por padrão)
+
+**Responder permissões pela ilha**, nos Ajustes, adiciona uma entrada às configurações do usuário do Claude Code (`~/.claude/settings.json`): um gancho `PermissionRequest` que roda `WindowsIsland.exe permission-hook`. O Claude Code só o executa quando vai pedir uma permissão a você. O gancho envia o nome da ferramenta e um resumo curto do que ela quer fazer (até 280 caracteres do comando, arquivo, endereço ou consulta) para a API local da ilha neste computador, com o token da API, e espera o seu clique.
+
+- **Só o clique decide.** Permitir e Negar só são respondidos clicando nos botões. Se você não clicar em 60 segundos, a ilha não estiver aberta, a API estiver desligada ou algo falhar, o gancho não imprime nada e termina normalmente, então o Claude Code mostra o pedido dele como sempre.
+- **Mostra um resumo, não tudo.** Um comando longo é cortado com "…". Em caso de dúvida, use o pedido do próprio Claude.
+- **Uma entrada, com cópia de segurança.** Só a entrada da ilha é adicionada ou removida. Uma cópia do seu arquivo é salva ao lado como `settings.json.island-backup` na primeira vez, e nada é alterado se o arquivo não puder ser lido. Comentários dentro do arquivo se perdem quando ele é reescrito; a cópia os mantém. Desligar a opção, ou desinstalar a ilha, remove a entrada.
+- **O resumo fica só na memória** e nunca é guardado. A ilha só envia o token ao próprio processo (ela confere quem é o dono da porta antes).
+- **Qualquer programa com o token poderia mostrar um pedido**, mas um pedido só é respondido pelo seu clique e só volta para o programa que o fez.
+
 ## Acesso à rede
 
 A própria ilha faz um tipo principal de conexão (a segunda, abaixo, é opcional): uns 30 segundos depois de abrir e depois a cada hora, ela baixa os arquivos de release deste repositório no GitHub, a menos que você desligue **Atualizações automáticas**. Faz o mesmo quando você clica em **Procurar atualizações**. O GitHub vê seu endereço IP, como em qualquer download. Nenhum dado do Claude ou pessoal é enviado. Uma atualização só é instalada quando a assinatura RSA bate com a chave pública embutida no app e o SHA-256 do arquivo bate com o manifesto assinado.

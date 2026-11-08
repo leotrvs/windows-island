@@ -37,6 +37,7 @@ A Dynamic Island for Windows. Music, Claude Code, its usage limits and your noti
 - **Two activities at once:** the second one splits off into a bubble beside the island
 - **Several Claude chats at once:** the island counts them (for example `2 · 0:58`, or `1/2 · Waiting` when one of two waits for you) and the Claude page lists each chat with its own state and time
 - **Claude Desktop permissions:** a chat in the Claude desktop app that asks for a permission or puts a question shows as waiting for you, like in the terminal The question (when it is short) is shown in the alert, with an **Open Claude** link on the Claude page that brings the app to the front to answer.
+- **Answer permissions on the island (experimental, off by default):** when Claude Code is about to ask for a permission, such as reading a database or applying a migration, the island shows the tool and what it wants to do with **Allow** and **Deny**. It uses a hook that you turn on in Settings; if you do not click in time, Claude asks as usual
 - **Website icons:** with the browser extension, web audio shows the site's own icon, and website notifications show the site's icon and name
 - **Fluid motion:** shape and content morph with springs, never with fixed-time fades
 - **Discreet:** it never takes focus, clicks around it reach the window below, it shrinks to a thin line when a maximized window is in front and it hides in fullscreen
@@ -60,6 +61,7 @@ A Dynamic Island for Windows. Music, Claude Code, its usage limits and your noti
 | Battery low | <img src="docs/images/battery-low-en.png" alt="Low battery alert" width="420"> |
 | Claude expanded, with the limits | <img src="docs/images/claudeexpanded-en.png" alt="Claude expanded with usage rings" width="460"> |
 | Claude needs you (a permission or a question) | <img src="docs/images/banner-waiting-en.png" alt="Claude needs you (a permission or a question)" width="420"> |
+| Claude Code asks for a permission | <img src="docs/images/permission-en.png" alt="Claude Code asks for a permission" width="460"> |
 | Claude limit at 75% or 90% | <img src="docs/images/usage-90-en.png" alt="Claude limit at 75% or 90%" width="420"> |
 | Claude limit reached | <img src="docs/images/usage-100-en.png" alt="Claude limit reached" width="420"> |
 | Claude limit renewed | <img src="docs/images/usage-reset5-en.png" alt="Claude limit renewed" width="420"> |

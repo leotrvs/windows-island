@@ -18,7 +18,7 @@ namespace WindowsIsland
 {
     public partial class IslandWindow : Window
     {
-        enum View { Hidden, Minimal, Idle, MusicCompact, ClaudeCompact, CodexCompact, TimerCompact, BatteryCompact, ExternalCompact, SystemCompact, MusicExpanded, ClaudeExpanded, TimerExpanded, SystemExpanded, ExternalExpanded, Banner, Toast, Level }
+        enum View { Hidden, Minimal, Idle, MusicCompact, ClaudeCompact, CodexCompact, TimerCompact, BatteryCompact, ExternalCompact, SystemCompact, MusicExpanded, ClaudeExpanded, TimerExpanded, SystemExpanded, ExternalExpanded, Banner, Toast, Level, Permission }
         enum Activity { None, Music, Claude, Codex, Timer, Battery, System, External }
 
         static readonly Dictionary<View, Size> Sizes = new Dictionary<View, Size>
@@ -41,6 +41,7 @@ namespace WindowsIsland
             [View.Banner] = new Size(352, 74),
             [View.Toast] = new Size(184, 36),
             [View.Level] = new Size(220, 36),
+            [View.Permission] = new Size(372, 138),
         };
 
         const double MaxRadius = 38;
@@ -131,6 +132,7 @@ namespace WindowsIsland
             panels[View.Banner] = Banner;
             panels[View.Toast] = Toast;
             panels[View.Level] = Level;
+            panels[View.Permission] = PermissionPanel;
             foreach (FrameworkElement panel in panels.Values)
             {
                 presence[panel] = new Spring(0, 0.002, 300, 0.85);
@@ -169,6 +171,10 @@ namespace WindowsIsland
             Pill.MouseLeave += OnPillLeave;
             Pill.MouseLeftButtonUp += OnPillClick;
             enterTimer.Tick += (s, e) => { enterTimer.Stop(); SetHovering(true); };
+            PermAllow.MouseLeftButtonUp += (s, e) => { e.Handled = true; permission?.Resolve("allow"); };
+            PermDeny.MouseLeftButtonUp += (s, e) => { e.Handled = true; permission?.Resolve("deny"); };
+            PermAllow.MouseLeftButtonDown += (s, e) => e.Handled = true;
+            PermDeny.MouseLeftButtonDown += (s, e) => e.Handled = true;
             OpenClaudeLink.MouseLeftButtonUp += (s, e) => { e.Handled = true; ClaudeWindow.Focus(); };
             OpenClaudeLink.MouseLeftButtonDown += (s, e) => e.Handled = true;
             // Resting the mouse on the small second activity opens the island straight on that activity's page
@@ -757,6 +763,22 @@ namespace WindowsIsland
             }
             settings.MonitorStyle = "Rings";
             UpdateSystemMonitor();
+
+            // A made-up permission request with Allow and Deny
+            settings.PermissionPrompts = true;
+            ApiPermission sample = new ApiPermission { Tool = "mcp__supabase__apply_migration", Summary = "create table invoices (id uuid primary key default gen_random_uuid(), amount numeric not null, paid boolean default false)" };
+            sample.Closed += () => { };
+            ShowPermission(sample);
+            forced = View.Permission;
+            Recompute();
+            SnapAll();
+            ApplyFrame();
+            Root.UpdateLayout();
+            ApplyFrame();
+            Root.UpdateLayout();
+            SaveSnapshot(System.IO.Path.Combine(folder, "permission" + suffix + ".png"));
+            sample.Cancel();
+            settings.PermissionPrompts = false;
         }
 
         void SnapAll()
@@ -944,6 +966,7 @@ namespace WindowsIsland
             View next;
             if (forced.HasValue) next = forced.Value;
             else if (fullscreen && settings.HideInFullscreen) next = View.Hidden;
+            else if (permission != null) next = View.Permission; // A question that waits for a click comes first
             else if (tucked) next = View.Hidden;
             else if (hovering || DateTime.Now < peekUntil)
                 next = PickedPage() ?? DefaultPage(primary);
@@ -1082,7 +1105,7 @@ namespace WindowsIsland
         DateTime lastWheel;
         void OnPillWheel(object sender, MouseWheelEventArgs e)
         {
-            if (!IsExpandedView(view) || view == View.Banner) return;
+            if (!IsExpandedView(view) || view == View.Banner || view == View.Permission) return;
             e.Handled = true;
             if (DateTime.Now - lastWheel < TimeSpan.FromMilliseconds(280)) return; // A touchpad sends a burst
             lastWheel = DateTime.Now;
@@ -1099,7 +1122,7 @@ namespace WindowsIsland
         void UpdateDots()
         {
             List<Activity> pages = Pages();
-            bool show = IsExpandedView(view) && view != View.Banner && pages.Count > 1;
+            bool show = IsExpandedView(view) && view != View.Banner && view != View.Permission && pages.Count > 1;
             PageDots.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
             if (!show) return;
             Activity current = ActivityOf(view);
@@ -1239,6 +1262,59 @@ namespace WindowsIsland
             Recompute();
         }
 
+        // ---------- Permissions asked by Claude Code (through its hook) ----------
+
+        ApiPermission permission;
+        readonly Queue<ApiPermission> permissionQueue = new Queue<ApiPermission>();
+
+        internal void ShowPermission(ApiPermission request)
+        {
+            if (!settings.PermissionPrompts) { request.Resolve("none"); return; }
+            request.Closed += () => OnPermissionClosed(request);
+            permissionQueue.Enqueue(request);
+            if (permission == null) NextPermission();
+            else PermQueue.Text = permissionQueue.Count > 0 ? "+" + permissionQueue.Count : "";
+        }
+
+        void NextPermission()
+        {
+            permission = null;
+            while (permissionQueue.Count > 0 && permission == null)
+            {
+                ApiPermission next = permissionQueue.Dequeue();
+                if (!next.IsClosed) permission = next;
+            }
+            if (permission != null)
+            {
+                PermTitle.Text = Strings.PermissionAsks;
+                PermTool.Text = ToolName(permission.Tool);
+                PermSummary.Text = permission.Summary;
+                PermQueue.Text = permissionQueue.Count > 0 ? "+" + permissionQueue.Count : "";
+                PermCheck.Text = Strings.PermissionCheck;
+                PermAllowText.Text = Strings.Allow;
+                PermDenyText.Text = Strings.Deny;
+                tucked = false;
+                lastActive = DateTime.Now;
+            }
+            Recompute();
+        }
+
+        void OnPermissionClosed(ApiPermission request)
+        {
+            if (permission == request) NextPermission();
+        }
+
+        // "mcp__supabase__execute_sql" -> "supabase · execute_sql"
+        static string ToolName(string tool)
+        {
+            if (tool != null && tool.StartsWith("mcp__", StringComparison.Ordinal))
+            {
+                string[] parts = tool.Substring(5).Split(new[] { "__" }, 2, StringSplitOptions.None);
+                return parts.Length == 2 ? parts[0] + " \u00B7 " + parts[1] : parts[0];
+            }
+            return tool ?? "";
+        }
+
         // The Claude 5-hour or weekly limit reached a level, or renewed (level 0).
         internal void ShowLimitAlert(bool weekly, int level, int percent, DateTime? resets)
         {
@@ -1289,7 +1365,7 @@ namespace WindowsIsland
         // True while the user is looking at or using the island, so an update restart waits.
         internal bool IsBusy
         {
-            get { return hovering || view == View.Banner || view == View.MusicExpanded || view == View.ClaudeExpanded || view == View.TimerExpanded || view == View.SystemExpanded || view == View.ExternalExpanded; }
+            get { return hovering || view == View.Banner || view == View.Permission || view == View.MusicExpanded || view == View.ClaudeExpanded || view == View.TimerExpanded || view == View.SystemExpanded || view == View.ExternalExpanded; }
         }
 
         void Enqueue(BannerItem item)
@@ -1408,7 +1484,7 @@ namespace WindowsIsland
 
         static bool IsExpandedView(View value)
         {
-            return value == View.MusicExpanded || value == View.ClaudeExpanded || value == View.TimerExpanded || value == View.SystemExpanded || value == View.ExternalExpanded || value == View.Banner;
+            return value == View.MusicExpanded || value == View.ClaudeExpanded || value == View.TimerExpanded || value == View.SystemExpanded || value == View.ExternalExpanded || value == View.Banner || value == View.Permission;
         }
 
         void PlaceWindow()

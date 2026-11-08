@@ -121,6 +121,8 @@ namespace WindowsIsland
             if (answer != MessageBoxResult.Yes) return;
 
             StopOtherCopies();
+            string hookError;
+            ClaudeHook.Apply(false, out hookError); // Claude Code must not be left calling a program that is gone
             Settings.RemoveStartup();
             Registry.CurrentUser.DeleteSubKeyTree(UninstallKeyPath, false);
             TryDelete(StartMenuShortcut);

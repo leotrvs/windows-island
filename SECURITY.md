@@ -30,6 +30,16 @@
 - Send analytics or telemetry
 - Require administrator rights
 
+## Answering Claude Code's permissions (off by default)
+
+**Answer permissions on the island** in Settings adds one entry to Claude Code's user settings (`~/.claude/settings.json`): a `PermissionRequest` hook that runs `WindowsIsland.exe permission-hook`. Claude Code runs it only when it is about to ask you for a permission. The hook sends the tool name and a short summary of what it wants to do (up to 280 characters of the command, file, address or query) to the island's local API on this computer, with the API token, and waits for your click.
+
+- **Only a click decides.** Allow and Deny are answered only by clicking the buttons. If you do not click within 60 seconds, the island is not running, the API is off or anything fails, the hook prints nothing and exits normally, so Claude Code shows its own prompt exactly as before.
+- **It shows a summary, not everything.** A long command is cut with "…". When you are not sure, use Claude's own prompt.
+- **One entry, backed up.** Only the island's own entry is added or removed. A copy of your settings file is saved beside it as `settings.json.island-backup` the first time, and nothing is changed if the file cannot be read. Comments inside the file are lost when it is rewritten; the backup keeps them. Turning the option off, or uninstalling the island, removes the entry.
+- **The summary stays in memory** and is never stored. The island only sends the token to its own process (it checks who owns the port first).
+- **Any program that has the token could show a prompt**, but a prompt can only be answered by your click and only returns to the program that asked.
+
 ## Network access
 
 The island itself makes one kind of connection (the second one below is optional): about 30 seconds after it opens and then every hour, it downloads release files from this repository on GitHub, unless you turn off **Automatic updates**. It does the same when you click **Check for updates**. GitHub can see your IP address, as with any download. No Claude or personal data is sent. An update is installed only when its RSA signature matches the public key built into the app and the file's SHA-256 matches the signed manifest.

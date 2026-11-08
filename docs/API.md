@@ -65,6 +65,19 @@ For a browser extension: which tab is playing.
 | `host` | string | Such as `www.youtube.com` |
 | `favicon` | string | Base64 PNG, JPEG or ICO (a `data:` URL also works), at most 32 KB and 128 x 128 pixels |
 
+### `POST /v1/permission`
+
+Used by the island's own hook for Claude Code (see **Answer permissions on the island** in Settings). It shows Allow and Deny on the island and answers on the same connection once you click, the time runs out, or the caller hangs up.
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `tool` | string, required | The tool's name, up to 100 characters |
+| `summary` | string | What it wants to do (the command, the file, the query), up to 300 characters |
+| `session` | string | Up to 64 characters |
+| `wait` | number | 5-110 seconds to wait, default 60 |
+
+The answer is `{"decision":"allow"}`, `{"decision":"deny"}` or `{"decision":"none"}`. `none` means nothing was decided, including when the option is off, four requests are already waiting, or nobody clicked in time.
+
 ### Icons
 
 `info`, `check`, `error`, `warning`, `build`, `download`, `upload`, `sync`, `mail`, `music`, `code`, `terminal`, `bell`, `heart`, `star`, `clock`, `calendar`, `lock`, `shield`, `wifi`, `bluetooth`, `battery`, `camera`, `mic`, `cloud`, `globe`, `chat`, `play`.

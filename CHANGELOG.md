@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.5.0
+
+- **Answer permissions on the island (experimental, off by default):** Settings, Activities, "Answer permissions on the island" adds a `PermissionRequest` hook to Claude Code's user settings. When Claude Code is about to ask for a permission (a command, a file, a database query or migration from a connected tool), the island shows the tool and what it wants to do with Allow and Deny. Only a click decides; if you do not click within 60 seconds, the island is closed or anything fails, Claude asks as usual. Details and limits in SECURITY.md
+- The GitHub page now has a description and topics
+
 ## 2.4.4
 
 - The app now declares in its manifest that it is made for Windows 10 and 11, which should stop the "Program Compatibility Assistant" warning that could appear after an update

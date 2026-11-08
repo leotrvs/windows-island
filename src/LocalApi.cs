@@ -96,6 +96,9 @@ namespace WindowsIsland
         public event Action<string> ActivityEnded;
         public event Action<ApiAlert> AlertReceived;
         public event Action<ApiMediaHint> MediaHint;
+        public event Action<ApiPermission> PermissionAsked;
+        const int MaxPendingPermissions = 4;
+        int pendingPermissions; // Only touched on the UI thread
 
         public bool Running { get; private set; }
         public bool LastStartFailed { get; private set; }
@@ -327,7 +330,7 @@ namespace WindowsIsland
                     Reply reply;
                     try
                     {
-                        reply = await Handle(client, stream, deadline.Token);
+                        reply = await Handle(client, stream, deadline.Token, deadline);
                     }
                     catch (OperationCanceledException)
                     {
@@ -378,7 +381,7 @@ namespace WindowsIsland
             public Dictionary<string, string> Headers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
 
-        async Task<Reply> Handle(TcpClient client, NetworkStream stream, CancellationToken token)
+        async Task<Reply> Handle(TcpClient client, NetworkStream stream, CancellationToken token, CancellationTokenSource deadlineSource)
         {
             IPEndPoint remote = client.Client.RemoteEndPoint as IPEndPoint;
             if (remote == null || !IPAddress.IsLoopback(remote.Address)) return null;
@@ -421,7 +424,7 @@ namespace WindowsIsland
             }
 
             string route = request.Path;
-            bool known = route == "/v1/ping" || route == "/v1/activity" || route == "/v1/activity/end" || route == "/v1/alert" || route == "/v1/media-hint";
+            bool known = route == "/v1/ping" || route == "/v1/activity" || route == "/v1/activity/end" || route == "/v1/alert" || route == "/v1/media-hint" || route == "/v1/permission";
             if (!known) return Reply.Error(404, "not_found");
             if (route == "/v1/ping")
             {
@@ -473,6 +476,7 @@ namespace WindowsIsland
                 if (route == "/v1/alert" && !TakeBudget(true)) return Reply.Error(429, "too_many_requests");
                 string senderPath = SenderPath(remote, Port);
                 int ticket = generation;
+                if (route == "/v1/permission") return await PermissionCall(fields, stream, token, deadlineSource, ticket);
                 Func<Reply> work;
                 if (route == "/v1/activity") work = ActivityCall(fields, senderPath);
                 else if (route == "/v1/activity/end") work = EndCall(fields);
@@ -483,6 +487,49 @@ namespace WindowsIsland
                 return await dispatcher.InvokeAsync(() => ticket == generation && Running ? work() : Reply.Error(503, "unavailable"),
                                                     DispatcherPriority.Normal, token).Task;
             }
+        }
+
+        // Claude Code's permission hook: the island shows Allow and Deny, and the answer goes back on this same
+        // connection. A click, the time running out, or the caller hanging up (Claude's own prompt was answered first)
+        // ends the wait. "none" means no decision, so Claude Code shows its own prompt.
+        async Task<Reply> PermissionCall(Dictionary<string, JsonElement> fields, NetworkStream stream, CancellationToken token, CancellationTokenSource deadlineSource, int ticket)
+        {
+            bool bad = false;
+            string session = Text(fields, "session", 64, ref bad);
+            string tool = Text(fields, "tool", 100, ref bad);
+            string summary = Text(fields, "summary", 300, ref bad);
+            double? wait = Number(fields, "wait", ref bad);
+            if (bad || string.IsNullOrEmpty(tool)) return Reply.Error(400, "invalid_field");
+            int seconds = (int)Math.Clamp(wait ?? 60, 5, 110);
+
+            ApiPermission permission = new ApiPermission { Session = session, Tool = tool, Summary = summary ?? "" };
+            bool shown = await dispatcher.InvokeAsync(() =>
+            {
+                if (ticket != generation || !Running || PermissionAsked == null || pendingPermissions >= MaxPendingPermissions) return false;
+                pendingPermissions++;
+                PermissionAsked(permission);
+                return true;
+            }, DispatcherPriority.Normal, token).Task;
+            if (!shown) return new Reply(200, "{\"decision\":\"none\"}");
+
+            string decision = "none";
+            try
+            {
+                deadlineSource.CancelAfter(TimeSpan.FromSeconds(seconds + 5)); // This route is the one that waits
+                Task<int> hangup = stream.ReadAsync(new byte[1], 0, 1, token);
+                Task finished = await Task.WhenAny(permission.Answer, Task.Delay(TimeSpan.FromSeconds(seconds), token), hangup);
+                if (finished == permission.Answer) decision = permission.Answer.Result;
+            }
+            catch (Exception)
+            {
+                // Cancelled or the connection broke: no decision
+            }
+            finally
+            {
+                try { await dispatcher.InvokeAsync(() => { pendingPermissions--; permission.Cancel(); }); }
+                catch (Exception) { }
+            }
+            return new Reply(200, "{\"decision\":\"" + decision + "\"}");
         }
 
         bool Authorized(Request request)
