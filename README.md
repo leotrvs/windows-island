@@ -26,7 +26,7 @@ A Dynamic Island for Windows. Music, Claude Code, its usage limits and your noti
 - **Battery** on laptops: shown as an activity while charging, plus alerts for charger connected or removed, low battery and fully charged
 - **App names on the dots:** see which app is using the microphone or camera
 - **Screen sharing dot:** a blue dot while an app shares or records the screen, such as a call or a recording
-- **Steam downloads (off by default):** the progress of a game being downloaded or updated in Steam, read from the manifest files Steam keeps beside the games
+- **Steam downloads (on by default):** the progress of a game being downloaded or updated in Steam, read from the manifest files Steam keeps beside the games
 - **Discord muted or deafened (experimental, off by default):** a crossed microphone or crossed headphones beside the island while you are muted in Discord, however you muted. Needs a Discord app of your own, see [docs/DISCORD.md](docs/DISCORD.md)
 - **Light or dark Settings:** the Settings window can follow the Windows theme or be set to light or dark; the island itself is always black
 - **Your order and your times:** choose the order of the pages, which limit alerts to show (75%, 90%, 100%, renewed) and how long alerts, notifications and limit alerts stay

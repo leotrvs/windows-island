@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.8.2
+
+- **Steam downloads** is now on by default (it only reads Steam's local manifest files; turn it off in Settings, Activities)
+
 ## 2.8.1
 
 - **Limit alerts:** "renewed" is now announced also when the limit had not reached 75% (any drop of 10 points or more back to below 75%)
