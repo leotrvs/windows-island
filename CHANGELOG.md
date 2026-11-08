@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.9.1
+
+- **Settings:** shorter descriptions
+
 ## 2.9.0
 
 - **Steam downloads, fixed:** a paused or queued download is no longer shown as running (Steam's own log says what runs and what is paused), a second game being downloaded now takes its place, and the percent keeps moving between the moments Steam writes its files instead of waiting for the next 5%

@@ -194,10 +194,10 @@ namespace WindowsIsland
         public static string PermissionPartial => T("Too long to approve here. Look at it in Claude.", "Longo demais para aprovar aqui. Veja no Claude.", "Demasiado largo para aprobar aquí. Míralo en Claude.", "Слишком длинно, чтобы разрешать здесь. Посмотрите в Claude.");
         public static string PermissionCheck => T("Not sure? Check it in Claude.", "Em dúvida? Confira no Claude.", "¿Dudas? Compruébalo en Claude.", "Не уверены? Проверьте в Claude.");
         public static string MenuPermissionPrompts => T("Answer permissions on the island", "Responder permissões pela ilha", "Responder permisos en la isla", "Отвечать на разрешения на острове");
-        public static string HintPermissionPrompts => T("Experimental. Adds a hook to Claude Code's settings so its permission requests show Allow and Deny here. Turns on the local API. If you do not click in time, Claude asks as usual",
-                                                        "Experimental. Adiciona um gancho às configurações do Claude Code para que os pedidos de permissão mostrem Permitir e Negar aqui. Liga a API local. Se você não clicar a tempo, o Claude pergunta como sempre",
-                                                        "Experimental. Añade un gancho a la configuración de Claude Code para que sus peticiones de permiso muestren Permitir y Denegar aquí. Activa la API local. Si no haces clic a tiempo, Claude pregunta como siempre",
-                                                        "Экспериментально. Добавляет хук в настройки Claude Code, чтобы запросы разрешений показывали здесь «Разрешить» и «Отклонить». Включает локальный API. Если не нажать вовремя, Claude спросит как обычно");
+        public static string HintPermissionPrompts => T("Experimental. Shows Allow and Deny for Claude Code permission requests. Turns on the local API",
+                                    "Experimental. Mostra Permitir e Negar nos pedidos de permissão do Claude Code. Liga a API local",
+                                    "Experimental. Muestra Permitir y Denegar en las peticiones de permiso de Claude Code. Activa la API local",
+                                    "Экспериментально. Показывает «Разрешить» и «Отклонить» для запросов Claude Code. Включает локальный API");
         public static string PermissionHookFailed => T("Could not change Claude's settings file; nothing was changed.", "Não consegui alterar o arquivo de configurações do Claude; nada foi alterado.", "No pude cambiar el archivo de configuración de Claude; no se cambió nada.", "Не удалось изменить файл настроек Claude; ничего не изменено.");
         public static string GroupLimits => T("Claude limit alerts", "Avisos de limite do Claude", "Avisos de límite de Claude", "Оповещения о лимитах Claude");
         public static string MenuLimitAt(int percent) => T("Alert at " + percent + "%", "Avisar em " + percent + "%", "Avisar al " + percent + "%", "Оповещать на " + percent + "%");
@@ -209,16 +209,16 @@ namespace WindowsIsland
         public static string ThemeDark => T("Dark", "Escuro", "Oscuro", "Тёмная");
         public static string ThemeLight => T("Light", "Claro", "Claro", "Светлая");
         public static string MenuIgnoreApp(string app) => T("No dot for " + app, "Sem ponto para " + app, "Sin punto para " + app, "Без точки для " + app);
-        public static string HintIgnoreApps => T("Apps that used the microphone, camera or screen show up here; turn one on to stop its dot (a call app keeps the microphone busy for hours)",
-                                                 "Apps que usaram o microfone, a câmera ou a tela aparecem aqui; ligue um para tirar o ponto dele (um app de chamadas deixa o microfone ocupado por horas)",
-                                                 "Las apps que usaron el micrófono, la cámara o la pantalla aparecen aquí; activa una para quitar su punto (una app de llamadas mantiene el micrófono ocupado durante horas)",
-                                                 "Здесь появляются приложения, которые использовали микрофон, камеру или экран; включите одно, чтобы убрать его точку (приложение для звонков держит микрофон занятым часами)");
+        public static string HintIgnoreApps => T("Apps that used the microphone, camera or screen. Turn one on to hide its dot",
+                                    "Apps que usaram microfone, câmera ou tela. Ligue um para esconder o ponto dele",
+                                    "Apps que usaron micrófono, cámara o pantalla. Activa una para ocultar su punto",
+                                    "Приложения, использовавшие микрофон, камеру или экран. Включите, чтобы скрыть точку");
         public static string GroupDiscord => T("Discord (muted and deafened)", "Discord (mudo e ensurdecido)", "Discord (silenciado y ensordecido)", "Discord (микрофон и звук выключены)");
         public static string MenuDiscord => T("Show when I am muted in Discord", "Mostrar quando eu estou mudo no Discord", "Mostrar cuando estoy silenciado en Discord", "Показывать, когда я отключён в Discord");
-        public static string HintDiscord => T("Experimental. A crossed microphone or crossed headphones beside the island. Needs a Discord app of your own and you approve it once in Discord: see the guide below",
-                                              "Experimental. Um microfone cortado ou um fone cortado ao lado da ilha. Precisa de um app seu no Discord e você aprova uma vez dentro do Discord: veja o guia abaixo",
-                                              "Experimental. Un micrófono tachado o unos auriculares tachados junto a la isla. Necesita una app tuya en Discord y la apruebas una vez dentro de Discord: mira la guía de abajo",
-                                              "Экспериментально. Перечёркнутый микрофон или наушники рядом с островом. Нужно своё приложение Discord, одобрить его нужно один раз в Discord: см. руководство ниже");
+        public static string HintDiscord => T("Experimental. Crossed microphone or headphones beside the island. Needs your own Discord app: see the guide below",
+                                    "Experimental. Microfone ou fone cortado ao lado da ilha. Precisa de um app seu no Discord: veja o guia abaixo",
+                                    "Experimental. Micrófono o auriculares tachados junto a la isla. Necesita una app tuya en Discord: mira la guía",
+                                    "Экспериментально. Перечёркнутый микрофон или наушники рядом с островом. Нужно своё приложение Discord: см. руководство");
         public static string DiscordClientIdLabel => T("Application ID (Client ID)", "ID do aplicativo (Client ID)", "ID de la aplicación (Client ID)", "ID приложения (Client ID)");
         public static string DiscordClientSecretLabel => T("Client Secret (kept encrypted)", "Client Secret (guardado criptografado)", "Client Secret (guardado cifrado)", "Client Secret (хранится в зашифрованном виде)");
         public static string DiscordGuide => T("How to set it up, step by step", "Como configurar, passo a passo", "Cómo configurarlo, paso a paso", "Как настроить, шаг за шагом");
@@ -241,31 +241,31 @@ namespace WindowsIsland
         public static string IdlePill => T("Small pill", "Pílula pequena", "Píldora pequeña", "Маленькая капсула");
         public static string IdleLine => T("Thin line", "Linha fina", "Línea fina", "Тонкая линия");
         public static string MenuMonitorKeeps => T("Keep the monitor in sight", "Manter o monitor à vista", "Mantener el monitor a la vista", "Не закрывать монитор");
-        public static string HintMonitorKeeps => T("Music, Claude and other activities become a small bubble beside the monitor instead of covering it",
-                                                   "Música, Claude e outras atividades viram uma bolinha ao lado do monitor em vez de cobri-lo",
-                                                   "La música, Claude y otras actividades pasan a ser una burbuja junto al monitor en vez de taparlo",
-                                                   "Музыка, Claude и другие активности становятся маленьким пузырём рядом с монитором, а не закрывают его");
+        public static string HintMonitorKeeps => T("Music, Claude and others become a small bubble beside the monitor",
+                                    "Música, Claude e outros viram uma bolinha ao lado do monitor",
+                                    "La música, Claude y otros pasan a ser una burbuja junto al monitor",
+                                    "Музыка, Claude и другое становятся пузырём рядом с монитором");
         public static string MenuMaximized => T("With a maximized window in front", "Com uma janela maximizada na frente", "Con una ventana maximizada delante", "Если впереди развёрнутое окно");
-        public static string HintMaximized => T("A thin line stays out of the way of tab strips. Hidden is better for games that fill the screen without being detected as full screen",
-                                                "A linha fina sai do caminho das abas. Escondida é melhor para jogos que ocupam a tela sem serem detectados como tela cheia",
-                                                "La línea fina no estorba las pestañas. Oculta es mejor para juegos que llenan la pantalla sin detectarse como pantalla completa",
-                                                "Тонкая линия не мешает вкладкам. «Скрыт» лучше для игр, которые заполняют экран, но не определяются как полноэкранные");
+        public static string HintMaximized => T("A thin line stays out of the way of tab strips. Hidden suits games that fill the screen",
+                                    "A linha fina sai do caminho das abas. Escondida serve para jogos que ocupam a tela",
+                                    "La línea fina no estorba las pestañas. Oculta sirve para juegos que llenan la pantalla",
+                                    "Тонкая линия не мешает вкладкам. «Скрыт» подходит для игр на весь экран");
         public static string MaxThin => T("Thin line", "Linha fina", "Línea fina", "Тонкая линия");
         public static string MaxNormal => T("Normal", "Normal", "Normal", "Обычный");
         public static string MaxHidden => T("Hidden", "Escondida", "Oculta", "Скрыт");
         public static string DiscordForget => T("Forget the Discord data", "Esquecer os dados do Discord", "Olvidar los datos de Discord", "Забыть данные Discord");
         public static string MenuSteam => T("Steam downloads", "Downloads da Steam", "Descargas de Steam", "Загрузки Steam");
-        public static string HintSteam => T("Shows the progress of a game being downloaded or updated in Steam, read from the small files Steam keeps beside the games. Nothing is sent anywhere",
-                                            "Mostra o progresso de um jogo sendo baixado ou atualizado na Steam, lido dos arquivinhos que a Steam guarda ao lado dos jogos. Nada é enviado para lugar nenhum",
-                                            "Muestra el progreso de un juego que se descarga o actualiza en Steam, leído de los archivitos que Steam guarda junto a los juegos. No se envía nada a ningún sitio",
-                                            "Показывает ход загрузки или обновления игры в Steam, из маленьких файлов, которые Steam хранит рядом с играми. Ничего никуда не отправляется");
+        public static string HintSteam => T("Progress of Steam downloads and updates. Nothing is sent anywhere",
+                                    "Progresso dos downloads e atualizações da Steam. Nada é enviado para fora",
+                                    "Progreso de las descargas y actualizaciones de Steam. No se envía nada fuera",
+                                    "Ход загрузок и обновлений Steam. Ничего не отправляется");
         public static string SteamDone => T("Done", "Concluído", "Terminado", "Готово");
         public static string SteamPreparing => T("Installing", "Instalando", "Instalando", "Установка");
         public static string MenuScreenShare => T("Screen sharing (blue dot)", "Compartilhamento de tela (ponto azul)", "Compartir pantalla (punto azul)", "Показ экрана (синяя точка)");
-        public static string HintScreenShare => T("A blue dot while an app shares or records the screen. Only apps that tell Windows about it are seen (Discord does; many browsers and web apps do not). Needs the dots above",
-                                                   "Um ponto azul enquanto um app compartilha ou grava a tela. Só aparecem apps que avisam o Windows (o Discord avisa; muitos navegadores e apps da web não). Precisa dos pontos acima",
-                                                   "Un punto azul mientras una app comparte o graba la pantalla. Solo se ven las apps que avisan a Windows (Discord lo hace; muchos navegadores y apps web no). Necesita los puntos de arriba",
-                                                   "Синяя точка, пока приложение показывает или записывает экран. Видны только приложения, которые сообщают об этом Windows (Discord сообщает; многие браузеры и веб-приложения нет). Нужны точки выше");
+        public static string HintScreenShare => T("A blue dot while an app shares the screen. Only apps that tell Windows are seen (Discord does, most browsers do not)",
+                                    "Um ponto azul enquanto um app compartilha a tela. Só vale para apps que avisam o Windows (o Discord sim, a maioria dos navegadores não)",
+                                    "Un punto azul mientras una app comparte la pantalla. Solo apps que avisan a Windows (Discord sí, la mayoría de navegadores no)",
+                                    "Синяя точка, пока приложение показывает экран. Только для приложений, сообщающих об этом Windows (Discord да, браузеры чаще нет)");
         public static string OpenClaude => T("Open Claude", "Abrir o Claude", "Abrir Claude", "Открыть Claude");
         public static string MenuUninstall => T("Uninstall Windows Island", "Desinstalar o Windows Island", "Desinstalar Windows Island", "Удалить Windows Island");
         public static string MenuOpenSettings => T("Open settings file", "Abrir arquivo de configurações", "Abrir archivo de configuración", "Открыть файл настроек");
@@ -292,10 +292,10 @@ namespace WindowsIsland
                                                   "Naranja con el micrófono en uso, verde con la cámara",
                                                   "Оранжевая, пока используется микрофон, зелёная для камеры");
         public static string MenuPrivacyNames => T("App name when recording starts", "Nome do app ao começar a gravar", "Nombre de la app al empezar a grabar", "Название приложения при начале записи");
-        public static string HintPrivacyNames => T("Hover the dots to see which app uses the microphone or camera. Here, choose how long its name also shows by itself when an app starts",
-                                                   "Passe o mouse nos pontos para ver qual app usa o microfone ou a câmera. Aqui, escolha por quanto tempo o nome também aparece sozinho quando um app começa",
-                                                   "Pasa el ratón por los puntos para ver qué app usa el micrófono o la cámara. Aquí elige cuánto tiempo su nombre aparece también solo cuando una app empieza",
-                                                   "Наведите мышь на точки, чтобы увидеть, какое приложение использует микрофон или камеру. Здесь выберите, сколько секунд название показывается само, когда приложение начинает");
+        public static string HintPrivacyNames => T("Hover the dots to see the app. Choose how long its name also shows by itself",
+                                    "Passe o mouse nos pontos para ver o app. Escolha por quanto tempo o nome também aparece sozinho",
+                                    "Pasa el ratón por los puntos para ver la app. Elige cuánto tiempo su nombre aparece solo",
+                                    "Наведите мышь на точки, чтобы увидеть приложение. Выберите, как долго имя показывается само");
         public static string Off => T("Off", "Desligado", "Desactivado", "Выкл");
         public static string GroupPrivacy => T("Privacy (microphone and camera)", "Privacidade (microfone e câmera)", "Privacidad (micrófono y cámara)", "Конфиденциальность (микрофон и камера)");
         public static string GroupBattery => T("Battery", "Bateria", "Batería", "Батарея");
@@ -356,10 +356,10 @@ namespace WindowsIsland
         public static string FocusOff => T("Do not disturb off", "Não perturbe desligado", "No molestar desactivado", "«Не беспокоить» выключен");
         public static string SectionApi => T("Scripts and apps", "Scripts e apps", "Scripts y apps", "Скрипты и приложения");
         public static string MenuApi => T("Local API", "API local", "API local", "Локальный API");
-        public static string HintApi => T("Lets scripts and apps on this PC show activities and alerts in the island. The island command and the browser extension already work with it, no token needed",
-                                          "Deixa scripts e apps deste PC mostrarem atividades e avisos na ilha. O comando island e a extensão do navegador já funcionam com ela, sem token",
-                                          "Permite que scripts y apps de este PC muestren actividades y avisos en la isla. El comando island y la extensión del navegador ya funcionan con ella, sin token",
-                                          "Позволяет скриптам и приложениям на этом ПК показывать действия и уведомления на острове. Команда island и расширение для браузера уже работают с ней, токен не нужен");
+        public static string HintApi => T("Lets scripts and apps on this PC show activities and alerts in the island",
+                                    "Deixa scripts e apps deste PC mostrarem atividades e avisos na ilha",
+                                    "Permite que scripts y apps de este PC muestren actividades y avisos en la isla",
+                                    "Позволяет скриптам и приложениям на этом ПК показывать активности и уведомления на острове");
         public static string ApiTokenLabel => T("Token for your own scripts", "Token para seus próprios scripts", "Token para tus propios scripts", "Токен для ваших скриптов");
         public static string ApiTokenHint => T("Only if you write your own script or app: send it in the header Authorization: Bearer <token>",
                                                "Só se você criar seu próprio script ou app: envie no cabeçalho Authorization: Bearer <token>",
@@ -390,10 +390,10 @@ namespace WindowsIsland
         public static string StyleBars => T("Bars", "Barras", "Barras", "Полосы");
         public static string StyleNumbers => T("Numbers", "Números", "Números", "Числа");
         public static string MenuHideOsd => T("Hide Windows' volume popup (experimental)", "Esconder a barra de volume do Windows (experimental)", "Ocultar la barra de volumen de Windows (experimental)", "Скрывать окно громкости Windows (экспериментально)");
-        public static string HintHideOsd => T("Shows only the island's bar. Needs the volume bar above. A Windows update can stop it from working; turn it off to get the popup back",
-                                              "Mostra só a barra da ilha. Precisa da barra de volume acima. Uma atualização do Windows pode quebrar isso; desligue para a barra voltar",
-                                              "Muestra solo la barra de la isla. Requiere la barra de volumen de arriba. Una actualización de Windows puede romperlo; desactívelo para recuperar la barra",
-                                              "Показывает только полосу острова. Нужна полоса громкости выше. Обновление Windows может это сломать; выключите, чтобы вернуть окно");
+        public static string HintHideOsd => T("Shows only the island's bar. Needs the volume bar above. Turn it off to get the Windows popup back",
+                                    "Mostra só a barra da ilha. Precisa da barra de volume acima. Desligue para a barra do Windows voltar",
+                                    "Muestra solo la barra de la isla. Requiere la barra de volumen de arriba. Desactívalo para recuperar la del Windows",
+                                    "Показывает только полосу острова. Нужна полоса громкости выше. Выключите, чтобы вернуть окно Windows");
         public static string MenuLevels => T("Volume and brightness", "Volume e brilho", "Volumen y brillo", "Громкость и яркость");
         public static string HintLevels => T("A small bar while you change the volume or the screen brightness (laptop screens only)",
                                              "Uma barrinha enquanto você muda o volume ou o brilho da tela (só telas de notebook)",
