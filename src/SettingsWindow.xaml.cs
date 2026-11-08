@@ -19,19 +19,24 @@ namespace WindowsIsland
 
         readonly Settings settings;
         readonly Action changed;
-        readonly Action checkForUpdates;
+        readonly UpdateFlow updates;
         readonly Action peekExpanded;
         readonly DispatcherTimer saveTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(400) };
         StackPanel card;
         double restingTop;
 
-        internal SettingsWindow(Settings settings, Action changed, Action checkForUpdates, Action peekExpanded)
+        internal SettingsWindow(Settings settings, Action changed, UpdateFlow updates, Action peekExpanded)
         {
             this.settings = settings;
             this.changed = changed;
-            this.checkForUpdates = checkForUpdates;
+            this.updates = updates;
             this.peekExpanded = peekExpanded;
             InitializeComponent();
+
+            // The scroll bar inside the ScrollViewer ignores implicit styles, so it gets its thin one by hand.
+            Scroller.ApplyTemplate();
+            System.Windows.Controls.Primitives.ScrollBar bar = Scroller.Template.FindName("PART_VerticalScrollBar", Scroller) as System.Windows.Controls.Primitives.ScrollBar;
+            if (bar != null) bar.Style = (Style)FindResource("ThinScroll");
 
             Title = Installer.Name + " – " + Strings.SettingsTitle;
             Heading.Text = Strings.SettingsTitle;
@@ -47,7 +52,11 @@ namespace WindowsIsland
                 int border = 0x00382E2E; // A faint outline, since there is no title bar to frame the window
                 DwmSetWindowAttribute(handle, 34, ref border, sizeof(int));
             };
-            Closed += (s, e) => { if (saveTimer.IsEnabled) { saveTimer.Stop(); settings.Save(); } };
+            Closed += (s, e) =>
+            {
+                if (saveTimer.IsEnabled) { saveTimer.Stop(); settings.Save(); }
+                if (updates != null) updates.Changed -= OnUpdateChanged;
+            };
             // Like a tray flyout: it takes the focus (which closes the hidden-icons panel), slides up into the
             // corner, stays above other windows until you click elsewhere, and Esc closes it.
             Topmost = true;
@@ -75,6 +84,101 @@ namespace WindowsIsland
             PlaceNearTray();
             BuildTabs();
             Build(tab);
+        }
+
+        static readonly FontFamily IconFont = new FontFamily("Segoe Fluent Icons, Segoe MDL2 Assets");
+        static readonly Brush IconBrush = new SolidColorBrush(Color.FromRgb(0xB4, 0xB4, 0xBC));
+
+        // ---------- Language ----------
+
+        void LanguageRow()
+        {
+            string[] values = { "Auto", "en", "pt", "es", "ru" };
+            string[] names = { Strings.LanguageAuto, "English", "Português", "Español", "Русский" };
+            int current = Math.Max(0, Array.FindIndex(values, v => string.Equals(v, settings.Language, StringComparison.OrdinalIgnoreCase)));
+            Row("\uE774", Strings.LanguageLabel, null, null, SegmentBar(names, current, i =>
+            {
+                settings.Language = values[i];
+                Strings.Use(settings.Language);
+                Apply();
+                Dispatcher.BeginInvoke(new Action(RefreshTexts)); // After this click has finished
+            }));
+        }
+
+        // Titles, tabs and rows again, in the language just chosen.
+        void RefreshTexts()
+        {
+            Title = Installer.Name + " – " + Strings.SettingsTitle;
+            Heading.Text = Strings.SettingsTitle;
+            BuildTabs();
+            Rebuild();
+        }
+
+        // ---------- Updates ----------
+
+        TextBlock updateGlyph, updateText;
+        RotateTransform spin;
+
+        void UpdateRow()
+        {
+            spin = new RotateTransform();
+            updateGlyph = new TextBlock { FontFamily = IconFont, FontSize = 16, Width = 30, VerticalAlignment = VerticalAlignment.Center, RenderTransform = spin, RenderTransformOrigin = new Point(0.43, 0.5) };
+            updateText = new TextBlock { VerticalAlignment = VerticalAlignment.Center };
+            StackPanel line = new StackPanel { Orientation = Orientation.Horizontal, Background = Brushes.Transparent, Cursor = System.Windows.Input.Cursors.Hand };
+            line.Children.Add(updateGlyph);
+            line.Children.Add(updateText);
+            line.MouseLeftButtonUp += (s, e) =>
+            {
+                if (updates == null) return;
+                if (updates.State == UpdateFlow.Phase.Available) _ = updates.InstallAsync();
+                else if (updates.State == UpdateFlow.Phase.Idle || updates.State == UpdateFlow.Phase.UpToDate || updates.State == UpdateFlow.Phase.Failed) _ = updates.CheckAsync(true);
+            };
+            Row(null, null, null, null, null, line);
+            if (updates != null)
+            {
+                updates.Changed -= OnUpdateChanged;
+                updates.Changed += OnUpdateChanged;
+            }
+            RefreshUpdateRow();
+        }
+
+        void OnUpdateChanged()
+        {
+            Dispatcher.BeginInvoke(new Action(RefreshUpdateRow));
+        }
+
+        void RefreshUpdateRow()
+        {
+            if (updateText == null) return;
+            UpdateFlow.Phase phase = updates?.State ?? UpdateFlow.Phase.Idle;
+            string glyph = "\uE895";
+            string text = Strings.MenuCheckUpdates;
+            Brush color = (Brush)FindResource("Accent");
+            bool spinning = false;
+            switch (phase)
+            {
+                case UpdateFlow.Phase.Checking: glyph = "\uE895"; text = Strings.UpdateChecking; color = (Brush)FindResource("Secondary"); spinning = true; break;
+                case UpdateFlow.Phase.Available: glyph = "\uE896"; text = Strings.UpdateDownload(updates.Version); break;
+                case UpdateFlow.Phase.Downloading: glyph = "\uE895"; text = Strings.UpdateDownloading; color = (Brush)FindResource("Secondary"); spinning = true; break;
+                case UpdateFlow.Phase.UpToDate: glyph = "\uE73E"; text = Strings.UpToDate; color = (Brush)FindResource("On"); break;
+                case UpdateFlow.Phase.Failed: glyph = "\uE7BA"; text = Strings.UpdateFailed; color = new SolidColorBrush(Color.FromRgb(0xFF, 0x9F, 0x0A)); break;
+            }
+            updateGlyph.Text = glyph;
+            updateGlyph.Foreground = color;
+            updateText.Text = text;
+            updateText.Foreground = color;
+            if (spinning)
+                spin.BeginAnimation(RotateTransform.AngleProperty, new System.Windows.Media.Animation.DoubleAnimation(0, 360, TimeSpan.FromSeconds(1)) { RepeatBehavior = System.Windows.Media.Animation.RepeatBehavior.Forever });
+            else
+                spin.BeginAnimation(RotateTransform.AngleProperty, null);
+        }
+
+        // Opens on the System tab, where updates live.
+        public void GoToSystem()
+        {
+            tab = 3;
+            BuildTabs();
+            Rebuild();
         }
 
         static int tab; // Remembered while the app runs
@@ -120,7 +224,7 @@ Top = taskbarTop ? work.Top + 12 : work.Bottom - Height - 12;
             bool all = only == AllTabs;
             showTitles = all;
             if (all)
-                Content.Children.Add(new TextBlock { Text = Strings.SettingsTitle, FontFamily = new FontFamily("Segoe UI Variable Display, Segoe UI"), FontSize = 30, FontWeight = FontWeights.Bold, Margin = new Thickness(4, 0, 0, 14) });
+                Content.Children.Add(new TextBlock { Text = Strings.SettingsTitle, FontSize = 30, FontWeight = FontWeights.Bold, Margin = new Thickness(4, 0, 0, 14) });
             if (all || only == 0) BuildActivities();
             if (all || only == 1) BuildBehavior();
             if (all || only == 2) BuildAppearance();
@@ -130,44 +234,48 @@ Top = taskbarTop ? work.Top + 12 : work.Bottom - Height - 12;
         void BuildActivities()
         {
             Section(Strings.SectionActivities);
-            Toggle(Strings.MenuMusic, null, () => settings.ShowMusic, v => settings.ShowMusic = v);
-            Toggle(Strings.MenuClaude, null, () => settings.ShowClaude, v => settings.ShowClaude = v);
-            Toggle(Strings.MenuBanners, null, () => settings.ClaudeBanners, v => settings.ClaudeBanners = v);
-            Toggle(Strings.MenuCodex, null, () => settings.ShowCodex, v => settings.ShowCodex = v);
-            Toggle(Strings.MenuCodexBanners, null, () => settings.CodexBanners, v => settings.CodexBanners = v);
-            Toggle(Strings.MenuPrivacyDots, Strings.HintPrivacyDots, () => settings.ShowPrivacyDots, v => settings.ShowPrivacyDots = v);
-            Toggle(Strings.MenuBatteryAlerts, Strings.HintBatteryAlerts, () => settings.BatteryAlerts, v => settings.BatteryAlerts = v);
-            Toggle(Strings.MenuNotifications, Strings.HintNotifications, () => settings.ShowNotifications, v => settings.ShowNotifications = v);
+            Toggle("\uE8D6", Strings.MenuMusic, null, () => settings.ShowMusic, v => settings.ShowMusic = v);
+            Toggle("\uE8BD", Strings.MenuClaude, null, () => settings.ShowClaude, v => settings.ShowClaude = v);
+            Toggle("\uEA8F", Strings.MenuBanners, null, () => settings.ClaudeBanners, v => settings.ClaudeBanners = v);
+            Toggle("\uE756", Strings.MenuCodex, null, () => settings.ShowCodex, v => settings.ShowCodex = v);
+            Toggle("\uEA8F", Strings.MenuCodexBanners, null, () => settings.CodexBanners, v => settings.CodexBanners = v);
+            Toggle("\uE720", Strings.MenuPrivacyDots, Strings.HintPrivacyDots, () => settings.ShowPrivacyDots, v => settings.ShowPrivacyDots = v);
+            Toggle("\uE83F", Strings.MenuBatteryAlerts, Strings.HintBatteryAlerts, () => settings.BatteryAlerts, v => settings.BatteryAlerts = v);
+            Toggle("\uE7E7", Strings.MenuNotifications, Strings.HintNotifications, () => settings.ShowNotifications, v => settings.ShowNotifications = v);
         }
 
         void BuildBehavior()
         {
             Section(Strings.SectionBehavior);
-            Toggle(Strings.MenuEmptyIsland, Strings.HintEmptyIsland, () => settings.EmptyIsland, v => settings.EmptyIsland = v);
-            Toggle(Strings.MenuIdlePill, null, () => settings.ShowIdlePill, v => settings.ShowIdlePill = v);
-            Toggle(Strings.MenuHover, null, () => settings.ExpandOnHover, v => settings.ExpandOnHover = v);
-            Toggle(Strings.MenuFullscreen, null, () => settings.HideInFullscreen, v => settings.HideInFullscreen = v);
-            Choice(Strings.MenuAutoHide, Strings.HintAutoHide, new[] { 0, 5, 10, 30, 60, 300 }, true, () => settings.AutoHideSeconds, v => settings.AutoHideSeconds = v);
-            Choice(Strings.MenuAlertDuration, null, new[] { 3, 5, 8, 12, 20 }, false, () => settings.AlertSeconds, v => settings.AlertSeconds = v);
-            Choice(Strings.MenuPausedMusic, null, new[] { 0, 2, 5, 15, 30, 60 }, false, () => settings.PausedMusicSeconds, v => settings.PausedMusicSeconds = v);
+            Toggle("\uE7B3", Strings.MenuEmptyIsland, Strings.HintEmptyIsland, () => settings.EmptyIsland, v => settings.EmptyIsland = v);
+            Toggle("\uE7F8", Strings.MenuIdlePill, null, () => settings.ShowIdlePill, v => settings.ShowIdlePill = v);
+            Toggle("\uE7C9", Strings.MenuHover, null, () => settings.ExpandOnHover, v => settings.ExpandOnHover = v);
+            Toggle("\uE740", Strings.MenuFullscreen, null, () => settings.HideInFullscreen, v => settings.HideInFullscreen = v);
+            Choice("\uE916", Strings.MenuAutoHide, Strings.HintAutoHide, new[] { 0, 5, 10, 30, 60, 300 }, true, () => settings.AutoHideSeconds, v => settings.AutoHideSeconds = v);
+            Choice("\uE81C", Strings.MenuAlertDuration, null, new[] { 3, 5, 8, 12, 20 }, false, () => settings.AlertSeconds, v => settings.AlertSeconds = v);
+            Choice("\uE769", Strings.MenuPausedMusic, null, new[] { 0, 2, 5, 15, 30, 60 }, false, () => settings.PausedMusicSeconds, v => settings.PausedMusicSeconds = v);
         }
 
         void BuildAppearance()
         {
             Section(Strings.SectionAppearance);
-            Segmented(Strings.MenuPosition, new[] { Strings.MenuTop, Strings.MenuBottom },
+            Segmented("\uE745", Strings.MenuPosition, new[] { Strings.MenuTop, Strings.MenuBottom },
                 () => string.Equals(settings.Position, "Bottom", StringComparison.OrdinalIgnoreCase) ? 1 : 0,
                 i => settings.Position = i == 1 ? "Bottom" : "Top");
             MonitorRow();
             string[] ringValues = { "Blue", "Green", "Purple" };
-            Segmented(Strings.RingColorLabel, new[] { Strings.ColorBlue, Strings.ColorGreen, Strings.ColorPurple },
+            Segmented("\uE790", Strings.RingColorLabel, new[] { Strings.ColorBlue, Strings.ColorGreen, Strings.ColorPurple },
                 () => Math.Max(0, Array.FindIndex(ringValues, v => string.Equals(v, settings.RingColor, StringComparison.OrdinalIgnoreCase))),
                 i => settings.RingColor = ringValues[i]);
-            SliderRow(Strings.CollapsedSize, Settings.MinScale, Settings.MaxScale, 0.05, Percent, () => settings.CollapsedScale, v => settings.CollapsedScale = v, false);
-            SliderRow(Strings.ExpandedSize, Settings.MinScale, Settings.MaxScale, 0.05, Percent, () => settings.ExpandedScale, v => settings.ExpandedScale = v, true);
-            SliderRow(Strings.DistanceFromEdge, Settings.MinOffsetY, Settings.MaxOffsetY, 1, Pixels, () => settings.OffsetY, v => settings.OffsetY = v, false);
-            SliderRow(Strings.HorizontalPosition, -Settings.MaxOffsetX, Settings.MaxOffsetX, 10, Horizontal, () => settings.OffsetX, v => settings.OffsetX = v, false);
-            ActionRow(Strings.ResetAppearance, () =>
+            string[] bannerValues = { "Small", "Normal" };
+            Segmented("\uE8A1", Strings.BannerSizeLabel, new[] { Strings.BannerSmall, Strings.BannerNormal },
+                () => string.Equals(settings.BannerSize, "Normal", StringComparison.OrdinalIgnoreCase) ? 1 : 0,
+                i => settings.BannerSize = bannerValues[i]);
+            SliderRow("\uE740", Strings.CollapsedSize, Settings.MinScale, Settings.MaxScale, 0.05, Percent, () => settings.CollapsedScale, v => settings.CollapsedScale = v, false);
+            SliderRow("\uE740", Strings.ExpandedSize, Settings.MinScale, Settings.MaxScale, 0.05, Percent, () => settings.ExpandedScale, v => settings.ExpandedScale = v, true);
+            SliderRow("\uE745", Strings.DistanceFromEdge, Settings.MinOffsetY, Settings.MaxOffsetY, 1, Pixels, () => settings.OffsetY, v => settings.OffsetY = v, false);
+            SliderRow("\uE7C9", Strings.HorizontalPosition, -Settings.MaxOffsetX, Settings.MaxOffsetX, 10, Horizontal, () => settings.OffsetX, v => settings.OffsetX = v, false);
+            ActionRow("\uE777", Strings.ResetAppearance, () =>
             {
                 settings.ResetAppearance();
                 Apply();
@@ -178,10 +286,11 @@ Top = taskbarTop ? work.Top + 12 : work.Bottom - Height - 12;
         void BuildSystem()
         {
             Section(Strings.SectionSystem);
-            Toggle(Strings.MenuStartup, null, () => settings.StartWithWindows, v => settings.StartWithWindows = v);
-            Toggle(Strings.MenuAutoUpdate, null, () => settings.AutoUpdate, v => settings.AutoUpdate = v);
-            ActionRow(Strings.MenuCheckUpdates, checkForUpdates);
-            ActionRow(Strings.MenuOpenSettings, () =>
+            Toggle("\uE7E8", Strings.MenuStartup, null, () => settings.StartWithWindows, v => settings.StartWithWindows = v);
+            Toggle("\uE895", Strings.MenuAutoUpdate, null, () => settings.AutoUpdate, v => settings.AutoUpdate = v);
+            UpdateRow();
+            LanguageRow();
+            ActionRow("\uE8A5", Strings.MenuOpenSettings, () =>
             {
                 settings.Save();
                 try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(Settings.FilePath) { UseShellExecute = true })?.Dispose(); }
@@ -234,19 +343,36 @@ Top = taskbarTop ? work.Top + 12 : work.Bottom - Height - 12;
         }
 
         // One row: label (and hint) on the left, a control on the right, a hairline above all but the first.
-        void Row(string label, string hint, UIElement control, UIElement below = null, UIElement left = null)
+        void Row(string icon, string label, string hint, UIElement control, UIElement below = null, UIElement left = null)
         {
-            Grid grid = new Grid { Margin = new Thickness(16, 10, 14, 10), MinHeight = 30 };
+            Grid grid = new Grid { Margin = new Thickness(14, 10, 14, 10), MinHeight = 30 };
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
+            if (icon != null)
+            {
+                grid.Children.Add(new TextBlock
+                {
+                    Text = icon,
+                    FontFamily = IconFont,
+                    FontSize = 16,
+                    Foreground = IconBrush,
+                    Width = 30,
+                    VerticalAlignment = VerticalAlignment.Center,
+                });
+            }
+
             if (left != null)
             {
+                Grid.SetColumn(left, icon != null ? 1 : 0);
+                Grid.SetColumnSpan(left, icon != null ? 1 : 2);
                 grid.Children.Add(left);
             }
             else
             {
                 StackPanel text = new StackPanel { VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 12, 0) };
+                Grid.SetColumn(text, 1);
                 text.Children.Add(new TextBlock { Text = label, TextWrapping = TextWrapping.Wrap });
                 if (hint != null)
                     text.Children.Add(new TextBlock { Text = hint, FontSize = 12, Foreground = (Brush)FindResource("Secondary"), TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 2, 0, 0) });
@@ -255,7 +381,7 @@ Top = taskbarTop ? work.Top + 12 : work.Bottom - Height - 12;
 
             if (control != null)
             {
-                Grid.SetColumn(control, 1);
+                Grid.SetColumn(control, 2);
                 grid.Children.Add(control);
             }
 
@@ -267,7 +393,7 @@ Top = taskbarTop ? work.Top + 12 : work.Bottom - Height - 12;
             card.Children.Add(row);
         }
 
-        void Toggle(string label, string hint, Func<bool> get, Action<bool> set)
+        void Toggle(string icon, string label, string hint, Func<bool> get, Action<bool> set)
         {
             CheckBox toggle = new CheckBox { Style = (Style)FindResource("Switch"), IsChecked = get(), VerticalAlignment = VerticalAlignment.Center };
             toggle.ApplyTemplate();
@@ -281,7 +407,7 @@ Top = taskbarTop ? work.Top + 12 : work.Bottom - Height - 12;
 
             toggle.Checked += (s, e) => { AnimateSwitch(color, knob, true); set(true); Apply(); };
             toggle.Unchecked += (s, e) => { AnimateSwitch(color, knob, false); set(false); Apply(); };
-            Row(label, hint, toggle);
+            Row(icon, label, hint, toggle);
         }
 
         static readonly Color SwitchOn = Color.FromRgb(0x30, 0xD1, 0x58);
@@ -300,12 +426,12 @@ Top = taskbarTop ? work.Top + 12 : work.Bottom - Height - 12;
         }
 
         // Duration choices as a segmented control under the label.
-        void Choice(string label, string hint, int[] seconds, bool zeroIsNever, Func<int> get, Action<int> set)
+        void Choice(string icon, string label, string hint, int[] seconds, bool zeroIsNever, Func<int> get, Action<int> set)
         {
             string[] names = new string[seconds.Length];
             for (int i = 0; i < seconds.Length; i++) names[i] = Strings.Duration(seconds[i], zeroIsNever);
             int current = Array.IndexOf(seconds, get());
-            Row(label, hint, null, SegmentBar(names, current, i => set(seconds[i])));
+            Row(icon, label, hint, null, SegmentBar(names, current, i => set(seconds[i])));
         }
 
         // Primary, the one with the mouse, all, then each other monitor by the number Windows gives it.
@@ -320,17 +446,17 @@ Top = taskbarTop ? work.Top + 12 : work.Bottom - Height - 12;
                 names.Add(Strings.MonitorNumber(display.Number));
             }
             int current = values.FindIndex(v => string.Equals(v, settings.Monitor, StringComparison.OrdinalIgnoreCase));
-            Row(Strings.MonitorLabel, Strings.HintMonitor, null, SegmentBar(names.ToArray(), Math.Max(0, current), i => settings.Monitor = values[i]));
+            Row("\uE7F4", Strings.MonitorLabel, Strings.HintMonitor, null, SegmentBar(names.ToArray(), Math.Max(0, current), i => settings.Monitor = values[i]));
         }
 
-        void Segmented(string label, string[] names, Func<int> get, Action<int> set)
+        void Segmented(string icon, string label, string[] names, Func<int> get, Action<int> set)
         {
-            Row(label, null, SegmentBar(names, get(), set, true));
+            Row(icon, label, null, SegmentBar(names, get(), set, true));
         }
 
         FrameworkElement SegmentBar(string[] names, int current, Action<int> set, bool inline = false)
         {
-            StackPanel items = new StackPanel { Orientation = Orientation.Horizontal };
+            WrapPanel items = new WrapPanel { Orientation = Orientation.Horizontal }; // Wraps when a language needs the room
             string group = Guid.NewGuid().ToString();
             for (int i = 0; i < names.Length; i++)
             {
@@ -351,7 +477,7 @@ Top = taskbarTop ? work.Top + 12 : work.Bottom - Height - 12;
             };
         }
 
-        void SliderRow(string label, double min, double max, double step, Func<double, string> format,
+        void SliderRow(string icon, string label, double min, double max, double step, Func<double, string> format,
                        Func<double> get, Action<double> set, bool peek)
         {
             TextBlock value = new TextBlock { Text = format(get()), Foreground = (Brush)FindResource("Secondary"), VerticalAlignment = VerticalAlignment.Center };
@@ -373,14 +499,14 @@ Top = taskbarTop ? work.Top + 12 : work.Bottom - Height - 12;
                 if (peek) peekExpanded();
                 Apply();
             };
-            Row(label, null, value, slider);
+            Row(icon, label, null, value, slider);
         }
 
-        void ActionRow(string label, Action action)
+        void ActionRow(string icon, string label, Action action)
         {
             Button button = new Button { Content = label, Style = (Style)FindResource("LinkButton"), HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Center };
             button.Click += (s, e) => action();
-            Row(null, null, null, null, button);
+            Row(icon, null, null, null, null, button);
         }
 
         // Draws the whole settings page to a PNG for the README, at its full height.

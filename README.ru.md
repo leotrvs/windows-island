@@ -45,6 +45,8 @@ Dynamic Island для Windows. Музыка, Claude Code, его лимиты и
 | Codex работает | <img src="docs/images/codexcompact-en.png" alt="Компактная активность Codex" width="320"> |
 | Claude закончил или ему нужны вы | <img src="docs/images/banner-en.png" alt="Оповещение Claude" width="420"> |
 | Уведомление Windows | <img src="docs/images/notification-en.png" alt="Баннер уведомления" width="420"> |
+| Зарядка батареи | <img src="docs/images/battery-charging-en.png" alt="Оповещение о зарядке" width="420"> |
+| Низкий заряд | <img src="docs/images/battery-low-en.png" alt="Оповещение о низком заряде" width="420"> |
 | Claude развёрнут, с лимитами | <img src="docs/images/claudeexpanded-en.png" alt="Развёрнутый Claude с кольцами использования" width="460"> |
 
 ## Установка
@@ -73,6 +75,9 @@ Dynamic Island для Windows. Музыка, Claude Code, его лимиты и
 | Microphone and camera dots | Показывает точку рядом с островом, пока приложение использует микрофон (оранжевая) или камеру (зелёная) |
 | Battery alerts | Зарядное подключено или отключено, низкий заряд и полная зарядка. Только ноутбуки |
 | Show Windows notifications | Показывает новые уведомления в острове. По умолчанию выключено |
+| Alert size | Маленькие или обычные оповещения и уведомления |
+| Usage ring color | Синий, зелёный или фиолетовый. Рядом с лимитом кольца становятся жёлтыми и красными |
+| Language | По умолчанию как в Windows. Английский, португальский, испанский и русский |
 | Empty island | Свёрнутый остров остаётся простой капсулой без активностей. Наведите указатель или щёлкните, чтобы их увидеть |
 | Show pill when idle | Оставляет капсулу на экране, когда ничего не происходит |
 | Expand on hover | Разворачивает остров, когда на нём задерживается указатель. Если выключено, щёлкните |
@@ -121,8 +126,10 @@ pwsh -File scripts/build.ps1
 
 ## Планы
 
-В планах: меньший размер загрузки и новые активности. Полный список — в [docs/ROADMAP.md](docs/ROADMAP.md).
+Полный список планов находится в [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Лицензия
 
 [MIT](LICENSE). Название и логотип Claude не охватываются лицензией.
+
+Шрифт Inter входит в приложение по лицензии SIL Open Font License, см. [src/Assets/fonts/NOTICE.md](src/Assets/fonts/NOTICE.md).

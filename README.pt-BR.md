@@ -45,6 +45,8 @@ Uma Dynamic Island para o Windows. Música, Claude Code, os limites de uso e sua
 | Codex trabalhando | <img src="docs/images/codexcompact-pt.png" alt="Atividade compacta do Codex" width="320"> |
 | Claude terminou ou precisa de você | <img src="docs/images/banner-pt.png" alt="Aviso do Claude" width="420"> |
 | Uma notificação do Windows | <img src="docs/images/notification-pt.png" alt="Aviso de notificação" width="420"> |
+| Bateria carregando | <img src="docs/images/battery-charging-pt.png" alt="Aviso de carregamento" width="420"> |
+| Bateria baixa | <img src="docs/images/battery-low-pt.png" alt="Aviso de bateria baixa" width="420"> |
 | Claude expandido, com os limites | <img src="docs/images/claudeexpanded-pt.png" alt="Claude expandido com os anéis de uso" width="460"> |
 
 ## Instalar
@@ -73,6 +75,9 @@ Para testar sem instalar, rode `WindowsIsland.exe --portable`.
 | Pontos de microfone e câmera | Mostra um pontinho ao lado da ilha enquanto um app usa o microfone (laranja) ou a câmera (verde) |
 | Avisos de bateria | Carregador conectado ou removido, bateria baixa e carregada. Só em notebooks |
 | Mostrar notificações do Windows | Mostra as notificações novas na ilha. Vem desligado |
+| Tamanho dos avisos | Avisos e notificações pequenos ou normais |
+| Cor dos anéis de uso | Azul, verde ou roxo. Os anéis ficam amarelos e vermelhos perto do limite |
+| Idioma | Segue o Windows por padrão. Inglês, português, espanhol e russo |
 | Ilha vazia | Mantém a ilha recolhida como uma pílula simples, sem atividades. Passe o mouse ou clique para vê-las |
 | Mostrar pílula ociosa | Mantém a pílula na tela quando nada está acontecendo |
 | Expandir ao passar o mouse | Expande quando o mouse para sobre a ilha. Desligado, é preciso clicar |
@@ -119,8 +124,10 @@ Para contribuir, leia o [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Próximos passos
 
-Planejado: download menor e mais atividades ao vivo. A lista completa está em [docs/ROADMAP.md](docs/ROADMAP.md).
+A lista completa do que está planejado fica em [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Licença
 
 [MIT](LICENSE). O nome e o logo do Claude não estão cobertos.
+
+A fonte Inter vai junto no app, sob a SIL Open Font License, veja [src/Assets/fonts/NOTICE.md](src/Assets/fonts/NOTICE.md).

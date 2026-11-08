@@ -3,138 +3,226 @@ using System.Globalization;
 
 namespace WindowsIsland
 {
+    // Every text the app shows, in English, Portuguese, Spanish and Russian. The language follows Windows
+    // unless the user picks one in Settings.
     static class Strings
     {
-        static readonly bool Pt = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "pt";
+        static string lang = Detect();
 
-        static string T(string en, string pt) { return Pt ? pt : en; }
+        static string Detect()
+        {
+            return Normalize(CultureInfo.CurrentUICulture.TwoLetterISOLanguageName);
+        }
 
-        public static string ClaudeDone => T("Claude finished", "Claude terminou");
-        public static string ClaudeNeedsYou => T("Claude needs you", "Claude precisa de você");
-        public static string CodexDone => T("Codex finished", "Codex terminou");
-        public static string CodexIdle => T("No task running", "Nenhuma tarefa em andamento");
-        public static string CodexNoData => T("No data yet. Use Codex once to see its limits", "Sem dados ainda. Use o Codex uma vez para ver os limites");
-        public static string MenuCodex => T("Show Codex", "Mostrar Codex");
-        public static string MenuCodexBanners => T("Codex alerts", "Avisos do Codex");
-        public static string Working => T("Working", "Trabalhando");
-        public static string Waiting => T("Waiting", "Aguardando");
-        public static string WaitingForYou => T("Waiting for you", "Aguardando você");
-        public static string NoSession => T("No open session", "Nenhuma sessão aberta");
-        public static string Session5h => T("Session (5h)", "Sessão (5h)");
-        public static string Weekly => T("Week", "Semana");
-        public static string ReadingUsage => T("Reading your limits…", "Lendo seus limites…");
+        static string Normalize(string code)
+        {
+            code = (code ?? "").ToLowerInvariant();
+            return code == "pt" || code == "es" || code == "ru" ? code : "en";
+        }
+
+        // "Auto" (or empty) follows Windows; otherwise a language code: en, pt, es or ru.
+        public static void Use(string setting)
+        {
+            lang = string.IsNullOrWhiteSpace(setting) || setting.Equals("Auto", StringComparison.OrdinalIgnoreCase) ? Detect() : Normalize(setting);
+        }
+
+        public static string Current { get { return lang; } }
+
+        static CultureInfo Culture
+        {
+            get
+            {
+                try { return CultureInfo.GetCultureInfo(lang); }
+                catch (CultureNotFoundException) { return CultureInfo.InvariantCulture; }
+            }
+        }
+
+        static string T(string en, string pt, string es, string ru)
+        {
+            switch (lang)
+            {
+                case "pt": return pt;
+                case "es": return es;
+                case "ru": return ru;
+                default: return en;
+            }
+        }
+
+        public static string ClaudeDone => T("Claude finished", "Claude terminou", "Claude terminó", "Claude закончил");
+        public static string ClaudeNeedsYou => T("Claude needs you", "Claude precisa de você", "Claude te necesita", "Claude ждёт вас");
+        public static string CodexDone => T("Codex finished", "Codex terminou", "Codex terminó", "Codex закончил");
+        public static string CodexIdle => T("No task running", "Nenhuma tarefa em andamento", "Ninguna tarea en curso", "Нет активной задачи");
+        public static string CodexNoData => T("No data yet. Use Codex once to see its limits",
+                                              "Sem dados ainda. Use o Codex uma vez para ver os limites",
+                                              "Aún sin datos. Usa Codex una vez para ver sus límites",
+                                              "Данных пока нет. Запустите Codex один раз, чтобы увидеть лимиты");
+        public static string MenuCodex => T("Show Codex", "Mostrar Codex", "Mostrar Codex", "Показывать Codex");
+        public static string MenuCodexBanners => T("Codex alerts", "Avisos do Codex", "Avisos de Codex", "Оповещения Codex");
+        public static string Working => T("Working", "Trabalhando", "Trabajando", "Работает");
+        public static string Waiting => T("Waiting", "Aguardando", "Esperando", "Ожидает");
+        public static string WaitingForYou => T("Waiting for you", "Aguardando você", "Esperándote", "Ждёт вас");
+        public static string NoSession => T("No open session", "Nenhuma sessão aberta", "Ninguna sesión abierta", "Нет открытых сессий");
+        public static string Session5h => T("Session (5h)", "Sessão (5h)", "Sesión (5 h)", "Сессия (5 ч)");
+        public static string Weekly => T("Week", "Semana", "Semana", "Неделя");
+        public static string ReadingUsage => T("Reading your limits…", "Lendo seus limites…", "Leyendo tus límites…", "Чтение лимитов…");
         public static string ClaudeNotFound => T("Claude Code not found. Install it and sign in by running claude once.",
-                                                 "Claude Code não encontrado. Instale e entre rodando claude uma vez.");
-        public static string UnknownTrack => T("Unknown", "Desconhecido");
-        public static string SampleNotificationTitle => T("Lunch tomorrow?", "Almoço amanhã?");
-        public static string SampleNotificationBody => T("Are you free at noon? There is a new place nearby.", "Você está livre ao meio-dia? Abriu um lugar novo aqui perto.");
-        public static string SampleSession => T("Refactor the settings panel", "Refatorar o painel de ajustes");
+                                                 "Claude Code não encontrado. Instale e entre rodando claude uma vez.",
+                                                 "No se encontró Claude Code. Instálalo e inicia sesión ejecutando claude una vez.",
+                                                 "Claude Code не найден. Установите его и войдите, запустив claude один раз.");
+        public static string UnknownTrack => T("Unknown", "Desconhecido", "Desconocido", "Неизвестно");
+        public static string SampleNotificationTitle => T("Lunch tomorrow?", "Almoço amanhã?", "¿Almorzamos mañana?", "Обед завтра?");
+        public static string SampleNotificationBody => T("Are you free at noon? There is a new place nearby.",
+                                                         "Você está livre ao meio-dia? Abriu um lugar novo aqui perto.",
+                                                         "¿Estás libre al mediodía? Abrieron un sitio nuevo cerca.",
+                                                         "Вы свободны в полдень? Рядом открылось новое место.");
+        public static string SampleSession => T("Refactor the settings panel", "Refatorar o painel de ajustes", "Refactorizar el panel de ajustes", "Переработать панель настроек");
 
         public static string IdleSessions(int count)
         {
-            if (Pt) return count == 1 ? "1 sessão ociosa" : count + " sessões ociosas";
-            return count == 1 ? "1 idle session" : count + " idle sessions";
+            switch (lang)
+            {
+                case "pt": return count == 1 ? "1 sessão ociosa" : count + " sessões ociosas";
+                case "es": return count == 1 ? "1 sesión inactiva" : count + " sesiones inactivas";
+                case "ru":
+                    int last = count % 10, tens = count % 100;
+                    string word = last == 1 && tens != 11 ? "неактивная сессия" : last >= 2 && last <= 4 && (tens < 12 || tens > 14) ? "неактивные сессии" : "неактивных сессий";
+                    return count + " " + word;
+                default: return count == 1 ? "1 idle session" : count + " idle sessions";
+            }
         }
 
         public static string Resets(DateTime? when)
         {
             if (!when.HasValue) return "";
             string time = when.Value - DateTime.Now < TimeSpan.FromHours(20)
-                ? when.Value.ToString("HH:mm", CultureInfo.CurrentCulture)
-                : when.Value.ToString("ddd HH:mm", CultureInfo.CurrentCulture);
-            return T("resets ", "renova ") + time;
+                ? when.Value.ToString("HH:mm", Culture)
+                : when.Value.ToString("ddd HH:mm", Culture);
+            return T("resets ", "renova ", "se renueva ", "сброс ") + time;
         }
 
         // Install
-        public static string InstallTitle => T("Install Windows Island", "Instalar o Windows Island");
+        public static string InstallTitle => T("Install Windows Island", "Instalar o Windows Island", "Instalar Windows Island", "Установить Windows Island");
         public static string InstallPrompt => T(
             "Install Windows Island for your Windows user?\n\nIt adds Start menu and Desktop shortcuts and starts with Windows. You can uninstall it from Settings > Apps.",
-            "Instalar o Windows Island para o seu usuário do Windows?\n\nCria atalhos no menu Iniciar e na Área de Trabalho e inicia com o Windows. Dá para desinstalar em Configurações > Aplicativos.");
+            "Instalar o Windows Island para o seu usuário do Windows?\n\nCria atalhos no menu Iniciar e na Área de Trabalho e inicia com o Windows. Dá para desinstalar em Configurações > Aplicativos.",
+            "¿Instalar Windows Island para tu usuario de Windows?\n\nCrea accesos directos en el menú Inicio y el Escritorio y se inicia con Windows. Puedes desinstalarlo en Configuración > Aplicaciones.",
+            "Установить Windows Island для вашей учётной записи Windows?\n\nБудут созданы ярлыки в меню «Пуск» и на рабочем столе, приложение будет запускаться вместе с Windows. Удалить его можно в Параметры > Приложения.");
         public static string InstallFailed => T("The installation failed. Try again, or run with --portable.",
-                                                "A instalação falhou. Tente de novo ou rode com --portable.");
-        public static string UninstallTitle => T("Uninstall Windows Island", "Desinstalar o Windows Island");
+                                                "A instalação falhou. Tente de novo ou rode com --portable.",
+                                                "La instalación falló. Inténtalo de nuevo o ejecútalo con --portable.",
+                                                "Не удалось установить. Повторите попытку или запустите с --portable.");
+        public static string UninstallTitle => T("Uninstall Windows Island", "Desinstalar o Windows Island", "Desinstalar Windows Island", "Удалить Windows Island");
         public static string UninstallPrompt => T("Remove Windows Island, its shortcuts and its settings?",
-                                                  "Remover o Windows Island, os atalhos e as configurações?");
+                                                  "Remover o Windows Island, os atalhos e as configurações?",
+                                                  "¿Quitar Windows Island, sus accesos directos y su configuración?",
+                                                  "Удалить Windows Island, его ярлыки и настройки?");
 
-        // Tray menu
-        public static string MenuMusic => T("Show music", "Mostrar música");
-        public static string MenuClaude => T("Show Claude", "Mostrar Claude");
-        public static string MenuBanners => T("Claude alerts", "Avisos do Claude");
-        public static string MenuNotifications => T("Show Windows notifications", "Mostrar notificações do Windows");
-        // Settings window
-        public static string MenuSettings => T("Settings…", "Ajustes…");
-        public static string SettingsTitle => T("Settings", "Ajustes");
-        public static string SectionActivities => T("Activities", "Atividades");
-        public static string SectionBehavior => T("Behavior", "Comportamento");
-        public static string SectionAppearance => T("Appearance", "Aparência");
-        public static string SectionSystem => T("System", "Sistema");
-        public static string HintNotifications => T("Reads the text of new notifications to show them here", "Lê o texto das notificações novas para mostrá-las aqui");
-        public static string HintEmptyIsland => T("Stays a plain pill; hover to see activities", "Fica só a pílula; passe o mouse para ver as atividades");
-        public static string HintAutoHide => T("Comes back with new activity or when the mouse reaches its spot", "Volta com uma atividade nova ou quando o mouse chega ao lugar dela");
-        public static string MonitorLabel => T("Monitor", "Monitor");
-        public static string HintMonitor => T("With the mouse: the island moves to the screen the cursor is on", "Com o mouse: a ilha vai para a tela onde está o cursor");
-        public static string MonitorPrimary => T("Primary", "Principal");
-        public static string MonitorActive => T("With the mouse", "Com o mouse");
-        public static string MonitorAll => T("All", "Todos");
-        public static string MonitorNumber(int number) => T("Screen ", "Tela ") + number;
-        public static string CollapsedSize => T("Collapsed size", "Tamanho recolhida");
-        public static string ExpandedSize => T("Expanded size", "Tamanho expandida");
-        public static string DistanceFromEdge => T("Distance from the edge", "Distância da borda");
-        public static string HorizontalPosition => T("Horizontal position", "Posição horizontal");
-        public static string Centered => T("Centered", "Centralizada");
-        public static string ResetAppearance => T("Reset appearance", "Restaurar aparência");
+        // Tray menu and Settings
+        public static string MenuMusic => T("Show music", "Mostrar música", "Mostrar música", "Показывать музыку");
+        public static string MenuClaude => T("Show Claude", "Mostrar Claude", "Mostrar Claude", "Показывать Claude");
+        public static string MenuBanners => T("Claude alerts", "Avisos do Claude", "Avisos de Claude", "Оповещения Claude");
+        public static string MenuNotifications => T("Show Windows notifications", "Mostrar notificações do Windows", "Mostrar notificaciones de Windows", "Показывать уведомления Windows");
+        public static string MenuSettings => T("Settings…", "Ajustes…", "Ajustes…", "Настройки…");
+        public static string SettingsTitle => T("Settings", "Ajustes", "Ajustes", "Настройки");
+        public static string SectionActivities => T("Activities", "Atividades", "Actividades", "Активности");
+        public static string SectionBehavior => T("Behavior", "Comportamento", "Comportamiento", "Поведение");
+        public static string SectionAppearance => T("Appearance", "Aparência", "Apariencia", "Внешний вид");
+        public static string SectionSystem => T("System", "Sistema", "Sistema", "Система");
+        public static string HintNotifications => T("Reads the text of new notifications to show them here",
+                                                    "Lê o texto das notificações novas para mostrá-las aqui",
+                                                    "Lee el texto de las notificaciones nuevas para mostrarlas aquí",
+                                                    "Читает текст новых уведомлений, чтобы показать их здесь");
+        public static string HintEmptyIsland => T("Stays a plain pill; hover to see activities",
+                                                  "Fica só a pílula; passe o mouse para ver as atividades",
+                                                  "Queda solo la píldora; pasa el ratón para ver las actividades",
+                                                  "Остаётся простая капсула; наведите мышь, чтобы увидеть активности");
+        public static string HintAutoHide => T("Comes back with new activity or when the mouse reaches its spot",
+                                               "Volta com uma atividade nova ou quando o mouse chega ao lugar dela",
+                                               "Vuelve con una actividad nueva o cuando el ratón llega a su lugar",
+                                               "Возвращается при новой активности или когда мышь подходит к её месту");
+        public static string MonitorLabel => T("Monitor", "Monitor", "Monitor", "Монитор");
+        public static string HintMonitor => T("With the mouse: the island moves to the screen the cursor is on",
+                                              "Com o mouse: a ilha vai para a tela onde está o cursor",
+                                              "Con el ratón: la isla va a la pantalla donde está el cursor",
+                                              "С мышью: остров переходит на экран, где находится курсор");
+        public static string MonitorPrimary => T("Primary", "Principal", "Principal", "Основной");
+        public static string MonitorActive => T("With the mouse", "Com o mouse", "Con el ratón", "С мышью");
+        public static string MonitorAll => T("All", "Todos", "Todos", "Все");
+        public static string MonitorNumber(int number) => T("Screen ", "Tela ", "Pantalla ", "Экран ") + number;
+        public static string CollapsedSize => T("Collapsed size", "Tamanho recolhida", "Tamaño contraída", "Размер в свёрнутом виде");
+        public static string ExpandedSize => T("Expanded size", "Tamanho expandida", "Tamaño expandida", "Размер в развёрнутом виде");
+        public static string DistanceFromEdge => T("Distance from the edge", "Distância da borda", "Distancia del borde", "Отступ от края");
+        public static string HorizontalPosition => T("Horizontal position", "Posição horizontal", "Posición horizontal", "Положение по горизонтали");
+        public static string Centered => T("Centered", "Centralizada", "Centrada", "По центру");
+        public static string ResetAppearance => T("Reset appearance", "Restaurar aparência", "Restablecer apariencia", "Сбросить внешний вид");
 
-        public static string MenuAutoHide => T("Auto-hide when idle", "Esconder sozinha quando ociosa");
-        public static string MenuAlertDuration => T("Alert duration", "Duração dos avisos");
-        public static string MenuPausedMusic => T("Hide paused music after", "Esconder música pausada após");
+        public static string MenuAutoHide => T("Auto-hide when idle", "Esconder sozinha quando ociosa", "Ocultar sola cuando está inactiva", "Скрывать в простое");
+        public static string MenuAlertDuration => T("Alert duration", "Duração dos avisos", "Duración de los avisos", "Длительность оповещений");
+        public static string MenuPausedMusic => T("Hide paused music after", "Esconder música pausada após", "Ocultar música en pausa tras", "Скрывать музыку на паузе через");
 
         // 0 means "never" for auto-hide and "at once" for the others.
         public static string Duration(int seconds, bool zeroIsNever)
         {
-            if (seconds == 0) return zeroIsNever ? T("Never", "Nunca") : T("At once", "Na hora");
-            if (seconds >= 60 && seconds % 60 == 0) return (seconds / 60) + " min";
-            return seconds + " s";
+            if (seconds == 0) return zeroIsNever ? T("Never", "Nunca", "Nunca", "Никогда") : T("At once", "Na hora", "Al instante", "Сразу");
+            string minute = T("min", "min", "min", "мин"), second = T("s", "s", "s", "с");
+            if (seconds >= 60 && seconds % 60 == 0) return (seconds / 60) + " " + minute;
+            return seconds + " " + second;
         }
 
-        public static string MenuEmptyIsland => T("Empty island (no live activities)", "Ilha vazia (sem atividades)");
-        public static string MenuIdlePill => T("Show pill when idle", "Mostrar pílula ociosa");
-        public static string MenuHover => T("Expand on hover", "Expandir ao passar o mouse");
-        public static string MenuFullscreen => T("Hide in fullscreen", "Esconder em tela cheia");
-        public static string MenuPosition => T("Position", "Posição");
-        public static string MenuTop => T("Top", "Topo");
-        public static string MenuBottom => T("Bottom", "Embaixo");
-        public static string MenuStartup => T("Start with Windows", "Iniciar com o Windows");
-        public static string MenuAutoUpdate => T("Automatic updates", "Atualizações automáticas");
-        public static string MenuCheckUpdates => T("Check for updates", "Procurar atualizações");
-        public static string UpToDate => T("You have the latest version", "Você está na versão mais recente");
-        public static string UpdateFailed => T("Could not check for updates", "Não foi possível procurar atualizações");
-        public static string UpdatesNeedInstall => T("Updates work in the installed copy", "As atualizações funcionam na cópia instalada");
-        public static string UpdatedTo(string version) => T("Updated to version ", "Atualizado para a versão ") + version;
-        public static string MenuOpenSettings => T("Open settings file", "Abrir arquivo de configurações");
-        public static string MenuQuit => T("Quit", "Sair");
-        public static string MenuTimer => T("Timer", "Timer");
-        public static string MenuTimerMinutes(int minutes) => minutes < 60 ? minutes + T(" min", " min") : (minutes / 60) + " h";
-        public static string MenuStopwatch => T("Stopwatch", "Cronômetro");
-        public static string MenuStopTimer => T("Stop", "Parar");
-        public static string RingColorLabel => T("Usage ring color", "Cor dos anéis de uso");
-        public static string ColorBlue => T("Blue", "Azul");
-        public static string ColorGreen => T("Green", "Verde");
-        public static string ColorPurple => T("Purple", "Roxo");
-        public static string TimerStart => T("Start", "Iniciar");
-        public static string TimerPause => T("Pause", "Pausar");
-        public static string TimerResume => T("Resume", "Continuar");
-        public static string TimerPaused => T("Paused", "Pausado");
-        public static string TimerPickLength => T("Set a length", "Escolha a duração");
-        public static string TimerFinished => T("Timer finished", "Timer terminou");
-        public static string TimerLabel => T("Timer", "Timer");
-        public static string StopwatchLabel => T("Stopwatch", "Cronômetro");
-        public static string MenuPrivacyDots => T("Microphone and camera dots", "Pontos de microfone e câmera");
-        public static string HintPrivacyDots => T("Orange when the microphone is in use, green for the camera", "Laranja com o microfone em uso, verde com a câmera");
-        public static string MenuBatteryAlerts => T("Battery alerts", "Avisos de bateria");
-        public static string HintBatteryAlerts => T("Charger and low battery, on laptops", "Carregador e bateria baixa, em notebooks");
-        public static string BatteryCharging => T("Charging", "Carregando");
-        public static string BatteryUnplugged => T("Charger disconnected", "Carregador desconectado");
-        public static string BatteryFull => T("Battery full", "Bateria carregada");
-        public static string BatteryLow => T("Battery low", "Bateria baixa");
+        public static string MenuEmptyIsland => T("Empty island (no live activities)", "Ilha vazia (sem atividades)", "Isla vacía (sin actividades)", "Пустой остров (без активностей)");
+        public static string MenuIdlePill => T("Show pill when idle", "Mostrar pílula ociosa", "Mostrar píldora en reposo", "Показывать капсулу в простое");
+        public static string MenuHover => T("Expand on hover", "Expandir ao passar o mouse", "Expandir al pasar el ratón", "Раскрывать при наведении");
+        public static string MenuFullscreen => T("Hide in fullscreen", "Esconder em tela cheia", "Ocultar en pantalla completa", "Скрывать в полноэкранном режиме");
+        public static string MenuPosition => T("Position", "Posição", "Posición", "Положение");
+        public static string MenuTop => T("Top", "Topo", "Arriba", "Сверху");
+        public static string MenuBottom => T("Bottom", "Embaixo", "Abajo", "Снизу");
+        public static string MenuStartup => T("Start with Windows", "Iniciar com o Windows", "Iniciar con Windows", "Запускать с Windows");
+        public static string MenuAutoUpdate => T("Automatic updates", "Atualizações automáticas", "Actualizaciones automáticas", "Автоматические обновления");
+        public static string MenuCheckUpdates => T("Check for updates", "Procurar atualizações", "Buscar actualizaciones", "Проверить обновления");
+        public static string UpdateChecking => T("Checking for updates…", "Procurando atualizações…", "Buscando actualizaciones…", "Поиск обновлений…");
+        public static string UpdateDownload(string version) => T("Download update ", "Baixar a atualização ", "Descargar la actualización ", "Скачать обновление ") + version;
+        public static string UpdateDownloading => T("Downloading the update…", "Baixando a atualização…", "Descargando la actualización…", "Загрузка обновления…");
+        public static string UpToDate => T("You have the latest version", "Você está na versão mais recente", "Tienes la versión más reciente", "У вас последняя версия");
+        public static string UpdateFailed => T("Could not check for updates", "Não foi possível procurar atualizações", "No se pudo buscar actualizaciones", "Не удалось проверить обновления");
+        public static string UpdatesNeedInstall => T("Updates work in the installed copy", "As atualizações funcionam na cópia instalada", "Las actualizaciones funcionan en la copia instalada", "Обновления работают в установленной копии");
+        public static string UpdatedTo(string version) => T("Updated to version ", "Atualizado para a versão ", "Actualizado a la versión ", "Обновлено до версии ") + version;
+        public static string MenuOpenSettings => T("Open settings file", "Abrir arquivo de configurações", "Abrir archivo de configuración", "Открыть файл настроек");
+        public static string MenuQuit => T("Quit", "Sair", "Salir", "Выход");
+        public static string MenuTimer => T("Timer", "Timer", "Temporizador", "Таймер");
+        public static string MenuTimerMinutes(int minutes) => minutes < 60 ? minutes + " " + T("min", "min", "min", "мин") : (minutes / 60) + " " + T("h", "h", "h", "ч");
+        public static string MenuStopwatch => T("Stopwatch", "Cronômetro", "Cronómetro", "Секундомер");
+        public static string MenuStopTimer => T("Stop", "Parar", "Detener", "Стоп");
+        public static string RingColorLabel => T("Usage ring color", "Cor dos anéis de uso", "Color de los anillos de uso", "Цвет колец лимитов");
+        public static string ColorBlue => T("Blue", "Azul", "Azul", "Синий");
+        public static string ColorGreen => T("Green", "Verde", "Verde", "Зелёный");
+        public static string ColorPurple => T("Purple", "Roxo", "Morado", "Фиолетовый");
+        public static string TimerStart => T("Start", "Iniciar", "Iniciar", "Старт");
+        public static string TimerPause => T("Pause", "Pausar", "Pausar", "Пауза");
+        public static string TimerResume => T("Resume", "Continuar", "Continuar", "Продолжить");
+        public static string TimerPaused => T("Paused", "Pausado", "En pausa", "На паузе");
+        public static string TimerPickLength => T("Set a length", "Escolha a duração", "Elige la duración", "Выберите время");
+        public static string TimerFinished => T("Timer finished", "Timer terminou", "El temporizador terminó", "Таймер завершён");
+        public static string TimerLabel => T("Timer", "Timer", "Temporizador", "Таймер");
+        public static string StopwatchLabel => T("Stopwatch", "Cronômetro", "Cronómetro", "Секундомер");
+        public static string MenuPrivacyDots => T("Microphone and camera dots", "Pontos de microfone e câmera", "Puntos de micrófono y cámara", "Точки микрофона и камеры");
+        public static string HintPrivacyDots => T("Orange when the microphone is in use, green for the camera",
+                                                  "Laranja com o microfone em uso, verde com a câmera",
+                                                  "Naranja con el micrófono en uso, verde con la cámara",
+                                                  "Оранжевая, пока используется микрофон, зелёная для камеры");
+        public static string MenuBatteryAlerts => T("Battery alerts", "Avisos de bateria", "Avisos de batería", "Оповещения о батарее");
+        public static string HintBatteryAlerts => T("Charger and low battery, on laptops",
+                                                    "Carregador e bateria baixa, em notebooks",
+                                                    "Cargador y batería baja, en portátiles",
+                                                    "Зарядное устройство и низкий заряд, на ноутбуках");
+        public static string BatteryCharging => T("Charging", "Carregando", "Cargando", "Зарядка");
+        public static string BatteryUnplugged => T("Charger disconnected", "Carregador desconectado", "Cargador desconectado", "Зарядное отключено");
+        public static string BatteryFull => T("Battery full", "Bateria carregada", "Batería cargada", "Батарея заряжена");
+        public static string BatteryLow => T("Battery low", "Bateria baixa", "Batería baja", "Низкий заряд батареи");
+
+        public static string LanguageLabel => T("Language", "Idioma", "Idioma", "Язык");
+        public static string LanguageAuto => T("Automatic", "Automático", "Automático", "Автоматически");
+        public static string BannerSizeLabel => T("Alert size", "Tamanho dos avisos", "Tamaño de los avisos", "Размер оповещений");
+        public static string BannerSmall => T("Small", "Pequeno", "Pequeño", "Малый");
+        public static string BannerNormal => T("Normal", "Normal", "Normal", "Обычный");
     }
 }

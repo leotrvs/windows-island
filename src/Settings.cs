@@ -9,10 +9,10 @@ namespace WindowsIsland
     {
         public string Position { get; set; } = "Top"; // Top or Bottom
         public string Monitor { get; set; } = "Primary"; // Primary, Active (follows the mouse), All, or a device name
-        public double OffsetY { get; set; } = 8;
+        public double OffsetY { get; set; } = 5;
         public double OffsetX { get; set; } = 0;             // From the screen's center, in DIPs
-        public double CollapsedScale { get; set; } = 1.0;    // Idle and compact island
-        public double ExpandedScale { get; set; } = 1.0;     // Expanded island and alerts
+        public double CollapsedScale { get; set; } = 0.9;    // Idle and compact island
+        public double ExpandedScale { get; set; } = 0.95;     // Expanded island and alerts
         public bool ShowIdlePill { get; set; } = true;
         public bool EmptyIsland { get; set; } = false; // Plain pill only; activities show when it expands
         public int AlertSeconds { get; set; } = 5;       // Claude alerts, notifications and app messages
@@ -24,6 +24,8 @@ namespace WindowsIsland
         public bool ClaudeBanners { get; set; } = true;
         public bool ShowCodex { get; set; } = true;     // Only shows anything once Codex is installed
         public bool CodexBanners { get; set; } = true;
+        public string Language { get; set; } = "Auto";   // Auto follows Windows; or en, pt, es, ru
+        public string BannerSize { get; set; } = "Small"; // Small or Normal
         public string RingColor { get; set; } = "Blue";  // Usage rings: Blue, Green or Purple
         public bool ShowPrivacyDots { get; set; } = true;
         public bool BatteryAlerts { get; set; } = true;
@@ -78,10 +80,10 @@ namespace WindowsIsland
 
         public void ResetAppearance()
         {
-            OffsetY = 8;
+            OffsetY = 5;
             OffsetX = 0;
-            CollapsedScale = 1.0;
-            ExpandedScale = 1.0;
+            CollapsedScale = 0.9;
+            ExpandedScale = 0.95;
         }
 
         public void Save()

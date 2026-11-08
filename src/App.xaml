@@ -2,4 +2,20 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              ShutdownMode="OnExplicitShutdown">
+    <Application.Resources>
+        <!-- Inter, bundled in the exe so the app looks the same on every PC. Characters it lacks (such as Cyrillic) fall back to Segoe UI. -->
+        <FontFamily x:Key="Inter">./Assets/fonts/#Usage Inter, Segoe UI Variable Text, Segoe UI</FontFamily>
+        <FontFamily x:Key="InterSemiBold">./Assets/fonts/#Usage Inter SemiBold, Segoe UI Variable Text, Segoe UI</FontFamily>
+        <Style TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource Inter}"/>
+            <Style.Triggers>
+                <Trigger Property="FontWeight" Value="SemiBold">
+                    <Setter Property="FontFamily" Value="{StaticResource InterSemiBold}"/>
+                </Trigger>
+                <Trigger Property="FontWeight" Value="Bold">
+                    <Setter Property="FontFamily" Value="{StaticResource InterSemiBold}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Application.Resources>
 </Application>

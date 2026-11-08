@@ -45,6 +45,8 @@ A Dynamic Island for Windows. Music, Claude Code, its usage limits and your noti
 | Codex working | <img src="docs/images/codexcompact-en.png" alt="Compact Codex activity" width="320"> |
 | Claude finished or needs you | <img src="docs/images/banner-en.png" alt="Claude alert" width="420"> |
 | A Windows notification | <img src="docs/images/notification-en.png" alt="Notification banner" width="420"> |
+| Battery charging | <img src="docs/images/battery-charging-en.png" alt="Charging alert" width="420"> |
+| Battery low | <img src="docs/images/battery-low-en.png" alt="Low battery alert" width="420"> |
 | Claude expanded, with the limits | <img src="docs/images/claudeexpanded-en.png" alt="Claude expanded with usage rings" width="460"> |
 
 ## Install
@@ -73,6 +75,9 @@ To try it without installing, run `WindowsIsland.exe --portable`.
 | Microphone and camera dots | Shows a small dot beside the island while an app uses the microphone (orange) or the camera (green) |
 | Battery alerts | Charger connected or removed, low battery and fully charged. Laptops only |
 | Show Windows notifications | Shows new notifications in the island. Off by default |
+| Alert size | Small or normal alerts and notifications |
+| Usage ring color | Blue, green or purple. The rings turn amber and red near the limit |
+| Language | Follows Windows by default. English, Portuguese, Spanish and Russian |
 | Empty island | Keeps the collapsed island a plain pill, with no live activities. Hover or click to see them |
 | Show pill when idle | Keeps the small pill on screen when nothing is happening |
 | Expand on hover | Expands when the mouse rests on the island. When off, click it |
@@ -119,8 +124,10 @@ Contributors should read [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Roadmap
 
-Planned next: a smaller download and more live activities. The full list is in [docs/ROADMAP.md](docs/ROADMAP.md).
+The full list of what is planned is in [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## License
 
 [MIT](LICENSE). The Claude name and logo are not covered.
+
+The Inter font is bundled under the SIL Open Font License, see [src/Assets/fonts/NOTICE.md](src/Assets/fonts/NOTICE.md).

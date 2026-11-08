@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.11.0
+
+- **Check for updates** now shows what it is doing: a spinning icon and "Checking for updates…", then a download icon and "Download update 1.x" when one is found. Nothing is downloaded until you click. Automatic updates still install by themselves
+- **Languages:** English, Portuguese, Spanish and Russian, picked automatically from Windows. Change it in Settings, System, Language
+- **Inter** is now the font, bundled in the app (SIL Open Font License)
+- **Smaller alerts:** notifications and alerts are about 20% smaller, with a Small or Normal choice in Settings, Appearance
+- **Battery alerts** have their own icon (charging, low, full). Previews are in the README
+- **Icons** on every row of the Settings window, and a really thin scroll bar
+- **Defaults:** collapsed size 90%, expanded size 95%, distance from the edge 5 px (new installs; your own choices are kept)
+- `--preview=Settings` opens the Settings window with sample data
+
 ## 1.10.1
 
 - The Settings window now behaves like a tray flyout: it takes the focus (which closes the hidden-icons panel), slides up into the corner by the taskbar, stays above other windows until you click elsewhere, and Esc closes it

@@ -325,16 +325,20 @@
 
                 <!-- Alert banner: Claude alerts and Windows notifications -->
                 <Grid x:Name="Banner" Width="352" Height="74">
+                    <Viewbox Stretch="Uniform"><Grid Width="352" Height="74">
                     <Grid Margin="16,0,22,0" VerticalAlignment="Center">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <Border x:Name="BannerIcon" Width="42" Height="42" CornerRadius="21" Background="#29E8875F">
                             <Grid>
                                 <local:ClaudeSpark x:Name="BannerSpark" Width="26" Height="26"/>
                                 <Path x:Name="BannerBell" Data="{StaticResource BellGlyph}" Fill="White" Width="18" Height="19"
                                       Stretch="Uniform" Visibility="Collapsed"/>
+                                <TextBlock x:Name="BannerGlyph" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="21" Foreground="White"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"/>
                                 <Image x:Name="BannerCodex" Source="Assets/codex.png" Width="30" Height="30" Visibility="Collapsed"/>
                             </Grid>
                         </Border>
@@ -343,7 +347,12 @@
                             <TextBlock x:Name="BannerTitle" FontSize="15" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
                             <TextBlock x:Name="BannerSubtitle" Style="{StaticResource Caption}" FontSize="13" Margin="0,1,0,0"/>
                         </StackPanel>
+                        <!-- A big value on the right, such as the battery percentage -->
+                        <TextBlock x:Name="BannerSide" Grid.Column="2" FontSize="26" FontWeight="SemiBold" VerticalAlignment="Center"
+                                   Margin="12,0,2,0" Typography.NumeralAlignment="Tabular" Visibility="Collapsed"/>
                     </Grid>
+                
+                    </Grid></Viewbox>
                 </Grid>
                 <!-- Which page is open, when there is more than one -->
                 <StackPanel x:Name="PageDots" Orientation="Horizontal" Visibility="Collapsed" Background="Transparent"/>

@@ -31,7 +31,7 @@ namespace WindowsIsland
         readonly List<IslandWindow> islands = new List<IslandWindow>();
         readonly DispatcherTimer followTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(300) };
         DispatcherTimer updateTimer;
-        bool updating;
+        UpdateFlow updates;
         SettingsWindow settingsWindow;
         EventWaitHandle showSettings;
         const string ShowSettingsEvent = @"Local\WindowsIsland.ShowSettings";
@@ -111,6 +111,7 @@ namespace WindowsIsland
             }
 
             settings = sample ? new Settings() : Settings.Load();
+            if (!sample) Strings.Use(settings.Language);
             media = new MediaService(Dispatcher);
             claude = new ClaudeService(Dispatcher);
             codex = new CodexService(Dispatcher);
@@ -129,6 +130,12 @@ namespace WindowsIsland
                 // Previews and README images use a single island on the primary monitor.
                 IslandWindow window = new IslandWindow(settings, media, claude, codex, timer, privacy);
                 islands.Add(window);
+                if (string.Equals(preview, "Settings", StringComparison.OrdinalIgnoreCase))
+                {
+                    new SettingsWindow(settings, () => { }, null, () => { }).Show(); // A look at the Settings window with sample data
+                    window.Show();
+                    return;
+                }
                 if (preview != null) window.Preview(preview);
                 if (frames != null)
                 {
@@ -150,7 +157,7 @@ namespace WindowsIsland
                     {
                         string suffix = "-" + CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
                         window.RenderStates(render, suffix);
-                        SettingsWindow page = new SettingsWindow(new Settings(), () => { }, () => { }, () => { });
+                        SettingsWindow page = new SettingsWindow(new Settings(), () => { }, null, () => { });
                         page.SaveSnapshot(System.IO.Path.Combine(render, "settings" + suffix + ".png"));
                         Shutdown();
                     }));
@@ -172,9 +179,10 @@ namespace WindowsIsland
             {
                 foreach (IslandWindow island in islands) island.ShowSystemBanner(Strings.TimerFinished, "");
             };
-            battery.Alert += (title, body) => MainIsland?.ShowSystemBanner(title, body);
+            battery.Alert += (title, body, kind) => MainIsland?.ShowSystemBanner(title, body, kind);
             Action applySettings = () =>
             {
+                if (!sample) Strings.Use(settings.Language);
                 if (settings.ShowPrivacyDots && !sample) privacy.Start();
                 else privacy.Stop();
                 if (settings.BatteryAlerts && !sample) battery.Start();
@@ -185,11 +193,13 @@ namespace WindowsIsland
                 else notifications.Stop();
             };
 
+            updates = new UpdateFlow(Dispatcher, () => islands.Exists(i => i.IsBusy), () => Shutdown(),
+                message => MainIsland.ShowSystemBanner(Installer.Name, message));
             Action openSettings = () =>
             {
                 if (settingsWindow == null)
                 {
-                    settingsWindow = new SettingsWindow(settings, applySettings, () => _ = CheckForUpdatesAsync(true),
+                    settingsWindow = new SettingsWindow(settings, applySettings, updates,
                         () => { foreach (IslandWindow island in islands) island.PeekExpanded(); });
                     settingsWindow.Closed += (s, a) => settingsWindow = null;
                     settingsWindow.Show();
@@ -198,7 +208,12 @@ namespace WindowsIsland
                 settingsWindow.Activate();
             };
 
-            tray = new Tray(settings, applySettings, openSettings, () => _ = CheckForUpdatesAsync(true), () => Shutdown(), timer);
+            tray = new Tray(settings, applySettings, openSettings, () =>
+            {
+                openSettings();
+                if (settingsWindow != null) settingsWindow.GoToSystem();
+                _ = updates.CheckAsync(true);
+            }, () => Shutdown(), timer);
             if (sample) return;
             if (settings.ShowPrivacyDots) privacy.Start();
             if (settings.BatteryAlerts) battery.Start();
@@ -219,7 +234,7 @@ namespace WindowsIsland
             updateTimer.Tick += (s, a) =>
             {
                 updateTimer.Interval = UpdateInterval;
-                if (settings.AutoUpdate) _ = CheckForUpdatesAsync(false);
+                if (settings.AutoUpdate) _ = updates.CheckAsync(false);
             };
             updateTimer.Start();
         }
@@ -294,37 +309,6 @@ namespace WindowsIsland
         {
             try { return singleInstance.WaitOne(UpdateHandoverMs); }
             catch (AbandonedMutexException) { return true; }
-        }
-
-        async Task CheckForUpdatesAsync(bool manual)
-        {
-            if (updating) return;
-            updating = true;
-            try
-            {
-                if (!Updater.CanUpdate)
-                {
-                    if (manual) MainIsland.ShowSystemBanner(Installer.Name, Strings.UpdatesNeedInstall);
-                    return;
-                }
-
-                Tuple<UpdateResult, UpdateInfo> check = await Updater.CheckAsync();
-                if (check.Item1 == UpdateResult.Available && await Updater.DownloadVerifiedAsync(check.Item2))
-                {
-                    while (islands.Exists(i => i.IsBusy)) await Task.Delay(2000); // Never restart under the user's mouse
-                    if (Updater.ApplyAndRestart())
-                    {
-                        Shutdown();
-                        return;
-                    }
-                }
-                if (manual)
-                    MainIsland.ShowSystemBanner(Installer.Name, check.Item1 == UpdateResult.UpToDate ? Strings.UpToDate : Strings.UpdateFailed);
-            }
-            finally
-            {
-                updating = false;
-            }
         }
 
         protected override void OnExit(ExitEventArgs e)

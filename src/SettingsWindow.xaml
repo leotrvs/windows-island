@@ -48,7 +48,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="RadioButton">
-                        <Border x:Name="Chip" CornerRadius="7" Background="Transparent" Padding="10,5" Margin="2">
+                        <Border x:Name="Chip" CornerRadius="7" Background="Transparent" Padding="8,5" Margin="1.5">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
@@ -140,8 +140,9 @@
         </Style>
 
         <!-- A scrollbar that stays out of the way: thin, rounded, no arrows -->
-        <Style TargetType="ScrollBar">
+        <Style x:Key="ThinScroll" TargetType="ScrollBar">
             <Setter Property="Width" Value="5"/>
+            <Setter Property="MinWidth" Value="0"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ScrollBar">
@@ -169,7 +170,7 @@
         </Grid.RowDefinitions>
         <StackPanel Grid.Row="0" Margin="20,12,14,6">
             <Grid Margin="0,0,0,8">
-                <TextBlock x:Name="Heading" FontFamily="Segoe UI Variable Display, Segoe UI" FontSize="24" FontWeight="Bold" Margin="4,0,0,0" VerticalAlignment="Center"/>
+                <TextBlock x:Name="Heading" FontSize="24" FontWeight="Bold" Margin="4,0,0,0" VerticalAlignment="Center"/>
                 <Border x:Name="CloseButton" Width="30" Height="30" CornerRadius="15" Background="Transparent" Cursor="Hand"
                         HorizontalAlignment="Right" VerticalAlignment="Center" shell:WindowChrome.IsHitTestVisibleInChrome="True">
                     <Path Data="M 0,0 L 10,10 M 10,0 L 0,10" Stroke="#FF8E8E93" StrokeThickness="1.6" StrokeStartLineCap="Round"
@@ -178,7 +179,7 @@
             </Grid>
             <ContentControl x:Name="TabBar"/>
         </StackPanel>
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Focusable="False">
+        <ScrollViewer x:Name="Scroller" Grid.Row="1" VerticalScrollBarVisibility="Auto" Focusable="False">
             <StackPanel x:Name="Content" Margin="20,0,16,22"/>
         </ScrollViewer>
     </Grid>

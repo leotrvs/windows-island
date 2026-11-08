@@ -201,7 +201,7 @@ namespace WindowsIsland
 
         [DllImport("kernel32.dll")] static extern bool GetSystemPowerStatus(out SYSTEM_POWER_STATUS status);
 
-        public event Action<string, string> Alert; // title, body
+        public event Action<string, string, string> Alert; // title, body, kind
 
         readonly DispatcherTimer timer;
         bool known, wasOnAc, wasFull;
@@ -233,13 +233,13 @@ namespace WindowsIsland
 
             if (known)
             {
-                if (onAc && !wasOnAc) Alert?.Invoke(Strings.BatteryCharging, percent + "%");
-                else if (!onAc && wasOnAc) Alert?.Invoke(Strings.BatteryUnplugged, percent + "%");
-                else if (full && !wasFull) Alert?.Invoke(Strings.BatteryFull, "100%");
+                if (onAc && !wasOnAc) Alert?.Invoke(Strings.BatteryCharging, percent + "%", "charging");
+                else if (!onAc && wasOnAc) Alert?.Invoke(Strings.BatteryUnplugged, percent + "%", "unplugged");
+                else if (full && !wasFull) Alert?.Invoke(Strings.BatteryFull, "100%", "full");
                 if (!onAc)
                 {
                     int level = percent <= 10 ? 10 : percent <= 20 ? 20 : 100;
-                    if (level < lowNotified) Alert?.Invoke(Strings.BatteryLow, percent + "%");
+                    if (level < lowNotified) Alert?.Invoke(Strings.BatteryLow, percent + "%", "low");
                     lowNotified = Math.Min(lowNotified, level);
                 }
             }

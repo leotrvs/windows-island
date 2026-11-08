@@ -137,16 +137,12 @@ namespace WindowsIsland
             SetupButton(BtnWatch, timer.StartStopwatch);
             SetupButton(BtnPause, timer.PauseOrResume);
             SetupButton(BtnStop, timer.Stop);
-            BtnStartText.Text = Strings.TimerStart;
-            BtnWatchText.Text = Strings.MenuStopwatch;
-            BtnStopText.Text = Strings.MenuStopTimer;
             Pill.MouseWheel += OnPillWheel;
             ProgressHit.MouseLeftButtonUp += Seek;
             ProgressHit.MouseLeftButtonDown += (s, e) => e.Handled = true;
 
-            SessionLabel.Text = Strings.Session5h;
-            WeeklyLabel.Text = Strings.Weekly;
-            CodexWeeklyLabel.Text = Strings.Weekly;
+            ApplyTexts();
+            ApplyBannerSize();
 
             Pill.MouseEnter += OnPillEnter;
             Pill.MouseLeave += OnPillLeave;
@@ -257,6 +253,7 @@ namespace WindowsIsland
         Size SizeOf(View value)
         {
             if (value == View.ClaudeExpanded) return new Size(372, ClaudePanelHeight);
+            if (value == View.Banner) return new Size(Banner.Width, Banner.Height);
             return Sizes[value];
         }
 
@@ -396,6 +393,24 @@ namespace WindowsIsland
             Root.UpdateLayout();
             ApplyFrame();
             SaveSnapshot(System.IO.Path.Combine(folder, "notification" + suffix + ".png"));
+
+            // What the battery alerts look like on a laptop
+            foreach (string kind in new[] { "charging", "low" })
+            {
+                BannerItem alert = new BannerItem
+                {
+                    App = Installer.Name,
+                    Title = kind == "low" ? Strings.BatteryLow : Strings.BatteryCharging,
+                    Side = kind == "low" ? "18%" : "54%",
+                    Seconds = 5,
+                };
+                ApplyKind(alert, kind);
+                banners.Enqueue(alert);
+                NextBanner();
+                Root.UpdateLayout();
+                ApplyFrame();
+                SaveSnapshot(System.IO.Path.Combine(folder, "battery-" + kind + suffix + ".png"));
+            }
         }
 
         void SnapAll()
@@ -493,8 +508,30 @@ namespace WindowsIsland
             using (FileStream stream = File.Create(file)) encoder.Save(stream);
         }
 
+        // Fixed texts, again after the language changes.
+        void ApplyTexts()
+        {
+            SessionLabel.Text = Strings.Session5h;
+            WeeklyLabel.Text = Strings.Weekly;
+            CodexWeeklyLabel.Text = Strings.Weekly;
+            BtnStartText.Text = Strings.TimerStart;
+            BtnWatchText.Text = Strings.MenuStopwatch;
+            BtnStopText.Text = Strings.MenuStopTimer;
+        }
+
+        // Alerts come in two sizes; the content is scaled as a whole, so nothing else changes.
+        void ApplyBannerSize()
+        {
+            double k = string.Equals(settings.BannerSize, "Normal", StringComparison.OrdinalIgnoreCase) ? 1.0 : 0.8;
+            Banner.Width = 352 * k;
+            Banner.Height = 74 * k;
+        }
+
         public void SettingsChanged()
         {
+            ApplyTexts();
+            ApplyBannerSize();
+            UpdateTimerPage();
             UpdatePrivacy();
             UpdateCodex();
             PlaceWindow();
@@ -718,6 +755,9 @@ namespace WindowsIsland
         {
             public bool FromClaude;
             public bool FromCodex;
+            public string Side;        // A large value shown on the right
+            public string Glyph;       // A Segoe icon instead of the bell, such as for the battery
+            public Brush GlyphBrush;
             public string App;
             public string Title;
             public string Subtitle;
@@ -754,9 +794,24 @@ namespace WindowsIsland
         }
 
         // Messages from the app itself, such as update results. Not gated by the notifications option.
-        internal void ShowSystemBanner(string title, string body)
+        internal void ShowSystemBanner(string title, string body, string kind = null)
         {
-            Enqueue(new BannerItem { App = Installer.Name, Title = title, Subtitle = body, Seconds = settings.AlertSeconds });
+            BannerItem item = new BannerItem { App = Installer.Name, Title = title, Subtitle = body, Seconds = settings.AlertSeconds };
+            ApplyKind(item, kind);
+            if (kind != null) { item.Side = item.Subtitle; item.Subtitle = null; } // Battery: the percentage goes big on the right
+            Enqueue(item);
+        }
+
+        // Battery alerts carry an icon of their own.
+        static void ApplyKind(BannerItem item, string kind)
+        {
+            switch (kind)
+            {
+                case "charging": item.Glyph = "\uE83E"; item.GlyphBrush = Green; break;
+                case "full": item.Glyph = "\uE83F"; item.GlyphBrush = Green; break;
+                case "low": item.Glyph = "\uE850"; item.GlyphBrush = Red; break;
+                case "unplugged": item.Glyph = "\uE83F"; break;
+            }
         }
 
         // True while the user is looking at or using the island, so an update restart waits.
@@ -785,13 +840,23 @@ namespace WindowsIsland
 
             BannerSpark.Visibility = item.FromClaude ? Visibility.Visible : Visibility.Collapsed;
             BannerCodex.Visibility = item.FromCodex ? Visibility.Visible : Visibility.Collapsed;
-            BannerBell.Visibility = item.FromClaude || item.FromCodex ? Visibility.Collapsed : Visibility.Visible;
+            bool glyph = item.Glyph != null;
+            BannerGlyph.Visibility = glyph ? Visibility.Visible : Visibility.Collapsed;
+            if (glyph)
+            {
+                BannerGlyph.Text = item.Glyph;
+                BannerGlyph.Foreground = item.GlyphBrush ?? White;
+            }
+            BannerBell.Visibility = item.FromClaude || item.FromCodex || glyph ? Visibility.Collapsed : Visibility.Visible;
             BannerIcon.Background = item.FromClaude ? ClaudeTint : item.FromCodex ? CodexTint : NotificationTint;
             BannerApp.Text = item.App ?? "";
             BannerApp.Visibility = item.FromClaude || string.IsNullOrEmpty(item.App) ? Visibility.Collapsed : Visibility.Visible;
             BannerTitle.Text = item.Title;
             BannerSubtitle.Text = item.Subtitle ?? "";
             BannerSubtitle.Visibility = string.IsNullOrEmpty(item.Subtitle) ? Visibility.Collapsed : Visibility.Visible;
+            BannerSide.Text = item.Side ?? "";
+            BannerSide.Foreground = item.GlyphBrush ?? White;
+            BannerSide.Visibility = string.IsNullOrEmpty(item.Side) ? Visibility.Collapsed : Visibility.Visible;
 
             bannerUntil = DateTime.Now.AddSeconds(item.Seconds);
             Recompute();
