@@ -459,7 +459,9 @@ namespace WindowsIsland
             if (!IsLoaded && animate) return;
             UpdateLayout();
             double chrome = ActualHeight - Scroller.ActualHeight;
-            double want = chrome + Content.ActualHeight + Content.Margin.Top + Content.Margin.Bottom;
+            // The panel is stretched to fill the scroll area, so its own height cannot tell when the content shrank: measure what it needs
+            Content.Measure(new Size(Math.Max(1, Content.ActualWidth), double.PositiveInfinity));
+            double want = chrome + Content.DesiredSize.Height;
             double cx = Left + Width / 2;
             Rect work = Displays.Primary().WorkArea;
             foreach (Display d in Displays.All()) if (cx >= d.WorkArea.Left && cx <= d.WorkArea.Right) { work = d.WorkArea; break; }

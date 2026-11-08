@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.2.2
+
+- Settings window now also shrinks when a group is folded or a shorter tab is opened (it only grew before)
+
+
 ## 2.2.1
 
 - **Settings window** fits its content: it opens, switches tabs and unfolds groups at the height it needs, so nothing has to be scrolled (as far as the screen allows); it grows upwards when it reaches the bottom edge
