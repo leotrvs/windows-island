@@ -39,6 +39,7 @@ namespace WindowsIsland
         internal BatteryService Battery { get { return battery; } }
         LocalApi api;
         internal LocalApi Api { get { return api; } } // Activities and alerts from scripts and apps
+        SteamService steam;
         DiscordService discord;
         internal DiscordService Discord { get { return discord; } } // Muted or deafened in Discord
         ScreenshotService screenshots;
@@ -138,6 +139,24 @@ namespace WindowsIsland
             claude = new ClaudeService(Dispatcher);
             codex = new CodexService(Dispatcher);
             timer = new TimerService(Dispatcher);
+            steam = new SteamService(Dispatcher);
+            steam.Progress += (appId, name, percent, finished) =>
+            {
+                if (api == null) return;
+                string id = "steam-" + appId;
+                if (finished && percent < 0) { api.End(id); return; }
+                api.Post(new ApiActivity
+                {
+                    Id = id,
+                    App = "Steam",
+                    Title = name,
+                    Text = finished ? Strings.SteamDone : (percent >= 0 ? "" : Strings.SteamPreparing),
+                    Progress = finished ? 100 : percent,
+                    IconGlyph = LocalApi.Glyph("download"),
+                    State = finished ? "done" : "running",
+                    Updated = DateTime.UtcNow,
+                });
+            };
             discord = new DiscordService(Dispatcher);
             privacy = new PrivacyService(Dispatcher);
             privacy.IsIgnored = name => settings.PrivacyIgnored.Contains(name, StringComparer.OrdinalIgnoreCase);
@@ -259,6 +278,8 @@ namespace WindowsIsland
                 else api.Stop();
                 if (settings.DiscordEnabled && !sample) discord.Start(settings.DiscordClientId);
                 else discord.Stop();
+                if (settings.ShowSteamDownloads && !sample) steam.Start();
+                else steam.Stop();
                 if (!sample) ReconcileIslands();
                 foreach (IslandWindow island in islands) island.SettingsChanged();
                 if (settings.ShowNotifications && !sample) notifications.Start();
@@ -305,6 +326,7 @@ namespace WindowsIsland
             if (settings.ShowScreenshotAlert) screenshots.Start();
             if (settings.ApiEnabled) api.Start(settings.ApiPort);
             if (settings.DiscordEnabled) discord.Start(settings.DiscordClientId);
+            if (settings.ShowSteamDownloads) steam.Start();
             if (Installer.IsInstalledCopy) { Installer.EnsureCommandShim(); Installer.RefreshAppsEntry(); }
             if (settings.PermissionPrompts && !dev) { string hookError; ClaudeHook.Apply(true, out hookError); } // Keeps the hook pointing at this exe // Copies updated from before 2.0 get island.cmd too
 
@@ -410,6 +432,7 @@ namespace WindowsIsland
             screenshots?.Dispose();
             api?.Stop();
             discord?.Stop();
+            steam?.Stop();
             osd?.Apply(false); // Gives Windows its volume popup back
             if (ownsMutex)
             {

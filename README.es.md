@@ -26,6 +26,7 @@ Una Dynamic Island para Windows. La música, Claude Code, sus límites de uso y 
 - **Batería** en portátiles: aparece como actividad al cargar, además de avisos de cargador conectado o retirado, batería baja y carga completa
 - **Nombres de las apps en los puntos:** mira qué app usa el micrófono o la cámara al pasar el ratón por la isla
 - **Punto de pantalla compartida:** un punto azul mientras una app comparte o graba la pantalla, como en una llamada o una grabación
+- **Descargas de Steam (desactivado por defecto):** el progreso de un juego que se descarga o actualiza en Steam, leído de los archivos de manifiesto que Steam guarda junto a los juegos
 - **Discord silenciado o ensordecido (experimental, desactivado por defecto):** un micrófono tachado o unos auriculares tachados junto a la isla mientras estás silenciado en Discord, lo hayas hecho como lo hayas hecho. Necesita una app tuya en Discord, mira [docs/DISCORD.md](docs/DISCORD.md)
 - **Ajustes claros u oscuros:** la ventana de Ajustes puede seguir el tema de Windows o quedarse en claro u oscuro; la isla siempre es negra
 - **Tu orden y tus tiempos:** elige el orden de las páginas, qué avisos de límite mostrar (75%, 90%, 100%, renovado) y cuánto duran los avisos, las notificaciones y los avisos de límite

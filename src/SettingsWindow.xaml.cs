@@ -398,6 +398,7 @@ namespace WindowsIsland
                 Row("\uE77B", Strings.MenuPrivacyNames, Strings.HintPrivacyNames, null,
                     SegmentBar(nameLabels, Math.Max(0, Array.IndexOf(nameSeconds, settings.PrivacyNameSeconds)), i => settings.PrivacyNameSeconds = nameSeconds[i]));
             });
+            Toggle("\uE896", Strings.MenuSteam, Strings.HintSteam, () => settings.ShowSteamDownloads, v => settings.ShowSteamDownloads = v);
             Group("\uE720", Strings.GroupDiscord, DiscordRows);
             Group("\uE83E", Strings.GroupBattery, () =>
             {

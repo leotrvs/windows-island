@@ -342,7 +342,7 @@ namespace WindowsIsland
         DiscordService discord;
         void OnApiActivity(ApiActivity activity) { UpdateExternal(); Recompute(); }
         void OnApiEnded(string id) { UpdateExternal(); Recompute(); }
-        bool ApiActive { get { return api != null && api.Running && api.Activities.Count > 0; } }
+        bool ApiActive { get { return api != null && api.Activities.Count > 0; } }
 
         static readonly Brush ApiBlue = Freeze(new SolidColorBrush(Color.FromRgb(0x0A, 0x84, 0xFF)));
         static readonly Brush ApiGreen = Freeze(new SolidColorBrush(Color.FromRgb(0x30, 0xD1, 0x58)));

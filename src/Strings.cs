@@ -254,6 +254,13 @@ namespace WindowsIsland
         public static string MaxNormal => T("Normal", "Normal", "Normal", "Обычный");
         public static string MaxHidden => T("Hidden", "Escondida", "Oculta", "Скрыт");
         public static string DiscordForget => T("Forget the Discord data", "Esquecer os dados do Discord", "Olvidar los datos de Discord", "Забыть данные Discord");
+        public static string MenuSteam => T("Steam downloads", "Downloads da Steam", "Descargas de Steam", "Загрузки Steam");
+        public static string HintSteam => T("Shows the progress of a game being downloaded or updated in Steam, read from the small files Steam keeps beside the games. Nothing is sent anywhere",
+                                            "Mostra o progresso de um jogo sendo baixado ou atualizado na Steam, lido dos arquivinhos que a Steam guarda ao lado dos jogos. Nada é enviado para lugar nenhum",
+                                            "Muestra el progreso de un juego que se descarga o actualiza en Steam, leído de los archivitos que Steam guarda junto a los juegos. No se envía nada a ningún sitio",
+                                            "Показывает ход загрузки или обновления игры в Steam, из маленьких файлов, которые Steam хранит рядом с играми. Ничего никуда не отправляется");
+        public static string SteamDone => T("Done", "Concluído", "Terminado", "Готово");
+        public static string SteamPreparing => T("Installing", "Instalando", "Instalando", "Установка");
         public static string MenuScreenShare => T("Screen sharing (blue dot)", "Compartilhamento de tela (ponto azul)", "Compartir pantalla (punto azul)", "Показ экрана (синяя точка)");
         public static string HintScreenShare => T("A blue dot while an app shares or records the screen. Only apps that tell Windows about it are seen (Discord does; many browsers and web apps do not). Needs the dots above",
                                                    "Um ponto azul enquanto um app compartilha ou grava a tela. Só aparecem apps que avisam o Windows (o Discord avisa; muitos navegadores e apps da web não). Precisa dos pontos acima",

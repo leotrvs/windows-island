@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.8.0
+
+- **Steam downloads (off by default):** the progress of a game being downloaded or updated in Steam shows on the island as an activity with a progress bar, and "Done" when it finishes. It is read from the small manifest files Steam keeps beside the games (`appmanifest_*.acf`), in every Steam library folder; nothing is sent anywhere. Settings, Activities, "Steam downloads". Not yet tried with a download in progress: please report how it behaves
+- Activities the island posts itself (like this one) no longer need the local API to be on
+
 ## 2.7.1
 
 - Muting or unmuting in Discord brings the island back for a moment, even when it was put away or auto-hidden, so the change is seen; the crossed icon stays while you are muted

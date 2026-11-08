@@ -29,6 +29,7 @@ namespace WindowsIsland
         public bool DiscordEnabled { get; set; } = false;   // Show when you are muted or deafened in Discord (needs your own Discord app, see docs/DISCORD.md)
         public string DiscordClientId { get; set; } = "";
         public bool MonitorKeepsPlace { get; set; } = true; // With the system monitor on, an activity (music, Claude...) is a bubble beside it instead of replacing it
+        public bool ShowSteamDownloads { get; set; } = false; // Progress of Steam downloads and updates, read from Steam's manifest files
         public string IdleStyle { get; set; } = "Pill"; // When nothing is happening: Pill (the small pill) or Line (a thin line)
         public string MaximizedMode { get; set; } = "Thin"; // With a maximized window in front: Thin (a thin line), Normal (as always) or Hidden
         public bool ShowScreenShare { get; set; } = true; // A blue dot while the screen is shared or recorded (needs the privacy dots)

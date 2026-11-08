@@ -722,6 +722,31 @@ namespace WindowsIsland
             };
         }
 
+        // Activities the island itself posts (such as a Steam download), on the same list as those from scripts. UI thread only.
+        public void Post(ApiActivity activity)
+        {
+            Entry entry = activities.Find(a => a.Activity.Id == activity.Id);
+            if (entry == null)
+            {
+                if (activities.Count >= MaxActivities) return;
+                entry = new Entry();
+                activities.Add(entry);
+            }
+            entry.Activity = activity;
+            entry.Expires = DateTime.UtcNow + (activity.State == "running" ? ActivityTtl : FinishedLinger);
+            if (!sweep.IsEnabled) sweep.Start();
+            ActivityUpdated?.Invoke(activity);
+        }
+
+        public void End(string id)
+        {
+            Entry entry = activities.Find(a => a.Activity.Id == id);
+            if (entry == null) return;
+            activities.Remove(entry);
+            if (activities.Count == 0) sweep.Stop();
+            ActivityEnded?.Invoke(id);
+        }
+
         Func<Reply> EndCall(Dictionary<string, JsonElement> fields)
         {
             string id = Id(fields);
