@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.1.5
+
+- Notification icons (apps and websites) no longer sit on a gray tile: they show directly on the island with rounded corners, so transparent icons blend in
+
+
 ## 2.1.4
 
 - Small website icons in the music view are enlarged with smooth interpolation, so they look soft instead of blocky

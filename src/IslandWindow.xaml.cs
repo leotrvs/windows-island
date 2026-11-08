@@ -1218,7 +1218,9 @@ namespace WindowsIsland
             BannerAppIcon.Visibility = appIcon ? Visibility.Visible : Visibility.Collapsed;
             BannerAppIcon.Source = appIcon ? item.Icon : null;
             BannerBell.Visibility = item.FromClaude || item.FromCodex || glyph || appIcon ? Visibility.Collapsed : Visibility.Visible;
-            BannerIcon.Background = item.FromClaude ? ClaudeTint : item.FromCodex ? CodexTint : NotificationTint;
+            // An app or site icon sits straight on the island (no gray tile behind it), with softly rounded corners
+            BannerIcon.Background = item.FromClaude ? ClaudeTint : item.FromCodex ? CodexTint : appIcon ? Brushes.Transparent : NotificationTint;
+            BannerAppIcon.Clip = new RectangleGeometry(new Rect(0, 0, 30, 30), 7, 7);
             BannerApp.Text = item.App ?? "";
             BannerApp.Visibility = item.FromClaude || string.IsNullOrEmpty(item.App) ? Visibility.Collapsed : Visibility.Visible;
             BannerTitle.Text = item.Title;
