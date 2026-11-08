@@ -29,6 +29,7 @@ namespace WindowsIsland
         PrivacyService privacy;
         BatteryService battery;
         LevelService levels;
+        WindowsOsd osd;
         DeviceService devices;
         HotkeyService hotkey;
         FocusService focus;
@@ -137,6 +138,7 @@ namespace WindowsIsland
             privacy = new PrivacyService(Dispatcher);
             battery = new BatteryService(Dispatcher);
             levels = new LevelService(Dispatcher);
+            osd = new WindowsOsd(Dispatcher);
             devices = new DeviceService(Dispatcher);
             focus = new FocusService(Dispatcher);
             focus.Changed += () => { if (settings.ShowFocus) MainIsland?.ShowToast(focus.On ? Strings.FocusOn : Strings.FocusOff, "\uE708", 2.2); };
@@ -235,6 +237,7 @@ namespace WindowsIsland
                 if (!sample) devices.Start(settings.ShowDeviceAlerts, settings.ShowNetworkAlerts);
                 if (settings.ShowLevels && !sample) levels.Start();
                 else levels.Stop();
+                osd.Apply(settings.HideWindowsOsd && settings.ShowLevels && !sample);
                 if (settings.ShowScreenshotAlert && !sample) screenshots.Start();
                 else screenshots.Stop();
                 if (settings.ApiEnabled && !sample) api.Start(settings.ApiPort);
@@ -274,6 +277,7 @@ namespace WindowsIsland
             if (settings.ShowFocus) focus.Start();
             devices.Start(settings.ShowDeviceAlerts, settings.ShowNetworkAlerts);
             if (settings.ShowLevels) levels.Start();
+            osd.Apply(settings.HideWindowsOsd && settings.ShowLevels);
             if (settings.ShowScreenshotAlert) screenshots.Start();
             if (settings.ApiEnabled) api.Start(settings.ApiPort);
             if (Installer.IsInstalledCopy) Installer.EnsureCommandShim(); // Copies updated from before 2.0 get island.cmd too

@@ -7,6 +7,7 @@
 - **Choose your pages:** Settings, Behavior, lets you turn each page of the open island on or off
 - **App icons on notifications:** Windows notifications show the real icon of the app that sent them (loaded from the shell, only for plain app ids)
 - **Volume and brightness:** a small bar while you change the volume or the laptop screen brightness
+- **Hide Windows' volume popup (experimental, off by default):** hides Windows' own volume and brightness popup so only the island's bar shows. It relies on an undocumented shell window, so a Windows update may stop it working
 - **Devices and network:** a short note when a Bluetooth or USB device connects or disconnects, and when the internet goes away or comes back
 - **Do not disturb:** a small moon on the island while Do not disturb or a focus session is on
 - **Clock and system page:** the time and date, with processor and memory load

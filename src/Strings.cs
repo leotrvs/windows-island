@@ -270,6 +270,11 @@ namespace WindowsIsland
         public static string ExtNoBrowser => T("That browser was not found. The folder is ready:", "Esse navegador não foi encontrado. A pasta está pronta:", "No se encontró ese navegador. La carpeta está lista:", "Браузер не найден. Папка готова:");
         public static string ExtFailed => T("Could not prepare the extension", "Não foi possível preparar a extensão", "No se pudo preparar la extensión", "Не удалось подготовить расширение");
         public static string ApiPortBusy => T("The port is in use by another program", "A porta está em uso por outro programa", "El puerto está en uso por otro programa", "Порт занят другой программой");
+        public static string MenuHideOsd => T("Hide Windows' volume popup (experimental)", "Esconder a barra de volume do Windows (experimental)", "Ocultar la barra de volumen de Windows (experimental)", "Скрывать окно громкости Windows (экспериментально)");
+        public static string HintHideOsd => T("Shows only the island's bar. Needs the volume bar above. A Windows update can stop it from working; turn it off to get the popup back",
+                                              "Mostra só a barra da ilha. Precisa da barra de volume acima. Uma atualização do Windows pode quebrar isso; desligue para a barra voltar",
+                                              "Muestra solo la barra de la isla. Requiere la barra de volumen de arriba. Una actualización de Windows puede romperlo; desactívelo para recuperar la barra",
+                                              "Показывает только полосу острова. Нужна полоса громкости выше. Обновление Windows может это сломать; выключите, чтобы вернуть окно");
         public static string MenuLevels => T("Volume and brightness", "Volume e brilho", "Volumen y brillo", "Громкость и яркость");
         public static string HintLevels => T("A small bar while you change the volume or the screen brightness (laptop screens only)",
                                              "Uma barrinha enquanto você muda o volume ou o brilho da tela (só telas de notebook)",

@@ -37,6 +37,7 @@ namespace WindowsIsland
         public bool HotkeyEnabled { get; set; } = false;   // A global shortcut that opens and closes the island: off by default
         public string HotkeyCombo { get; set; } = "Ctrl+Alt+I";
         public bool ShowFocus { get; set; } = true; // A small moon while Do not disturb is on
+        public bool HideWindowsOsd { get; set; } = false; // Experimental: hide Windows' own volume popup
         public bool ShowLevels { get; set; } = true; // Volume and brightness while they change
         public bool ShowPrivacyDots { get; set; } = true;
         public bool ShowPrivacyNames { get; set; } = true; // The app's name beside the dots, for a few seconds
