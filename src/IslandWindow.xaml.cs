@@ -661,27 +661,6 @@ namespace WindowsIsland
             }
 
 
-            // Several chats at once, and a chat that waits for you
-            string[] chatNames = { "chats-working", "chats-waiting" };
-            for (int i = 0; i < chatNames.Length; i++)
-            {
-                claude.UseSampleChats(i);
-                lastCompactText = null; lastStatus = null;
-                foreach (View chatView in new[] { View.ClaudeCompact, View.ClaudeExpanded })
-                {
-                    forced = chatView;
-                    UpdateClaude();
-                    UpdateClaudeLive();
-                    Recompute();
-                    SnapAll();
-                    ApplyFrame();
-                    CompactSpark.Thinking = ExpandedSpark.Thinking = BubbleSpark.Thinking = false;
-                    Root.UpdateLayout();
-                    ApplyFrame();
-                    Root.UpdateLayout();
-                    SaveSnapshot(System.IO.Path.Combine(folder, chatNames[i] + (chatView == View.ClaudeCompact ? "-compact" : "-expanded") + suffix + ".png"));
-                }
-            }
             // A made-up Windows notification on the same banner
             forced = View.Banner; // The view is the banner before its text changes (after the monitor looks above), as it is in use
             Recompute();
@@ -741,6 +720,27 @@ namespace WindowsIsland
                 }
             }
 
+            // Several chats at once, and a chat that waits for you
+            string[] chatNames = { "chats-working", "chats-waiting" };
+            for (int i = 0; i < chatNames.Length; i++)
+            {
+                claude.UseSampleChats(i);
+                lastCompactText = null; lastStatus = null;
+                foreach (View chatView in new[] { View.ClaudeCompact, View.ClaudeExpanded })
+                {
+                    forced = chatView;
+                    UpdateClaude();
+                    UpdateClaudeLive();
+                    Recompute();
+                    SnapAll();
+                    ApplyFrame();
+                    CompactSpark.Thinking = ExpandedSpark.Thinking = BubbleSpark.Thinking = false;
+                    Root.UpdateLayout();
+                    ApplyFrame();
+                    Root.UpdateLayout();
+                    SaveSnapshot(System.IO.Path.Combine(folder, chatNames[i] + (chatView == View.ClaudeCompact ? "-compact" : "-expanded") + suffix + ".png"));
+                }
+            }
             // The other two looks of the system monitor
             foreach (string style in new[] { "Bars", "Numbers" })
             {
