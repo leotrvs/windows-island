@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.4.4
+
+- The app now declares in its manifest that it is made for Windows 10 and 11, which should stop the "Program Compatibility Assistant" warning that could appear after an update
+
+
 ## 2.4.3
 
 - **Questions from Claude Desktop:** a chat that ends with a question (such as "Publish?") is now recognized even when it is not marked as blocking, which is why the last one showed as idle. The alert and the Claude page show the question (shortened) and an **Open Claude** link brings the desktop app to the front to answer it. The island cannot click the answer for you
