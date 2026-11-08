@@ -39,6 +39,8 @@ namespace WindowsIsland
         internal BatteryService Battery { get { return battery; } }
         LocalApi api;
         internal LocalApi Api { get { return api; } } // Activities and alerts from scripts and apps
+        DiscordService discord;
+        internal DiscordService Discord { get { return discord; } } // Muted or deafened in Discord
         ScreenshotService screenshots;
         readonly List<IslandWindow> islands = new List<IslandWindow>();
         readonly DispatcherTimer followTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(300) };
@@ -136,6 +138,7 @@ namespace WindowsIsland
             claude = new ClaudeService(Dispatcher);
             codex = new CodexService(Dispatcher);
             timer = new TimerService(Dispatcher);
+            discord = new DiscordService(Dispatcher);
             privacy = new PrivacyService(Dispatcher);
             privacy.IsIgnored = name => settings.PrivacyIgnored.Contains(name, StringComparer.OrdinalIgnoreCase);
             privacy.AppSeen += name =>
@@ -254,6 +257,8 @@ namespace WindowsIsland
                 else screenshots.Stop();
                 if (settings.ApiEnabled && !sample) api.Start(settings.ApiPort);
                 else api.Stop();
+                if (settings.DiscordEnabled && !sample) discord.Start(settings.DiscordClientId);
+                else discord.Stop();
                 if (!sample) ReconcileIslands();
                 foreach (IslandWindow island in islands) island.SettingsChanged();
                 if (settings.ShowNotifications && !sample) notifications.Start();
@@ -299,6 +304,7 @@ namespace WindowsIsland
             osd.Apply(settings.HideWindowsOsd && settings.ShowLevels);
             if (settings.ShowScreenshotAlert) screenshots.Start();
             if (settings.ApiEnabled) api.Start(settings.ApiPort);
+            if (settings.DiscordEnabled) discord.Start(settings.DiscordClientId);
             if (Installer.IsInstalledCopy) { Installer.EnsureCommandShim(); Installer.RefreshAppsEntry(); }
             if (settings.PermissionPrompts && !dev) { string hookError; ClaudeHook.Apply(true, out hookError); } // Keeps the hook pointing at this exe // Copies updated from before 2.0 get island.cmd too
 
@@ -403,6 +409,7 @@ namespace WindowsIsland
             tray?.Dispose();
             screenshots?.Dispose();
             api?.Stop();
+            discord?.Stop();
             osd?.Apply(false); // Gives Windows its volume popup back
             if (ownsMutex)
             {

@@ -17,6 +17,7 @@
 | `HKCU\...\CapabilityAccessManager\ConsentStore` | Reads two timestamps per app (last start and stop of microphone and camera use) every 2 seconds, while **Microphone and camera dots** is on | Shows the dots. It never records or listens to audio or video, and does not read which app it is |
 | The Windows clipboard, for screenshots | Is told when the clipboard changes (no polling), while **Screenshot alert** is on, and checks only that an image arrived and that Windows Explorer or the Snipping Tool put it there | Shows a small note. It never reads the picture or any clipboard text, and it does not watch the keyboard |
 | `HKCU\...\CapabilityAccessManager\ConsentStore\graphicsCapture*` | Reads two timestamps per app (last start and stop of screen capture) every 2 seconds, while **Microphone and camera dots** and **Screen sharing** are on | Shows the blue dot while an app shares or records the screen. It never captures or reads the screen itself |
+| Discord's local RPC pipe (`\\.\pipe\discord-ipc-N`) | Only while **Show when I am muted in Discord** is on: connects to the pipe, checks that the program serving it runs in your session and lives in your own Discord folder under `%LOCALAPPDATA%`, and reads whether you are muted or deafened | Shows a crossed microphone or headphones. It reads nothing else, and the setup is described in [docs/DISCORD.md](docs/DISCORD.md). The client secret and Discord's tokens are kept encrypted for your Windows user in `%APPDATA%\WindowsIsland\discord.dat` |
 | Windows audio sessions (Core Audio) | Asks every 2 seconds whether any microphone has an active recording session, while **Microphone and camera dots** is on | Shows the dot. It reads only the active/inactive state and the process number: no audio is opened or heard, and no app name is kept |
 | `%APPDATA%\WindowsIsland\settings.json` | Reads and writes | Stores preferences |
 | `%LOCALAPPDATA%\Programs\WindowsIsland` | Reads and writes | Holds the installed app |
@@ -45,6 +46,8 @@
 ## Network access
 
 The island itself makes one kind of connection (the second one below is optional): about 30 seconds after it opens and then every hour, it downloads release files from this repository on GitHub, unless you turn off **Automatic updates**. It does the same when you click **Check for updates**. GitHub can see your IP address, as with any download. No Claude or personal data is sent. An update is installed only when its RSA signature matches the public key built into the app and the file's SHA-256 matches the signed manifest.
+
+With the Discord option on, the island also contacts `https://discord.com/api/oauth2/token` to trade Discord's approval for a token, and again to renew it. Nothing else is sent to Discord from the internet side; the voice state comes from the Discord app on this computer.
 
 When the browser extension is installed and a tab is playing sound, the island also downloads that site's public `/apple-touch-icon.png` (HTTPS only, no redirects, PNG up to 256 KB, once per site) to show a sharp icon. The site sees an ordinary request from your IP address and nothing else is sent.
 

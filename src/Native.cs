@@ -94,13 +94,23 @@ namespace WindowsIsland
             }
 
             RECT rect;
-            if (!state.Maximized && GetWindowRect(foreground, out rect))
+            if (GetWindowRect(foreground, out rect))
             {
                 RECT m = info.rcMonitor;
-                state.Fullscreen = rect.Left <= m.Left && rect.Top <= m.Top && rect.Right >= m.Right && rect.Bottom >= m.Bottom;
+                bool covers = rect.Left <= m.Left && rect.Top <= m.Top && rect.Right >= m.Right && rect.Bottom >= m.Bottom;
+                // A game in a borderless window reports itself as maximized too; what tells it from a normal maximized
+                // window (which stops at the taskbar and has a title bar) is that it covers the whole screen without one
+                if (covers && (!state.Maximized || (GetWindowLong(foreground, GWL_STYLE) & WS_CAPTION) != WS_CAPTION))
+                {
+                    state.Fullscreen = true;
+                    state.Maximized = false;
+                }
             }
             return state;
         }
+
+        const int GWL_STYLE = -16, WS_CAPTION = 0x00C00000;
+        [DllImport("user32.dll", EntryPoint = "GetWindowLongW")] static extern int GetWindowLong(IntPtr hwnd, int index);
 
         static bool IsDesktop(IntPtr hwnd)
         {

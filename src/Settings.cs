@@ -26,6 +26,11 @@ namespace WindowsIsland
         public string Theme { get; set; } = "Auto"; // Colors of the Settings window: Auto (follows Windows), Dark or Light
         public System.Collections.Generic.List<string> PrivacyIgnored { get; set; } = new System.Collections.Generic.List<string>(); // Apps whose microphone, camera or screen use shows no dot
         public System.Collections.Generic.List<string> PrivacySeen { get; set; } = new System.Collections.Generic.List<string>();    // Apps seen using them, offered in Settings to ignore
+        public bool DiscordEnabled { get; set; } = false;   // Show when you are muted or deafened in Discord (needs your own Discord app, see docs/DISCORD.md)
+        public string DiscordClientId { get; set; } = "";
+        public bool MonitorKeepsPlace { get; set; } = true; // With the system monitor on, an activity (music, Claude...) is a bubble beside it instead of replacing it
+        public string IdleStyle { get; set; } = "Pill"; // When nothing is happening: Pill (the small pill) or Line (a thin line)
+        public string MaximizedMode { get; set; } = "Thin"; // With a maximized window in front: Thin (a thin line), Normal (as always) or Hidden
         public bool ShowScreenShare { get; set; } = true; // A blue dot while the screen is shared or recorded (needs the privacy dots)
         public bool LimitAt75 { get; set; } = true;     // Which limit alerts to show
         public bool LimitAt90 { get; set; } = true;
@@ -116,6 +121,8 @@ namespace WindowsIsland
         // The file is hand-editable, so values are kept within sensible bounds.
         Settings Sanitized()
         {
+            if (!string.Equals(IdleStyle, "Line", StringComparison.OrdinalIgnoreCase)) IdleStyle = "Pill";
+            if (!string.Equals(MaximizedMode, "Normal", StringComparison.OrdinalIgnoreCase) && !string.Equals(MaximizedMode, "Hidden", StringComparison.OrdinalIgnoreCase)) MaximizedMode = "Thin";
             AlertSeconds = Math.Clamp(AlertSeconds, 1, 60);
             LimitAlertSeconds = Math.Clamp(LimitAlertSeconds, 1, 60);
             NotificationSeconds = Math.Clamp(NotificationSeconds, 1, 60);

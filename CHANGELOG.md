@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.7.0
+
+- **Discord muted or deafened (experimental, off by default):** a crossed microphone or crossed headphones beside the island while you are muted or deafened in Discord, however you did it. It uses Discord's local RPC, which needs a Discord application of your own and a one-time approval inside Discord; the step-by-step guide is in docs/DISCORD.md and a link is in Settings, Activities, Discord. The client secret and the tokens are kept encrypted for your Windows user, and the island only talks to the pipe if Discord itself serves it. Tested against the real Discord for the connection and the refusal of a wrong application id; the approval and the muted state could not be tried without a Discord application, so please report what you see
+- **Security review of the Discord feature:** the pipe is only trusted when its server runs in your session and is an executable inside your own Discord folder, and it cannot act as you; a refusal is final until you change the ID or the secret (Discord is not asked to show its approval window again and again) and failures back off up to five minutes; a saved token is tied to its application id; a rejected renewal token is dropped; a secret typed meanwhile is never overwritten; there is a **Forget the Discord data** button
+- **Games and videos that fill the screen** are now treated as full screen, not as a maximized window, so the island no longer shrinks to a thin line over them (it hides, as set in "Hide in fullscreen")
+- **New options in Settings, Behavior:** what the island looks like when nothing is happening (small pill or thin line) and what it does with a maximized window in front (thin line, normal or hidden)
+- **System monitor stays in sight:** with the monitor on, music, Claude and other activities become the small bubble beside it instead of covering it (Settings, Appearance, "Keep the monitor in sight", on by default)
+- Unit tests for the Discord message format
+
 ## 2.6.1
 
 - **Ignore an app's dots:** apps seen using the microphone, camera or screen are listed in Settings, Activities, Privacy, and one can be turned off (a call app such as Discord keeps the microphone busy for hours)

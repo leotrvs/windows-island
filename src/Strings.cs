@@ -213,6 +213,47 @@ namespace WindowsIsland
                                                  "Apps que usaram o microfone, a câmera ou a tela aparecem aqui; ligue um para tirar o ponto dele (um app de chamadas deixa o microfone ocupado por horas)",
                                                  "Las apps que usaron el micrófono, la cámara o la pantalla aparecen aquí; activa una para quitar su punto (una app de llamadas mantiene el micrófono ocupado durante horas)",
                                                  "Здесь появляются приложения, которые использовали микрофон, камеру или экран; включите одно, чтобы убрать его точку (приложение для звонков держит микрофон занятым часами)");
+        public static string GroupDiscord => T("Discord (muted and deafened)", "Discord (mudo e ensurdecido)", "Discord (silenciado y ensordecido)", "Discord (микрофон и звук выключены)");
+        public static string MenuDiscord => T("Show when I am muted in Discord", "Mostrar quando eu estou mudo no Discord", "Mostrar cuando estoy silenciado en Discord", "Показывать, когда я отключён в Discord");
+        public static string HintDiscord => T("Experimental. A crossed microphone or crossed headphones beside the island. Needs a Discord app of your own and you approve it once in Discord: see the guide below",
+                                              "Experimental. Um microfone cortado ou um fone cortado ao lado da ilha. Precisa de um app seu no Discord e você aprova uma vez dentro do Discord: veja o guia abaixo",
+                                              "Experimental. Un micrófono tachado o unos auriculares tachados junto a la isla. Necesita una app tuya en Discord y la apruebas una vez dentro de Discord: mira la guía de abajo",
+                                              "Экспериментально. Перечёркнутый микрофон или наушники рядом с островом. Нужно своё приложение Discord, одобрить его нужно один раз в Discord: см. руководство ниже");
+        public static string DiscordClientIdLabel => T("Application ID (Client ID)", "ID do aplicativo (Client ID)", "ID de la aplicación (Client ID)", "ID приложения (Client ID)");
+        public static string DiscordClientSecretLabel => T("Client Secret (kept encrypted)", "Client Secret (guardado criptografado)", "Client Secret (guardado cifrado)", "Client Secret (хранится в зашифрованном виде)");
+        public static string DiscordGuide => T("How to set it up, step by step", "Como configurar, passo a passo", "Cómo configurarlo, paso a paso", "Как настроить, шаг за шагом");
+        public static string DiscordStatus(DiscordService.State state, string detail)
+        {
+            switch (state)
+            {
+                case DiscordService.State.NeedsSetup: return T("Fill in the Client ID and the Client Secret.", "Preencha o Client ID e o Client Secret.", "Rellena el Client ID y el Client Secret.", "Заполните Client ID и Client Secret.");
+                case DiscordService.State.WaitingForDiscord: return T("Waiting for Discord to open.", "Esperando o Discord abrir.", "Esperando a que Discord se abra.", "Ожидание запуска Discord.");
+                case DiscordService.State.Approve: return T("Approve the request in the Discord window.", "Aprove o pedido na janela do Discord.", "Aprueba la petición en la ventana de Discord.", "Одобрите запрос в окне Discord.");
+                case DiscordService.State.Connected: return T("Connected to Discord.", "Conectado ao Discord.", "Conectado a Discord.", "Подключено к Discord.");
+                case DiscordService.State.Refused:
+                    return T("Discord did not accept it", "O Discord não aceitou", "Discord no lo aceptó", "Discord не принял") + (string.IsNullOrEmpty(detail) ? "" : ": " + detail) +
+                           T(". Check the ID, the secret and that you are a tester of the app.", ". Confira o ID, o secret e se você é tester do app.", ". Comprueba el ID, el secret y que eres tester de la app.", ". Проверьте ID, secret и что вы тестер приложения.");
+                case DiscordService.State.Failed: return T("Could not connect. Trying again.", "Não consegui conectar. Tentando de novo.", "No pude conectar. Reintentando.", "Не удалось подключиться. Повтор.");
+                default: return "";
+            }
+        }
+        public static string MenuIdleStyle => T("When nothing is happening", "Quando nada está acontecendo", "Cuando no pasa nada", "Когда ничего не происходит");
+        public static string IdlePill => T("Small pill", "Pílula pequena", "Píldora pequeña", "Маленькая капсула");
+        public static string IdleLine => T("Thin line", "Linha fina", "Línea fina", "Тонкая линия");
+        public static string MenuMonitorKeeps => T("Keep the monitor in sight", "Manter o monitor à vista", "Mantener el monitor a la vista", "Не закрывать монитор");
+        public static string HintMonitorKeeps => T("Music, Claude and other activities become a small bubble beside the monitor instead of covering it",
+                                                   "Música, Claude e outras atividades viram uma bolinha ao lado do monitor em vez de cobri-lo",
+                                                   "La música, Claude y otras actividades pasan a ser una burbuja junto al monitor en vez de taparlo",
+                                                   "Музыка, Claude и другие активности становятся маленьким пузырём рядом с монитором, а не закрывают его");
+        public static string MenuMaximized => T("With a maximized window in front", "Com uma janela maximizada na frente", "Con una ventana maximizada delante", "Если впереди развёрнутое окно");
+        public static string HintMaximized => T("A thin line stays out of the way of tab strips. Hidden is better for games that fill the screen without being detected as full screen",
+                                                "A linha fina sai do caminho das abas. Escondida é melhor para jogos que ocupam a tela sem serem detectados como tela cheia",
+                                                "La línea fina no estorba las pestañas. Oculta es mejor para juegos que llenan la pantalla sin detectarse como pantalla completa",
+                                                "Тонкая линия не мешает вкладкам. «Скрыт» лучше для игр, которые заполняют экран, но не определяются как полноэкранные");
+        public static string MaxThin => T("Thin line", "Linha fina", "Línea fina", "Тонкая линия");
+        public static string MaxNormal => T("Normal", "Normal", "Normal", "Обычный");
+        public static string MaxHidden => T("Hidden", "Escondida", "Oculta", "Скрыт");
+        public static string DiscordForget => T("Forget the Discord data", "Esquecer os dados do Discord", "Olvidar los datos de Discord", "Забыть данные Discord");
         public static string MenuScreenShare => T("Screen sharing (blue dot)", "Compartilhamento de tela (ponto azul)", "Compartir pantalla (punto azul)", "Показ экрана (синяя точка)");
         public static string HintScreenShare => T("A blue dot while an app shares or records the screen. Only apps that tell Windows about it are seen (Discord does; many browsers and web apps do not). Needs the dots above",
                                                    "Um ponto azul enquanto um app compartilha ou grava a tela. Só aparecem apps que avisam o Windows (o Discord avisa; muitos navegadores e apps da web não). Precisa dos pontos acima",

@@ -398,6 +398,7 @@ namespace WindowsIsland
                 Row("\uE77B", Strings.MenuPrivacyNames, Strings.HintPrivacyNames, null,
                     SegmentBar(nameLabels, Math.Max(0, Array.IndexOf(nameSeconds, settings.PrivacyNameSeconds)), i => settings.PrivacyNameSeconds = nameSeconds[i]));
             });
+            Group("\uE720", Strings.GroupDiscord, DiscordRows);
             Group("\uE83E", Strings.GroupBattery, () =>
             {
                 Toggle("\uE83E", Strings.MenuBatteryActivity, Strings.HintBatteryActivity, () => settings.BatteryActivity, v => settings.BatteryActivity = v);
@@ -416,6 +417,84 @@ namespace WindowsIsland
                 Toggle("\uE767", Strings.MenuLevels, Strings.HintLevels, () => settings.ShowLevels, v => settings.ShowLevels = v);
                 Toggle("\uE74F", Strings.MenuHideOsd, Strings.HintHideOsd, () => settings.HideWindowsOsd, v => settings.HideWindowsOsd = v);
             });
+        }
+
+        // The Discord rows: the switch, the app's id and secret, the state of the connection and a guide.
+        void DiscordRows()
+        {
+            DiscordService discord = (Application.Current as App)?.Discord;
+            Toggle("\uE720", Strings.MenuDiscord, Strings.HintDiscord, () => settings.DiscordEnabled, v => settings.DiscordEnabled = v);
+            InputRow(Strings.DiscordClientIdLabel, () => settings.DiscordClientId, v => settings.DiscordClientId = (v ?? "").Trim(), false);
+            InputRow(Strings.DiscordClientSecretLabel, () => DiscordSecrets.Load().ClientSecret, v =>
+            {
+                DiscordSecrets secrets = DiscordSecrets.Load();
+                secrets.ClientSecret = (v ?? "").Trim();
+                secrets.AccessToken = secrets.RefreshToken = ""; // A new secret means a new authorization
+                secrets.Save();
+                if (settings.DiscordEnabled && discord != null) discord.Restart(settings.DiscordClientId);
+            }, true);
+
+            TextBlock status = new TextBlock { FontSize = 12, Foreground = (Brush)FindResource("Secondary"), TextWrapping = TextWrapping.Wrap, Margin = new Thickness(60, 0, 14, 10) };
+            Action show = () => status.Text = discord == null || !settings.DiscordEnabled ? "" : Strings.DiscordStatus(discord.Status, discord.Detail);
+            show();
+            if (discord != null)
+            {
+                Action changed = () => Dispatcher.BeginInvoke(show);
+                discord.Changed += changed;
+                Closed += (s, e) => discord.Changed -= changed;
+            }
+            ((StackPanel)card.Children[card.Children.Count - 1]).Children.Add(status);
+
+            Button guide = new Button { Content = Strings.DiscordGuide, Style = (Style)FindResource("LinkButton"), HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Center };
+            guide.Click += (s, e) => { try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("https://github.com/leotrvs/windows-island/blob/main/docs/DISCORD.md") { UseShellExecute = true }); } catch (Exception) { } };
+            Row("\uE897", null, null, null, null, guide);
+            ActionRow("\uE74D", Strings.DiscordForget, () =>
+            {
+                // The secret and the tokens are deleted, the id cleared and the connection closed
+                DiscordSecrets.Delete();
+                settings.DiscordClientId = "";
+                settings.DiscordEnabled = false;
+                Apply();
+                Dispatcher.BeginInvoke(new Action(Rebuild), DispatcherPriority.Background);
+            }, true);
+        }
+
+        // A text box (or a password box) under its label; the value is saved when the box loses the focus.
+        void InputRow(string label, Func<string> get, Action<string> set, bool secret)
+        {
+            Control box;
+            string shown = get() ?? "";
+            if (secret)
+            {
+                PasswordBox password = new PasswordBox { Password = shown.Length == 0 ? "" : new string('\u2022', 12) };
+                bool touched = false;
+                password.PasswordChanged += (s, e) => touched = true;
+                password.GotFocus += (s, e) => { if (!touched && shown.Length > 0) password.Clear(); }; // A saved secret is not shown: typing replaces it
+                password.LostFocus += (s, e) =>
+                {
+                    string mask = new string('\u2022', 12);
+                    if (touched && password.Password.Length > 0 && password.Password != mask) { set(password.Password); Apply(); }
+                    password.Password = (get() ?? "").Length > 0 ? mask : "";
+                    touched = false;
+                };
+                box = password;
+            }
+            else
+            {
+                TextBox text = new TextBox { Text = shown };
+                text.LostFocus += (s, e) => { set(text.Text); Apply(); };
+                text.KeyDown += (s, e) => { if (e.Key == System.Windows.Input.Key.Enter) { set(text.Text); Apply(); } };
+                box = text;
+            }
+            box.Background = Brushes.Transparent;
+            box.Foreground = new SolidColorBrush(SettingsTheme.Text);
+            box.BorderThickness = new Thickness(0);
+            box.Padding = new Thickness(10, 7, 10, 7);
+            box.FontSize = 13;
+            if (box is TextBox) ((TextBox)box).CaretBrush = new SolidColorBrush(SettingsTheme.Text);
+            if (box is PasswordBox) ((PasswordBox)box).CaretBrush = new SolidColorBrush(SettingsTheme.Text);
+            Border frame = new Border { CornerRadius = new CornerRadius(8), Background = new SolidColorBrush(SettingsTheme.SegTrack), Child = box, Margin = new Thickness(14, 0, 14, 12) };
+            Row(null, label, null, null, frame);
         }
 
         // Adds or removes Claude Code's hook that sends permission requests to the island. The hook needs the local API.
@@ -441,6 +520,16 @@ namespace WindowsIsland
             Toggle("\uE7F8", Strings.MenuIdlePill, null, () => settings.ShowIdlePill, v => settings.ShowIdlePill = v);
             Toggle("\uE7C9", Strings.MenuHover, null, () => settings.ExpandOnHover, v => settings.ExpandOnHover = v);
             Toggle("\uE740", Strings.MenuFullscreen, null, () => settings.HideInFullscreen, v => settings.HideInFullscreen = v);
+            string[] idleValues = { "Pill", "Line" };
+            Row("\uE7F8", Strings.MenuIdleStyle, null, null,
+                SegmentBar(new[] { Strings.IdlePill, Strings.IdleLine },
+                    string.Equals(settings.IdleStyle, "Line", StringComparison.OrdinalIgnoreCase) ? 1 : 0,
+                    i => settings.IdleStyle = idleValues[i]));
+            string[] maxValues = { "Thin", "Normal", "Hidden" };
+            Row("\uE740", Strings.MenuMaximized, Strings.HintMaximized, null,
+                SegmentBar(new[] { Strings.MaxThin, Strings.MaxNormal, Strings.MaxHidden },
+                    Math.Max(0, Array.FindIndex(maxValues, v => string.Equals(v, settings.MaximizedMode, StringComparison.OrdinalIgnoreCase))),
+                    i => settings.MaximizedMode = maxValues[i]));
             Toggle("\uE765", Strings.MenuHotkey, Strings.HintHotkey, () => settings.HotkeyEnabled, v => { settings.HotkeyEnabled = v; Dispatcher.BeginInvoke(new Action(Rebuild), DispatcherPriority.Background); });
             if (settings.HotkeyEnabled) HotkeyRow();
             Group("\uE916", Strings.GroupTimes, () =>
@@ -488,6 +577,7 @@ namespace WindowsIsland
             });
             if (settings.SystemMonitor)
             {
+                Toggle("\uE7C9", Strings.MenuMonitorKeeps, Strings.HintMonitorKeeps, () => settings.MonitorKeepsPlace, v => settings.MonitorKeepsPlace = v);
                 string[] monitorValues = { "Rings", "Bars", "Numbers" };
                 Segmented("\uE790", Strings.MonitorStyleLabel, new[] { Strings.StyleRings, Strings.StyleBars, Strings.StyleNumbers },
                     () => Math.Max(0, Array.FindIndex(monitorValues, v => string.Equals(v, settings.MonitorStyle, StringComparison.OrdinalIgnoreCase))),

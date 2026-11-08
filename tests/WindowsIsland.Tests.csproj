@@ -19,6 +19,7 @@
     <Compile Include="..\src\ClaudeWaiting.cs" Link="App\ClaudeWaiting.cs" />
     <Compile Include="..\src\ClaudeHook.cs" Link="App\ClaudeHook.cs" />
     <Compile Include="..\src\LimitMath.cs" Link="App\LimitMath.cs" />
+    <Compile Include="..\src\DiscordRpc.cs" Link="App\DiscordRpc.cs" />
   </ItemGroup>
 
 </Project>

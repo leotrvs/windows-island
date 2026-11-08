@@ -203,6 +203,8 @@ namespace WindowsIsland
             codex.Finished += OnCodexFinished;
             timer.Changed += OnTimerChanged;
             privacy.Changed += OnPrivacyChanged;
+            discord = (Application.Current as App)?.Discord;
+            if (discord != null) discord.Changed += OnPrivacyChanged;
             battery = (Application.Current as App)?.Battery;
             if (battery != null) battery.Changed += OnBatteryChanged;
             api = (Application.Current as App)?.Api;
@@ -319,6 +321,7 @@ namespace WindowsIsland
 
         // ---- Live activities pushed by scripts and apps through the local API ----
         LocalApi api;
+        DiscordService discord;
         void OnApiActivity(ApiActivity activity) { UpdateExternal(); Recompute(); }
         void OnApiEnded(string id) { UpdateExternal(); Recompute(); }
         bool ApiActive { get { return api != null && api.Running && api.Activities.Count > 0; } }
@@ -429,9 +432,16 @@ namespace WindowsIsland
             MicDot.Visibility = mic ? Visibility.Visible : Visibility.Collapsed;
             CamDot.Visibility = cam ? Visibility.Visible : Visibility.Collapsed;
             ScreenDot.Visibility = screen ? Visibility.Visible : Visibility.Collapsed;
+            // Muted or deafened in Discord, while the Discord option is on and connected
+            bool deaf = settings.DiscordEnabled && discord != null && discord.Deafened;
+            bool muted = settings.DiscordEnabled && discord != null && discord.Muted && !deaf;
+            DiscordDeaf.Visibility = deaf ? Visibility.Visible : Visibility.Collapsed;
+            DiscordMute.Visibility = muted ? Visibility.Visible : Visibility.Collapsed;
+            bool discordShown = deaf || muted;
 
             // Hovering over the dots (not the island) shows the name of the app using the microphone or camera; a new app also shows it by itself if the setting asks for it.
             string label = mic || cam || screen ? PrivacyLabel() : "";
+            bool anything = mic || cam || screen || discordShown;
             if (label != privacyLabel)
             {
                 bool added = label.Length > 0;
@@ -450,8 +460,8 @@ namespace WindowsIsland
                 }
             }
             bool showName = label.Length > 0 && (dotHover || DateTime.Now < privacyNameUntil);
-            PrivacyDots.IsHitTestVisible = mic || cam || screen; // Only while a dot is there, so the spot is empty the rest of the time
-            double dotsWidth = 10 + 10 * ((mic ? 1 : 0) + (cam ? 1 : 0) + (screen ? 1 : 0)), nameWidth = 0;
+            PrivacyDots.IsHitTestVisible = anything; // Only while a dot is there, so the spot is empty the rest of the time
+            double dotsWidth = 10 + 10 * ((mic ? 1 : 0) + (cam ? 1 : 0) + (screen ? 1 : 0)) + (discordShown ? 17 : 0), nameWidth = 0;
             PrivacyName.Visibility = showName ? Visibility.Visible : Visibility.Collapsed;
             if (showName)
             {
@@ -460,7 +470,7 @@ namespace WindowsIsland
                 nameWidth = PrivacyName.DesiredSize.Width + PrivacyName.Margin.Left + PrivacyName.Margin.Right;
             }
             PrivacyDots.Width = dotsWidth + nameWidth;
-            privacyOpacity.Target = mic || cam || screen ? 1 : 0;
+            privacyOpacity.Target = anything ? 1 : 0;
         }
 
         string lastTimerText;
@@ -592,6 +602,7 @@ namespace WindowsIsland
             codex.Finished -= OnCodexFinished;
             timer.Changed -= OnTimerChanged;
             privacy.Changed -= OnPrivacyChanged;
+            if (discord != null) discord.Changed -= OnPrivacyChanged;
             if (battery != null) battery.Changed -= OnBatteryChanged;
             if (focusState != null) focusState.Changed -= OnFocusChanged;
             if (api != null) { api.ActivityUpdated -= OnApiActivity; api.ActivityEnded -= OnApiEnded; }
@@ -982,6 +993,8 @@ namespace WindowsIsland
             else if (DateTime.Now < bannerUntil) next = View.Banner;
             else if (DateTime.Now < toastUntil) next = View.Toast;
             else if (DateTime.Now < levelUntil) next = View.Level;
+            // With the system monitor on, it stays and the activity is the small bubble beside it
+            else if (KeepsMonitor(primary)) next = View.SystemCompact;
             // Empty island: the collapsed island stays a plain pill. Activities only show when it expands.
             else if (primary == Activity.Music && !settings.EmptyIsland) next = View.MusicCompact;
             else if (primary == Activity.Claude && !settings.EmptyIsland) next = View.ClaudeCompact;
@@ -989,10 +1002,12 @@ namespace WindowsIsland
             else if (primary == Activity.External && !settings.EmptyIsland) next = View.ExternalCompact;
             else if (primary == Activity.Battery && !settings.EmptyIsland) next = View.BatteryCompact;
             else if (primary == Activity.Timer) next = View.TimerCompact;
-            else if (settings.SystemMonitor && maximized && !IsBottom) next = View.Minimal;
+            else if (maximized && settings.MaximizedMode == "Hidden") next = View.Hidden; // A game or a video that fills the screen
+            else if (settings.SystemMonitor && maximized && !IsBottom && settings.MaximizedMode == "Thin") next = View.Minimal;
             else if (settings.SystemMonitor) next = View.SystemCompact;
             else if (!settings.ShowIdlePill && !PrivacyOn) next = View.Hidden;
-            else if (maximized && !IsBottom) next = View.Minimal; // Stay out of the way of tab strips
+            else if (maximized && !IsBottom && settings.MaximizedMode == "Thin") next = View.Minimal; // Stay out of the way of tab strips
+            else if (settings.IdleStyle == "Line") next = View.Minimal; // The thin line as the idle look
             else next = View.Idle;
 
             // Auto-hide: an island that has shown nothing for a while steps away until something happens
@@ -1014,6 +1029,7 @@ namespace WindowsIsland
                                    : Activity.None;
             Activity other = primary == shownActivity ? second : primary;
             Activity nextBubble = shownActivity != Activity.None && other != shownActivity ? other : Activity.None;
+            if (next == View.SystemCompact && KeepsMonitor(primary)) nextBubble = primary; // The monitor keeps its place, the activity is the bubble
             if (next != view || nextBubble != bubble)
             {
                 view = next;
@@ -1021,6 +1037,12 @@ namespace WindowsIsland
                 ApplyTargets();
             }
             StartLoop();
+        }
+
+        // The monitor is not covered by an activity while "keep the monitor" is on (and the island is not an empty pill).
+        bool KeepsMonitor(Activity primary)
+        {
+            return settings.SystemMonitor && settings.MonitorKeepsPlace && !settings.EmptyIsland && primary != Activity.None && primary != Activity.System;
         }
 
         void ApplyTargets()
