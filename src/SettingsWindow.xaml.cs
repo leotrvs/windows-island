@@ -423,19 +423,19 @@ namespace WindowsIsland
             ApiRows();
             UpdateRow();
             LanguageRow();
-            if (Installer.IsInstalledCopy)
-                ActionRow("\uE74D", Strings.MenuUninstall, () =>
-                {
-                    // The same uninstaller Windows' apps list runs; it asks first and removes the app and its settings
-                    try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(Installer.InstalledExe, "--uninstall") { UseShellExecute = true })?.Dispose(); }
-                    catch (Exception) { }
-                });
             ActionRow("\uE8A5", Strings.MenuOpenSettings, () =>
             {
                 settings.Save();
                 try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(Settings.FilePath) { UseShellExecute = true })?.Dispose(); }
                 catch (Exception) { }
             });
+            // The last row, in red, since it removes the app: the same uninstaller Windows' apps list runs; it asks first
+            if (Installer.IsInstalledCopy)
+                ActionRow("\uE74D", Strings.MenuUninstall, () =>
+                {
+                    try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(Installer.InstalledExe, "--uninstall") { UseShellExecute = true })?.Dispose(); }
+                    catch (Exception) { }
+                }, true);
 
             // Version on the left, the project's page on the right
             Grid footer = new Grid { Margin = new Thickness(6, 18, 6, 0) };
@@ -891,11 +891,22 @@ namespace WindowsIsland
             }
         }
 
-        void ActionRow(string icon, string label, Action action)
+        static readonly Brush DangerBrush = new SolidColorBrush(Color.FromRgb(0xFF, 0x45, 0x3A));
+
+        void ActionRow(string icon, string label, Action action, bool danger = false)
         {
             Button button = new Button { Content = label, Style = (Style)FindResource("LinkButton"), HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Center };
+            if (danger) button.Foreground = DangerBrush;
             button.Click += (s, e) => action();
             Row(icon, null, null, null, null, button);
+            if (danger)
+            {
+                // The icon in red too
+                StackPanel row = (StackPanel)card.Children[card.Children.Count - 1];
+                Grid grid = row.Children[row.Children.Count - 1] as Grid;
+                TextBlock mark = grid != null && grid.Children.Count > 0 ? grid.Children[0] as TextBlock : null;
+                if (mark != null) mark.Foreground = DangerBrush;
+            }
         }
 
         // Draws the whole settings page to a PNG for the README, at its full height.

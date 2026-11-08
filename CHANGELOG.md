@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.4.2
+
+- The uninstall button in Settings is now the last row and all in red, to mark it as dangerous
+
+
 ## 2.4.1
 
 - **Uninstall:** a new "Uninstall Windows Island" button at the end of Settings, System (installed copy only), because the entry in Windows' apps list is not always shown. The entry is now refreshed at every start (its version was never updated after the first install) and carries a size, date and link; the exe's product version no longer has a build hash
