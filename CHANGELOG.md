@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.1.1
+
+- **Tuck away:** the island now comes back after 2.5 seconds, and also when the mouse rests on the top edge of the screen in the middle (where it sits), so it does not have to be on its exact spot
+
 ## 2.1.0
 
 - **System monitor:** an option in Settings, Appearance, keeps the processor and memory load on the island when nothing else is happening. Rings (the default), bars or numbers; off by default

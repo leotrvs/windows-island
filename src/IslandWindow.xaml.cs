@@ -1234,8 +1234,8 @@ namespace WindowsIsland
 
         // ---------- Tucking the island away ----------
         // Dragging the island up (down when it sits at the bottom) puts it away, so what is behind can be used.
-        // It comes back with new activity or an alert, or when the mouse rests on its spot for a few seconds.
-        const double TuckDistance = 10, TuckRevealSeconds = 4;
+        // It comes back with new activity or an alert, or when the mouse rests on its spot, or on the screen edge above it, for a moment.
+        const double TuckDistance = 10, TuckRevealSeconds = 2.5;
         bool tucked, tuckPrivacy, suppressClick;
         Activity tuckPrimary, lastPrimary;
         DateTime? dwellStart;
@@ -1272,7 +1272,10 @@ namespace WindowsIsland
             double depth = settings.OffsetY + reach;
             bool insideX = Math.Abs(cursor.X - center) <= halfWidth;
             bool insideY = IsBottom ? cursor.Y >= edge - depth && cursor.Y <= edge : cursor.Y >= edge && cursor.Y <= edge + depth;
-            if (!insideX || !insideY) { dwellStart = null; return; }
+            // A tucked island is not there to aim at, so the screen edge in the middle, where it sits, also counts
+            bool atEdge = tucked && Math.Abs(cursor.X - center) <= 250 * settings.CollapsedScale &&
+                          (IsBottom ? cursor.Y >= edge - 4 : cursor.Y <= edge + 4);
+            if (!(insideX && insideY) && !atEdge) { dwellStart = null; return; }
 
             if (tucked)
             {
