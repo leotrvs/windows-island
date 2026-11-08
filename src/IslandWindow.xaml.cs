@@ -26,7 +26,7 @@ namespace WindowsIsland
             [View.Hidden] = new Size(90, 24),
             [View.Minimal] = new Size(76, 6),
             [View.Idle] = new Size(112, 30),
-            [View.MusicCompact] = new Size(204, 34),
+            [View.MusicCompact] = new Size(176, 34),
             [View.ClaudeCompact] = new Size(176, 34),
             [View.CodexCompact] = new Size(176, 34),
             [View.TimerCompact] = new Size(150, 34),
@@ -336,26 +336,26 @@ namespace WindowsIsland
             MicDot.Visibility = mic ? Visibility.Visible : Visibility.Collapsed;
             CamDot.Visibility = cam ? Visibility.Visible : Visibility.Collapsed;
 
-            // A new app using the microphone or camera shows its name for a few seconds; hovering shows it again.
+            // Hovering shows the name of the app using the microphone or camera; a new app also shows it by itself if the setting asks for it.
             string label = mic || cam ? PrivacyLabel() : "";
             if (label != privacyLabel)
             {
                 bool added = label.Length > 0;
                 privacyLabel = label;
-                if (added)
+                if (added && settings.PrivacyNameSeconds > 0)
                 {
-                    privacyNameUntil = DateTime.Now.AddSeconds(5);
+                    privacyNameUntil = DateTime.Now.AddSeconds(settings.PrivacyNameSeconds);
                     if (privacyNameTimer == null)
                     {
                         privacyNameTimer = new DispatcherTimer();
                         privacyNameTimer.Tick += (s, e) => { privacyNameTimer.Stop(); UpdatePrivacy(); };
                     }
-                    privacyNameTimer.Interval = TimeSpan.FromSeconds(5.1);
+                    privacyNameTimer.Interval = TimeSpan.FromSeconds(settings.PrivacyNameSeconds + 0.1);
                     privacyNameTimer.Stop();
                     privacyNameTimer.Start();
                 }
             }
-            bool showName = settings.ShowPrivacyNames && label.Length > 0 && (hovering || DateTime.Now < privacyNameUntil);
+            bool showName = label.Length > 0 && (hovering || DateTime.Now < privacyNameUntil);
             double dotsWidth = mic && cam ? 30 : 20, nameWidth = 0;
             PrivacyName.Visibility = showName ? Visibility.Visible : Visibility.Collapsed;
             if (showName)

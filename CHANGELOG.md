@@ -2,7 +2,7 @@
 
 ## 2.0.0 (unreleased)
 
-- **App names on the dots:** the app using the microphone or camera shows its name beside the dot for a few seconds, and again while the mouse is over the island
+- **App names on the dots:** hover the island to see which app uses the microphone or camera, beside the dot. Settings can also show the name by itself for 1, 2 or 3 seconds when an app starts (off by default)
 - **Battery as an activity:** while the charger is plugged in and the battery is not full, the island shows the charge level like any other activity
 - **Choose your pages:** Settings, Behavior, lets you turn each page of the open island on or off
 - **App icons on notifications:** Windows notifications show the real icon of the app that sent them (loaded from the shell, only for plain app ids)

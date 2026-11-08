@@ -209,11 +209,12 @@ namespace WindowsIsland
                                                   "Laranja com o microfone em uso, verde com a câmera",
                                                   "Naranja con el micrófono en uso, verde con la cámara",
                                                   "Оранжевая, пока используется микрофон, зелёная для камеры");
-        public static string MenuPrivacyNames => T("App name on the dots", "Nome do app nos pontos", "Nombre de la app en los puntos", "Название приложения у точек");
-        public static string HintPrivacyNames => T("Shows which app is using the microphone or camera, for a few seconds and while the mouse is over the island",
-                                                   "Mostra qual app usa o microfone ou a câmera, por alguns segundos e enquanto o mouse está na ilha",
-                                                   "Muestra qué app usa el micrófono o la cámara, unos segundos y mientras el ratón está sobre la isla",
-                                                   "Показывает, какое приложение использует микрофон или камеру, несколько секунд и пока мышь над островом");
+        public static string MenuPrivacyNames => T("App name when recording starts", "Nome do app ao começar a gravar", "Nombre de la app al empezar a grabar", "Название приложения при начале записи");
+        public static string HintPrivacyNames => T("Hover the dots to see which app uses the microphone or camera. Here, choose how long its name also shows by itself when an app starts",
+                                                   "Passe o mouse nos pontos para ver qual app usa o microfone ou a câmera. Aqui, escolha por quanto tempo o nome também aparece sozinho quando um app começa",
+                                                   "Pasa el ratón por los puntos para ver qué app usa el micrófono o la cámara. Aquí elige cuánto tiempo su nombre aparece también solo cuando una app empieza",
+                                                   "Наведите мышь на точки, чтобы увидеть, какое приложение использует микрофон или камеру. Здесь выберите, сколько секунд название показывается само, когда приложение начинает");
+        public static string Off => T("Off", "Desligado", "Desactivado", "Выкл");
         public static string SectionPages => T("Pages", "Páginas", "Páginas", "Страницы");
         public static string HintPages => T("The pages you can switch between when the island is open",
                                             "As páginas entre as quais você alterna com a ilha aberta",
