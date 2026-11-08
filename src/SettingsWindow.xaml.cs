@@ -607,6 +607,21 @@ namespace WindowsIsland
             Row(icon, label, null, value, slider);
         }
 
+        static bool CopyText(string text)
+        {
+            for (int attempt = 0; attempt < 10; attempt++)
+            {
+                try
+                {
+                    Clipboard.SetDataObject(text, true);
+                    if (Clipboard.ContainsText() && Clipboard.GetText() == text) return true;
+                }
+                catch (Exception) { } // The clipboard is held by another program for a moment
+                System.Threading.Thread.Sleep(80);
+            }
+            return false;
+        }
+
         // The local API for scripts and apps: a switch, and while it is on, the token to hand to them.
         void ApiRows()
         {
@@ -655,9 +670,15 @@ namespace WindowsIsland
                     {
                         string token = api.Token ?? api.RegenerateToken();
                         string folder = ExtensionInstaller.Extract(token, api.Port > 0 ? api.Port : settings.ApiPort);
-                        try { Clipboard.SetText(folder); } catch (Exception) { }
+                        // Another program can hold the clipboard for a moment, so it is retried and checked; when it
+                        // still fails, the folder opens in Explorer so its address can be copied from there.
+                        bool copied = CopyText(folder);
+                        if (!copied)
+                        {
+                            try { System.Diagnostics.Process.Start("explorer.exe", (char)34 + folder + (char)34); } catch (Exception) { }
+                        }
                         bool opened = ExtensionInstaller.OpenExtensionsPage(isEdge);
-                        note.Text = opened ? Strings.ExtSteps(folder) : Strings.ExtNoBrowser + " " + folder;
+                        note.Text = !opened ? Strings.ExtNoBrowser + " " + folder : copied ? Strings.ExtSteps(folder) : Strings.ExtStepsNoCopy(folder);
                     }
                     catch (Exception)
                     {

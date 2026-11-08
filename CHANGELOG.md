@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.1.2
+
+- **Browser extension button:** opens the extensions page itself (browsers ignore chrome:// addresses from the command line and show a blank tab, so the address is typed into that tab, only when a blank new tab is in front)
+- Copying the folder path is retried and checked; if it still fails, the folder opens in Explorer instead of saying it was copied. The steps also name "Modo de programador" and "Carregar descompactada" for Portuguese (Portugal) browsers
+
 ## 2.1.1
 
 - **Tuck away:** the island now comes back after 2.5 seconds, and also when the mouse rests on the top edge of the screen in the middle (where it sits), so it does not have to be on its exact spot
