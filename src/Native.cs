@@ -16,7 +16,7 @@ namespace WindowsIsland
         const long WS_EX_TOOLWINDOW = 0x80;
         const long WS_EX_APPWINDOW = 0x40000;
         const long WS_EX_NOACTIVATE = 0x08000000;
-        const uint SWP_NOSIZE = 0x1, SWP_NOMOVE = 0x2, SWP_NOACTIVATE = 0x10, SWP_NOOWNERZORDER = 0x200;
+        const uint SWP_NOSIZE = 0x1, SWP_NOMOVE = 0x2, SWP_NOACTIVATE = 0x10, SWP_NOOWNERZORDER = 0x200, SWP_NOZORDER = 0x4;
         const uint MONITOR_DEFAULTTONEAREST = 2;
         const int QUNS_RUNNING_D3D_FULL_SCREEN = 3;
         const int QUNS_PRESENTATION_MODE = 4;
@@ -56,6 +56,13 @@ namespace WindowsIsland
             long style = GetWindowLongPtr(hwnd, GWL_EXSTYLE).ToInt64();
             style = (style | WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE) & ~WS_EX_APPWINDOW;
             SetWindowLongPtr(hwnd, GWL_EXSTYLE, new IntPtr(style));
+        }
+
+        // Moves a window to physical screen pixels without activating it. Crossing to a monitor with another scale
+        // makes Windows send the DPI change right away, so callers set the size after this returns.
+        public static void MoveTo(IntPtr hwnd, int x, int y)
+        {
+            if (hwnd != IntPtr.Zero) SetWindowPos(hwnd, IntPtr.Zero, x, y, 0, 0, SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOOWNERZORDER);
         }
 
         public static void KeepTopmost(IntPtr hwnd)

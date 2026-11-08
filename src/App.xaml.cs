@@ -89,7 +89,7 @@ namespace WindowsIsland
                 return;
             }
             // A downloaded copy offers to install itself; --portable runs it in place.
-            if (!sample && !portable && !afterUpdate && !Installer.IsInstalledCopy)
+            if (!sample && !portable && !afterUpdate && Array.IndexOf(e.Args, "--dev") < 0 && !Installer.IsInstalledCopy)
             {
                 Installer.RunInteractive();
                 Shutdown();

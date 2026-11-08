@@ -17,11 +17,11 @@ Ideas planned for upcoming releases, in the order they are expected to land. Not
 - A way for scripts and other apps to show their own live activities
 - The real tab icon (favicon) for web audio without artwork. Windows does not report the tab or site, so this needs a small browser extension that tells the island which tab is playing
 - App icons on notification banners
-- Sharp islands on monitors with different display scales (per-monitor DPI)
 - Notifications through the official Windows listener, once the app ships as a signed package
 
 ## Done
 
+- Sharp islands on monitors with different display scales (1.13.0)
 - Screenshot alert, sliding tab pills, sharper Settings text (1.12.0)
 - Update flow with progress, languages (en, pt, es, ru), Inter font, smaller alerts, icons in Settings (1.11.0)
 - Animated README GIF from sample data, and Settings that opens like a tray flyout (1.10.1)

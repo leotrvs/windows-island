@@ -14,6 +14,9 @@ namespace WindowsIsland
         public bool Primary;
         public Rect Bounds;
         public Rect WorkArea;  // Without the taskbar
+        public Rect PxBounds;  // Same two rectangles in physical pixels
+        public Rect PxWorkArea;
+        public double Scale = 1; // This monitor's DPI scale: 1.0 = 100%, 1.5 = 150%
     }
 
     static class Displays
@@ -46,36 +49,46 @@ namespace WindowsIsland
         [DllImport("user32.dll")] static extern IntPtr MonitorFromPoint(POINT point, uint flags);
         [DllImport("user32.dll")] static extern bool GetCursorPos(out POINT point);
 
+        [DllImport("shcore.dll")] static extern int GetDpiForMonitor(IntPtr monitor, int type, out uint x, out uint y);
+
+        static double ScaleOf(IntPtr monitor)
+        {
+            try
+            {
+                uint x, y;
+                if (GetDpiForMonitor(monitor, 0, out x, out y) == 0 && x > 0) return x / 96.0;
+            }
+            catch { }
+            return 1;
+        }
+
         public static List<Display> All()
         {
-            // Monitors report physical pixels; WPF positions windows in DIPs at the system DPI.
-            List<MONITORINFOEX> found = new List<MONITORINFOEX>();
+            // Monitors report physical pixels. Each also gets its own scale, because the app is per-monitor DPI aware.
+            List<KeyValuePair<IntPtr, MONITORINFOEX>> found = new List<KeyValuePair<IntPtr, MONITORINFOEX>>();
             EnumDisplayMonitors(IntPtr.Zero, IntPtr.Zero, (monitor, dc, rect, data) =>
             {
                 MONITORINFOEX info = new MONITORINFOEX { cbSize = Marshal.SizeOf<MONITORINFOEX>() };
-                if (GetMonitorInfo(monitor, ref info)) found.Add(info);
+                if (GetMonitorInfo(monitor, ref info)) found.Add(new KeyValuePair<IntPtr, MONITORINFOEX>(monitor, info));
                 return true;
             }, IntPtr.Zero);
 
-            double toDip = 1;
-            foreach (MONITORINFOEX info in found)
-            {
-                int width = info.rcMonitor.Right - info.rcMonitor.Left;
-                if ((info.dwFlags & MONITORINFOF_PRIMARY) != 0 && width > 0)
-                    toDip = SystemParameters.PrimaryScreenWidth / width;
-            }
-
             List<Display> displays = new List<Display>();
-            foreach (MONITORINFOEX info in found)
+            foreach (KeyValuePair<IntPtr, MONITORINFOEX> pair in found)
             {
+                MONITORINFOEX info = pair.Value;
+                double scale = ScaleOf(pair.Key);
                 Match number = Digits.Match(info.szDevice ?? "");
                 displays.Add(new Display
                 {
                     Id = info.szDevice,
                     Number = number.Success ? int.Parse(number.Value) : displays.Count + 1,
                     Primary = (info.dwFlags & MONITORINFOF_PRIMARY) != 0,
-                    Bounds = Scale(info.rcMonitor, toDip),
-                    WorkArea = Scale(info.rcWork, toDip),
+                    Scale = scale,
+                    PxBounds = Scale(info.rcMonitor, 1),
+                    PxWorkArea = Scale(info.rcWork, 1),
+                    Bounds = Scale(info.rcMonitor, 1 / scale),
+                    WorkArea = Scale(info.rcWork, 1 / scale),
                 });
             }
             displays.Sort((a, b) => a.Primary != b.Primary ? (a.Primary ? -1 : 1) : a.Number.CompareTo(b.Number));
@@ -92,6 +105,8 @@ namespace WindowsIsland
                 Primary = true,
                 Bounds = new Rect(0, 0, SystemParameters.PrimaryScreenWidth, SystemParameters.PrimaryScreenHeight),
                 WorkArea = SystemParameters.WorkArea,
+                PxBounds = new Rect(0, 0, SystemParameters.PrimaryScreenWidth, SystemParameters.PrimaryScreenHeight),
+                PxWorkArea = SystemParameters.WorkArea,
             };
         }
 

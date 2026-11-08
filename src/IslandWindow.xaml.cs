@@ -914,17 +914,26 @@ namespace WindowsIsland
         void PlaceWindow()
         {
             Display display = Target ?? Displays.Primary();
-            Rect screen = display.Bounds;
-            Rect work = display.WorkArea;
+            Rect screen = display.PxBounds;
+            Rect work = display.PxWorkArea;
+            double scale = display.Scale;
             bool bottom = IsBottom;
 
-            // Room for the largest state at the user's sizes, plus the bubble and the shadow.
+            // Room for the largest state at the user's sizes, plus the bubble and the shadow (all in DIPs).
             double largest = Math.Max(settings.ExpandedScale, settings.CollapsedScale);
-            Width = Math.Max(520, 372 * largest + 140);
+            double wantWidth = Math.Max(520, 372 * largest + 140);
             double tallest = Math.Max(Math.Max(Sizes[View.MusicExpanded].Height, Sizes[View.TimerExpanded].Height), ClaudePanelHeight);
-            Height = Math.Max(tallest * settings.ExpandedScale, 34 * settings.CollapsedScale) + settings.OffsetY + 44;
-            Left = Math.Clamp(screen.Left + (screen.Width - Width) / 2 + settings.OffsetX, screen.Left, Math.Max(screen.Left, screen.Right - Width));
-            Top = bottom ? work.Bottom - Height : work.Top;
+            double wantHeight = Math.Max(tallest * settings.ExpandedScale, 34 * settings.CollapsedScale) + settings.OffsetY + 44;
+
+            // Positions are physical pixels so each monitor keeps its own scale: first step onto the monitor
+            // (which switches the window's DPI), then size in DIPs, then settle the exact position.
+            double pxWidth = Math.Round(wantWidth * scale), pxHeight = Math.Round(wantHeight * scale);
+            double pxLeft = Math.Clamp(screen.Left + (screen.Width - pxWidth) / 2 + settings.OffsetX * scale, screen.Left, Math.Max(screen.Left, screen.Right - pxWidth));
+            double pxTop = bottom ? work.Bottom - pxHeight : work.Top;
+            Native.MoveTo(hwnd, (int)Math.Round(pxLeft), (int)Math.Round(pxTop));
+            Width = wantWidth;
+            Height = wantHeight;
+            Native.MoveTo(hwnd, (int)Math.Round(pxLeft), (int)Math.Round(pxTop));
 
             VerticalAlignment align = bottom ? VerticalAlignment.Bottom : VerticalAlignment.Top;
             Thickness margin = bottom ? new Thickness(0, 0, 0, settings.OffsetY) : new Thickness(0, settings.OffsetY, 0, 0);

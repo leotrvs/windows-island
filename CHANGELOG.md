@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.13.0
+
+- **Sharp on every monitor:** the island now follows each monitor's own display scale (per-monitor DPI), so it is no longer stretched and blurry on a screen with a different scale than the main one
+- `--dev` no longer needs `--portable`
+
 ## 1.12.0
 
 - **Screenshot alert:** a very small note, "Screenshot taken", when you take a screenshot with Print Screen or Win+Shift+S. It does not queue up or repeat for a burst of screenshots, and it can be turned off in Settings, Activities. It only notices that an image reached the clipboard from Windows' own screenshot tools: it never reads the picture and does not watch the keyboard
