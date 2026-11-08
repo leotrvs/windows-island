@@ -18,8 +18,8 @@ namespace WindowsIsland
 {
     public partial class IslandWindow : Window
     {
-        enum View { Hidden, Minimal, Idle, MusicCompact, ClaudeCompact, CodexCompact, TimerCompact, BatteryCompact, MusicExpanded, ClaudeExpanded, TimerExpanded, Banner, Toast }
-        enum Activity { None, Music, Claude, Codex, Timer, Battery }
+        enum View { Hidden, Minimal, Idle, MusicCompact, ClaudeCompact, CodexCompact, TimerCompact, BatteryCompact, MusicExpanded, ClaudeExpanded, TimerExpanded, SystemExpanded, Banner, Toast, Level }
+        enum Activity { None, Music, Claude, Codex, Timer, Battery, System }
 
         static readonly Dictionary<View, Size> Sizes = new Dictionary<View, Size>
         {
@@ -33,9 +33,11 @@ namespace WindowsIsland
             [View.BatteryCompact] = new Size(150, 34),
             [View.MusicExpanded] = new Size(372, 152),
             [View.TimerExpanded] = new Size(372, 150),
+            [View.SystemExpanded] = new Size(372, 150),
             [View.ClaudeExpanded] = new Size(372, 156),
             [View.Banner] = new Size(352, 74),
             [View.Toast] = new Size(184, 36),
+            [View.Level] = new Size(220, 36),
         };
 
         const double MaxRadius = 38;
@@ -116,10 +118,12 @@ namespace WindowsIsland
             panels[View.TimerCompact] = TimerCompact;
             panels[View.BatteryCompact] = BatteryCompact;
             panels[View.TimerExpanded] = TimerExpanded;
+            panels[View.SystemExpanded] = SystemExpanded;
             panels[View.MusicExpanded] = MusicExpanded;
             panels[View.ClaudeExpanded] = ClaudeExpanded;
             panels[View.Banner] = Banner;
             panels[View.Toast] = Toast;
+            panels[View.Level] = Level;
             foreach (FrameworkElement panel in panels.Values)
             {
                 presence[panel] = new Spring(0, 0.002, 300, 0.85);
@@ -165,6 +169,8 @@ namespace WindowsIsland
             privacy.Changed += OnPrivacyChanged;
             battery = (Application.Current as App)?.Battery;
             if (battery != null) battery.Changed += OnBatteryChanged;
+            focusState = (Application.Current as App)?.Focus;
+            if (focusState != null) focusState.Changed += OnFocusChanged;
 
             SourceInitialized += (s, e) =>
             {
@@ -192,6 +198,34 @@ namespace WindowsIsland
         void OnTimerChanged() { UpdateTimerPage(); Recompute(); }
         void OnPrivacyChanged() { UpdatePrivacy(); Recompute(); }
         void OnBatteryChanged() { UpdateBattery(); Recompute(); }
+
+        // The clock and system page: the time, and the processor and memory load, refreshed once a second.
+        readonly SystemStats systemStats = new SystemStats();
+        DateTime lastSystemUpdate = DateTime.MinValue;
+        void UpdateSystemPage()
+        {
+            DateTime now = DateTime.Now;
+            string time = now.ToString("t");
+            if (ClockBig.Text != time) ClockBig.Text = time;
+            if (now - lastSystemUpdate < TimeSpan.FromSeconds(1) && lastSystemUpdate != DateTime.MinValue) return;
+            if (now - lastSystemUpdate > TimeSpan.FromSeconds(3)) systemStats.Reset();
+            lastSystemUpdate = now;
+            systemStats.Update();
+            ClockDate.Text = now.ToString("dddd, d MMMM");
+            CpuLabel.Text = Strings.CpuLabel;
+            MemoryLabel.Text = Strings.MemoryLabel;
+            CpuText.Text = systemStats.Cpu + "%";
+            MemoryText.Text = systemStats.Memory + "%";
+            CpuFill.Width = 132.0 * systemStats.Cpu / 100;
+            MemoryFill.Width = 132.0 * systemStats.Memory / 100;
+        }
+        void OnFocusChanged() { UpdateFocusMoon(); }
+
+        FocusService focusState;
+        void UpdateFocusMoon()
+        {
+            FocusMoon.Visibility = settings.ShowFocus && focusState != null && focusState.On ? Visibility.Visible : Visibility.Collapsed;
+        }
 
         BatteryService battery;
         bool BatteryActive { get { return settings.BatteryActivity && battery != null && battery.Charging; } }
@@ -221,6 +255,7 @@ namespace WindowsIsland
 
         void UpdatePrivacy()
         {
+            UpdateFocusMoon();
             bool mic = privacy.Microphone && settings.ShowPrivacyDots, cam = privacy.Camera && settings.ShowPrivacyDots;
             MicDot.Visibility = mic ? Visibility.Visible : Visibility.Collapsed;
             CamDot.Visibility = cam ? Visibility.Visible : Visibility.Collapsed;
@@ -384,6 +419,7 @@ namespace WindowsIsland
             timer.Changed -= OnTimerChanged;
             privacy.Changed -= OnPrivacyChanged;
             if (battery != null) battery.Changed -= OnBatteryChanged;
+            if (focusState != null) focusState.Changed -= OnFocusChanged;
             enterTimer.Stop();
             leaveTimer.Stop();
             pollTimer.Stop();
@@ -417,6 +453,8 @@ namespace WindowsIsland
             if (!Enum.TryParse(name, true, out value)) return;
             forced = value;
             BatteryCompactText.Text = "54%";
+            LevelGlyph.Text = ""; LevelFill.Width = 84.5; LevelText.Text = "65%";
+            UpdateSystemPage();
             BannerTitle.Text = Strings.ClaudeDone;
             BannerSubtitle.Text = Strings.SampleSession;
         }
@@ -425,7 +463,7 @@ namespace WindowsIsland
         public void RenderStates(string folder, string suffix)
         {
             Directory.CreateDirectory(folder);
-            View[] states = { View.Idle, View.MusicCompact, View.ClaudeCompact, View.CodexCompact, View.BatteryCompact, View.MusicExpanded, View.ClaudeExpanded, View.TimerExpanded, View.Banner };
+            View[] states = { View.Idle, View.MusicCompact, View.ClaudeCompact, View.CodexCompact, View.BatteryCompact, View.MusicExpanded, View.ClaudeExpanded, View.TimerExpanded, View.SystemExpanded, View.Level, View.Banner };
             double[] levels = { 0.55, 0.95, 0.4, 0.75 };
             Array.Copy(levels, eqLevel, levels.Length);
             BatteryCompactText.Text = "54%";
@@ -605,6 +643,22 @@ namespace WindowsIsland
             StartLoop();
         }
 
+        // The keyboard shortcut: opens the island, or closes it again when it is already open.
+        internal void ToggleOpen()
+        {
+            if (hovering || DateTime.Now < peekUntil)
+            {
+                peekUntil = DateTime.MinValue;
+                SetHovering(false);
+            }
+            else
+            {
+                lastActive = DateTime.Now; // Also brings back an auto-hidden island
+                SetHovering(true);
+            }
+            Recompute();
+        }
+
         // Opens the island for a moment, so a change to the expanded size can be seen while it is made.
         internal void PeekExpanded()
         {
@@ -637,6 +691,7 @@ namespace WindowsIsland
                 next = PickedPage() ?? DefaultPage(primary);
             else if (DateTime.Now < bannerUntil) next = View.Banner;
             else if (DateTime.Now < toastUntil) next = View.Toast;
+            else if (DateTime.Now < levelUntil) next = View.Level;
             // Empty island: the collapsed island stays a plain pill. Activities only show when it expands.
             else if (primary == Activity.Music && !settings.EmptyIsland) next = View.MusicCompact;
             else if (primary == Activity.Claude && !settings.EmptyIsland) next = View.ClaudeCompact;
@@ -716,6 +771,7 @@ namespace WindowsIsland
             List<Activity> pages = new List<Activity>();
             if (settings.PageMusic && settings.ShowMusic && media.HasSession) pages.Add(Activity.Music);
             if (settings.PageClaude && (settings.ShowClaude || CodexSectionVisible)) pages.Add(Activity.Claude);
+            if (settings.PageSystem) pages.Add(Activity.System);
             if (settings.PageTimer) pages.Add(Activity.Timer);
             return pages;
         }
@@ -735,12 +791,12 @@ namespace WindowsIsland
 
         static View ExpandedFor(Activity activity)
         {
-            return activity == Activity.Music ? View.MusicExpanded : activity == Activity.Timer ? View.TimerExpanded : View.ClaudeExpanded;
+            return activity == Activity.Music ? View.MusicExpanded : activity == Activity.Timer ? View.TimerExpanded : activity == Activity.System ? View.SystemExpanded : View.ClaudeExpanded;
         }
 
         static Activity ActivityOf(View value)
         {
-            return value == View.MusicExpanded ? Activity.Music : value == View.TimerExpanded ? Activity.Timer : Activity.Claude;
+            return value == View.MusicExpanded ? Activity.Music : value == View.TimerExpanded ? Activity.Timer : value == View.SystemExpanded ? Activity.System : Activity.Claude;
         }
 
         View? PickedPage()
@@ -837,6 +893,7 @@ namespace WindowsIsland
             public string Side;        // A large value shown on the right
             public string Glyph;       // A Segoe icon instead of the bell, such as for the battery
             public Brush GlyphBrush;
+            public ImageSource Icon;   // The sending app's own icon, for Windows notifications
             public string App;
             public string Title;
             public string Subtitle;
@@ -866,6 +923,7 @@ namespace WindowsIsland
             Enqueue(new BannerItem
             {
                 App = notification.App,
+                Icon = notification.Icon,
                 Title = notification.Title,
                 Subtitle = notification.Body,
                 Seconds = settings.AlertSeconds,
@@ -874,6 +932,20 @@ namespace WindowsIsland
 
         // Messages from the app itself, such as update results. Not gated by the notifications option.
         DateTime toastUntil;
+
+        // The volume or screen brightness while it is being changed.
+        DateTime levelUntil;
+        internal void ShowLevel(LevelService.Kind kind, int percent, bool muted)
+        {
+            if (!settings.ShowLevels) return;
+            if (fullscreen && settings.HideInFullscreen) return;
+            percent = Math.Clamp(percent, 0, 100);
+            LevelGlyph.Text = kind == LevelService.Kind.Brightness ? "\uE706" : muted || percent == 0 ? "\uE74F" : percent < 34 ? "\uE992" : percent < 67 ? "\uE993" : "\uE767";
+            LevelFill.Width = Math.Max(0, 130.0 * (muted ? 0 : percent) / 100);
+            LevelText.Text = muted ? "" : percent + "%";
+            levelUntil = DateTime.Now.AddSeconds(1.4);
+            Recompute();
+        }
 
         // A short note that never queues: a new one just restarts the time.
         internal void ShowToast(string text, string glyph, double seconds)
@@ -907,7 +979,7 @@ namespace WindowsIsland
         // True while the user is looking at or using the island, so an update restart waits.
         internal bool IsBusy
         {
-            get { return hovering || view == View.Banner || view == View.MusicExpanded || view == View.ClaudeExpanded || view == View.TimerExpanded; }
+            get { return hovering || view == View.Banner || view == View.MusicExpanded || view == View.ClaudeExpanded || view == View.TimerExpanded || view == View.SystemExpanded; }
         }
 
         void Enqueue(BannerItem item)
@@ -937,7 +1009,10 @@ namespace WindowsIsland
                 BannerGlyph.Text = item.Glyph;
                 BannerGlyph.Foreground = item.GlyphBrush ?? White;
             }
-            BannerBell.Visibility = item.FromClaude || item.FromCodex || glyph ? Visibility.Collapsed : Visibility.Visible;
+            bool appIcon = item.Icon != null && !item.FromClaude && !item.FromCodex && !glyph;
+            BannerAppIcon.Visibility = appIcon ? Visibility.Visible : Visibility.Collapsed;
+            BannerAppIcon.Source = appIcon ? item.Icon : null;
+            BannerBell.Visibility = item.FromClaude || item.FromCodex || glyph || appIcon ? Visibility.Collapsed : Visibility.Visible;
             BannerIcon.Background = item.FromClaude ? ClaudeTint : item.FromCodex ? CodexTint : NotificationTint;
             BannerApp.Text = item.App ?? "";
             BannerApp.Visibility = item.FromClaude || string.IsNullOrEmpty(item.App) ? Visibility.Collapsed : Visibility.Visible;
@@ -984,7 +1059,7 @@ namespace WindowsIsland
 
         static bool IsExpandedView(View value)
         {
-            return value == View.MusicExpanded || value == View.ClaudeExpanded || value == View.TimerExpanded || value == View.Banner;
+            return value == View.MusicExpanded || value == View.ClaudeExpanded || value == View.TimerExpanded || value == View.SystemExpanded || value == View.Banner;
         }
 
         void PlaceWindow()
@@ -998,7 +1073,7 @@ namespace WindowsIsland
             // Room for the largest state at the user's sizes, plus the bubble and the shadow (all in DIPs).
             double largest = Math.Max(settings.ExpandedScale, settings.CollapsedScale);
             double wantWidth = Math.Max(520, 372 * largest + 140);
-            double tallest = Math.Max(Math.Max(Sizes[View.MusicExpanded].Height, Sizes[View.TimerExpanded].Height), ClaudePanelHeight);
+            double tallest = Math.Max(Math.Max(Math.Max(Sizes[View.MusicExpanded].Height, Sizes[View.TimerExpanded].Height), Sizes[View.SystemExpanded].Height), ClaudePanelHeight);
             double wantHeight = Math.Max(tallest * settings.ExpandedScale, 34 * settings.CollapsedScale) + settings.OffsetY + 44;
 
             // Positions are physical pixels so each monitor keeps its own scale: first step onto the monitor
@@ -1281,6 +1356,12 @@ namespace WindowsIsland
             {
                 UpdateProgress();
                 keepGoing |= media.IsPlaying;
+            }
+
+            if (presence[SystemExpanded].Value > 0.01)
+            {
+                UpdateSystemPage();
+                keepGoing = true;
             }
 
             if ((presence[TimerCompact].Value > 0.01 || presence[TimerExpanded].Value > 0.01) && timer.Running)

@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Threading;
@@ -299,6 +300,10 @@ Top = taskbarTop ? work.Top + 12 : work.Bottom - Height - 12;
             Toggle("\uE77B", Strings.MenuPrivacyNames, Strings.HintPrivacyNames, () => settings.ShowPrivacyNames, v => settings.ShowPrivacyNames = v);
             Toggle("\uE83E", Strings.MenuBatteryActivity, Strings.HintBatteryActivity, () => settings.BatteryActivity, v => settings.BatteryActivity = v);
             Toggle("\uE83F", Strings.MenuBatteryAlerts, Strings.HintBatteryAlerts, () => settings.BatteryAlerts, v => settings.BatteryAlerts = v);
+            Toggle("\uE702", Strings.MenuDevices, Strings.HintDevices, () => settings.ShowDeviceAlerts, v => settings.ShowDeviceAlerts = v);
+            Toggle("\uE701", Strings.MenuNetworkAlerts, Strings.HintNetworkAlerts, () => settings.ShowNetworkAlerts, v => settings.ShowNetworkAlerts = v);
+            Toggle("\uE708", Strings.MenuFocus, Strings.HintFocus, () => settings.ShowFocus, v => settings.ShowFocus = v);
+            Toggle("\uE767", Strings.MenuLevels, Strings.HintLevels, () => settings.ShowLevels, v => settings.ShowLevels = v);
             Toggle("\uE722", Strings.MenuScreenshot, Strings.HintScreenshot, () => settings.ShowScreenshotAlert, v => settings.ShowScreenshotAlert = v);
             Toggle("\uE7E7", Strings.MenuNotifications, Strings.HintNotifications, () => settings.ShowNotifications, v => settings.ShowNotifications = v);
         }
@@ -310,6 +315,8 @@ Top = taskbarTop ? work.Top + 12 : work.Bottom - Height - 12;
             Toggle("\uE7F8", Strings.MenuIdlePill, null, () => settings.ShowIdlePill, v => settings.ShowIdlePill = v);
             Toggle("\uE7C9", Strings.MenuHover, null, () => settings.ExpandOnHover, v => settings.ExpandOnHover = v);
             Toggle("\uE740", Strings.MenuFullscreen, null, () => settings.HideInFullscreen, v => settings.HideInFullscreen = v);
+            Toggle("\uE765", Strings.MenuHotkey, Strings.HintHotkey, () => settings.HotkeyEnabled, v => { settings.HotkeyEnabled = v; Dispatcher.BeginInvoke(new Action(Rebuild), DispatcherPriority.Background); });
+            if (settings.HotkeyEnabled) HotkeyRow();
             Choice("\uE916", Strings.MenuAutoHide, Strings.HintAutoHide, new[] { 0, 5, 10, 30, 60, 300 }, true, () => settings.AutoHideSeconds, v => settings.AutoHideSeconds = v);
             Choice("\uE81C", Strings.MenuAlertDuration, null, new[] { 3, 5, 8, 12, 20 }, false, () => settings.AlertSeconds, v => settings.AlertSeconds = v);
             Choice("\uE769", Strings.MenuPausedMusic, null, new[] { 0, 2, 5, 15, 30, 60 }, false, () => settings.PausedMusicSeconds, v => settings.PausedMusicSeconds = v);
@@ -317,6 +324,7 @@ Top = taskbarTop ? work.Top + 12 : work.Bottom - Height - 12;
             Section(Strings.SectionPages);
             Toggle("\uE8D6", Strings.PageMusicLabel, Strings.HintPages, () => settings.PageMusic, v => settings.PageMusic = v);
             Toggle("img:claude", Strings.PageClaudeLabel, null, () => settings.PageClaude, v => settings.PageClaude = v);
+            Toggle("\uE9D9", Strings.PageSystemLabel, null, () => settings.PageSystem, v => settings.PageSystem = v);
             Toggle("\uE916", Strings.PageTimerLabel, null, () => settings.PageTimer, v => settings.PageTimer = v);
         }
 
@@ -563,6 +571,49 @@ Top = taskbarTop ? work.Top + 12 : work.Bottom - Height - 12;
                 Apply();
             };
             Row(icon, label, null, value, slider);
+        }
+
+        // Shows the current shortcut; a click waits for the next key combination and saves it.
+        void HotkeyRow()
+        {
+            Button button = new Button { Content = settings.HotkeyCombo, Style = (Style)FindResource("LinkButton"), HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Center, Focusable = true };
+            bool capturing = false;
+            button.Click += (s, e) =>
+            {
+                capturing = true;
+                button.Content = Strings.HotkeyPress;
+                button.Focus();
+            };
+            button.LostKeyboardFocus += (s, e) =>
+            {
+                if (!capturing) return;
+                capturing = false;
+                button.Content = settings.HotkeyCombo;
+            };
+            button.PreviewKeyDown += (s, e) =>
+            {
+                if (!capturing) return;
+                e.Handled = true;
+                Key key = e.Key == Key.System ? e.SystemKey : e.Key;
+                if (key == Key.Escape)
+                {
+                    capturing = false;
+                    button.Content = settings.HotkeyCombo;
+                    return;
+                }
+                string combo = HotkeyService.Format(Keyboard.Modifiers, key);
+                if (combo == null) return; // Only a modifier so far, or no modifier at all
+                capturing = false;
+                settings.HotkeyCombo = combo;
+                Apply();
+                Rebuild();
+            };
+            Row("\uE765", null, null, null, null, button);
+            if (App.HotkeyFailed)
+            {
+                TextBlock warning = new TextBlock { Text = Strings.HotkeyTaken, FontSize = 12, Foreground = Brushes.IndianRed, Margin = new Thickness(60, 0, 14, 10), TextWrapping = TextWrapping.Wrap };
+                ((StackPanel)card.Children[card.Children.Count - 1]).Children.Add(warning);
+            }
         }
 
         void ActionRow(string icon, string label, Action action)

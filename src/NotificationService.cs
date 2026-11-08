@@ -16,6 +16,7 @@ namespace WindowsIsland
         public string App;
         public string Title;
         public string Body;
+        public System.Windows.Media.ImageSource Icon; // The sending app's icon, frozen, or null for the bell
     }
 
     // Shows new Windows notifications in the island. The official listener API needs a signed package,
@@ -187,6 +188,7 @@ namespace WindowsIsland
                     App = Shorten(FriendlyName(handler), 60),
                     Title = Shorten(texts[0], MaxTextLength),
                     Body = texts.Count > 1 ? Shorten(string.Join(" ", texts.Skip(1)), MaxTextLength) : "",
+                    Icon = AppIcons.Load(handler), // Validates the id itself; never opens paths from the database
                 };
             }
             catch (Exception)

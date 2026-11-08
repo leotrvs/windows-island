@@ -31,6 +31,13 @@ namespace WindowsIsland
         public bool PageMusic { get; set; } = true;
         public bool PageClaude { get; set; } = true;
         public bool PageTimer { get; set; } = true;
+        public bool PageSystem { get; set; } = true;
+        public bool ShowDeviceAlerts { get; set; } = true;  // Bluetooth and USB devices connecting
+        public bool ShowNetworkAlerts { get; set; } = true; // Going offline and coming back
+        public bool HotkeyEnabled { get; set; } = false;   // A global shortcut that opens and closes the island: off by default
+        public string HotkeyCombo { get; set; } = "Ctrl+Alt+I";
+        public bool ShowFocus { get; set; } = true; // A small moon while Do not disturb is on
+        public bool ShowLevels { get; set; } = true; // Volume and brightness while they change
         public bool ShowPrivacyDots { get; set; } = true;
         public bool ShowPrivacyNames { get; set; } = true; // The app's name beside the dots, for a few seconds
         public bool BatteryAlerts { get; set; } = true;

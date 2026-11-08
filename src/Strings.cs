@@ -222,6 +222,43 @@ namespace WindowsIsland
         public static string PageMusicLabel => T("Music page", "Página de música", "Página de música", "Страница музыки");
         public static string PageClaudeLabel => T("Claude and Codex page", "Página do Claude e Codex", "Página de Claude y Codex", "Страница Claude и Codex");
         public static string PageTimerLabel => T("Timer page", "Página do timer", "Página del temporizador", "Страница таймера");
+        public static string MenuDevices => T("Bluetooth and USB devices", "Dispositivos Bluetooth e USB", "Dispositivos Bluetooth y USB", "Устройства Bluetooth и USB");
+        public static string HintDevices => T("A short note when headphones, drives and other devices connect or disconnect",
+                                              "Um aviso curto quando fones, pendrives e outros dispositivos conectam ou desconectam",
+                                              "Un aviso corto cuando se conectan o desconectan auriculares, unidades y otros dispositivos",
+                                              "Короткое уведомление, когда наушники, диски и другие устройства подключаются или отключаются");
+        public static string MenuNetworkAlerts => T("Network connection", "Conexão de rede", "Conexión de red", "Подключение к сети");
+        public static string HintNetworkAlerts => T("A short note when the internet goes away or comes back",
+                                                    "Um aviso curto quando a internet cai ou volta",
+                                                    "Un aviso corto cuando se cae o vuelve internet",
+                                                    "Короткое уведомление, когда интернет пропадает или возвращается");
+        public static string DeviceConnected(string name) => string.Format(T("{0} connected", "{0} conectado", "{0} conectado", "{0}: подключено"), name);
+        public static string DeviceDisconnected(string name) => string.Format(T("{0} disconnected", "{0} desconectado", "{0} desconectado", "{0}: отключено"), name);
+        public static string NetworkOnline => T("Back online", "Internet de volta", "Conexión restablecida", "Интернет снова есть");
+        public static string NetworkOffline => T("No internet", "Sem internet", "Sin internet", "Нет интернета");
+        public static string MenuHotkey => T("Keyboard shortcut", "Atalho de teclado", "Atajo de teclado", "Сочетание клавиш");
+        public static string HintHotkey => T("Opens and closes the island from anywhere. Off by default",
+                                             "Abre e fecha a ilha de qualquer lugar. Desligado por padrão",
+                                             "Abre y cierra la isla desde cualquier lugar. Desactivado por defecto",
+                                             "Открывает и закрывает остров из любого места. По умолчанию выключено");
+        public static string HotkeyChange => T("Change shortcut", "Mudar atalho", "Cambiar atajo", "Изменить сочетание");
+        public static string HotkeyPress => T("Press the new keys… (Esc cancels)", "Aperte as novas teclas… (Esc cancela)", "Pulsa las nuevas teclas… (Esc cancela)", "Нажмите новые клавиши… (Esc — отмена)");
+        public static string HotkeyTaken => T("Another program already uses this shortcut", "Outro programa já usa este atalho", "Otro programa ya usa este atajo", "Это сочетание уже занято другой программой");
+        public static string MenuFocus => T("Do not disturb", "Não perturbe", "No molestar", "Не беспокоить");
+        public static string HintFocus => T("A small moon on the island while Do not disturb or a focus session is on",
+                                            "Uma luazinha na ilha enquanto o Não perturbe ou uma sessão de foco está ligada",
+                                            "Una lunita en la isla mientras No molestar o una sesión de enfoque está activa",
+                                            "Маленькая луна на острове, пока включён режим «Не беспокоить» или сеанс фокусировки");
+        public static string FocusOn => T("Do not disturb on", "Não perturbe ligado", "No molestar activado", "«Не беспокоить» включён");
+        public static string FocusOff => T("Do not disturb off", "Não perturbe desligado", "No molestar desactivado", "«Не беспокоить» выключен");
+        public static string MenuLevels => T("Volume and brightness", "Volume e brilho", "Volumen y brillo", "Громкость и яркость");
+        public static string HintLevels => T("A small bar while you change the volume or the screen brightness (laptop screens only)",
+                                             "Uma barrinha enquanto você muda o volume ou o brilho da tela (só telas de notebook)",
+                                             "Una barrita mientras cambias el volumen o el brillo de la pantalla (solo pantallas de portátil)",
+                                             "Небольшая полоска при изменении громкости или яркости экрана (только экраны ноутбуков)");
+        public static string PageSystemLabel => T("Clock and system page", "Página de relógio e sistema", "Página de reloj y sistema", "Страница часов и системы");
+        public static string CpuLabel => T("Processor", "Processador", "Procesador", "Процессор");
+        public static string MemoryLabel => T("Memory", "Memória", "Memoria", "Память");
         public static string MenuBatteryActivity => T("Battery while charging", "Bateria ao carregar", "Batería al cargar", "Батарея при зарядке");
         public static string HintBatteryActivity => T("Shows the charge level in the island while the charger is plugged in",
                                                       "Mostra o nível de carga na ilha enquanto o carregador está ligado",

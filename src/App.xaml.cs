@@ -28,6 +28,12 @@ namespace WindowsIsland
         TimerService timer;
         PrivacyService privacy;
         BatteryService battery;
+        LevelService levels;
+        DeviceService devices;
+        HotkeyService hotkey;
+        FocusService focus;
+        internal FocusService Focus { get { return focus; } }
+        internal static bool HotkeyFailed; // The chosen shortcut could not be registered
         internal BatteryService Battery { get { return battery; } }
         ScreenshotService screenshots;
         readonly List<IslandWindow> islands = new List<IslandWindow>();
@@ -122,6 +128,12 @@ namespace WindowsIsland
             timer = new TimerService(Dispatcher);
             privacy = new PrivacyService(Dispatcher);
             battery = new BatteryService(Dispatcher);
+            levels = new LevelService(Dispatcher);
+            devices = new DeviceService(Dispatcher);
+            focus = new FocusService(Dispatcher);
+            focus.Changed += () => { if (settings.ShowFocus) MainIsland?.ShowToast(focus.On ? Strings.FocusOn : Strings.FocusOff, "\uE708", 2.2); };
+            hotkey = new HotkeyService();
+            hotkey.Pressed += () => MainIsland?.ToggleOpen();
             screenshots = new ScreenshotService();
             if (sample)
             {
@@ -184,6 +196,14 @@ namespace WindowsIsland
             {
                 foreach (IslandWindow island in islands) island.ShowSystemBanner(Strings.TimerFinished, "");
             };
+            devices.Changed += (kind, name, connected) =>
+            {
+                if (kind == DeviceService.Kind.Network)
+                    MainIsland?.ShowToast(connected ? Strings.NetworkOnline : Strings.NetworkOffline, connected ? "\uE701" : "\uF384", 2.6);
+                else
+                    MainIsland?.ShowToast(connected ? Strings.DeviceConnected(name) : Strings.DeviceDisconnected(name), kind == DeviceService.Kind.Bluetooth ? "\uE702" : "\uE88E", 2.6);
+            };
+            levels.Changed += (kind, percent, muted) => MainIsland?.ShowLevel(kind, percent, muted);
             screenshots.Taken += () => MainIsland?.ShowToast(Strings.ScreenshotTaken, "\uE722", 2.2);
             battery.Alert += (title, body, kind) => MainIsland?.ShowSystemBanner(title, body, kind);
             Action applySettings = () =>
@@ -194,6 +214,13 @@ namespace WindowsIsland
                 battery.AlertsOn = settings.BatteryAlerts;
                 if ((settings.BatteryAlerts || settings.BatteryActivity) && !sample) battery.Start();
                 else battery.Stop();
+                if (!sample) HotkeyFailed = settings.HotkeyEnabled && !hotkey.Apply(true, settings.HotkeyCombo);
+                if (!sample && !settings.HotkeyEnabled) hotkey.Apply(false, null);
+                if (settings.ShowFocus && !sample) focus.Start();
+                else focus.Stop();
+                if (!sample) devices.Start(settings.ShowDeviceAlerts, settings.ShowNetworkAlerts);
+                if (settings.ShowLevels && !sample) levels.Start();
+                else levels.Stop();
                 if (settings.ShowScreenshotAlert && !sample) screenshots.Start();
                 else screenshots.Stop();
                 if (!sample) ReconcileIslands();
@@ -227,6 +254,10 @@ namespace WindowsIsland
             if (settings.ShowPrivacyDots) privacy.Start();
             battery.AlertsOn = settings.BatteryAlerts;
             if (settings.BatteryAlerts || settings.BatteryActivity) battery.Start();
+            if (settings.HotkeyEnabled) HotkeyFailed = !hotkey.Apply(true, settings.HotkeyCombo);
+            if (settings.ShowFocus) focus.Start();
+            devices.Start(settings.ShowDeviceAlerts, settings.ShowNetworkAlerts);
+            if (settings.ShowLevels) levels.Start();
             if (settings.ShowScreenshotAlert) screenshots.Start();
 
             if (!dev)

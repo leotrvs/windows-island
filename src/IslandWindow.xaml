@@ -94,7 +94,10 @@
             <Border.RenderTransform><ScaleTransform x:Name="PillScale" ScaleX="0.7" ScaleY="0.7"/></Border.RenderTransform>
 
             <Canvas x:Name="Stage">
-                <Grid x:Name="IdlePanel" Width="112" Height="30"/>
+                <Grid x:Name="IdlePanel" Width="112" Height="30">
+                    <TextBlock x:Name="FocusMoon" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Text="&#xE708;" FontSize="12" Foreground="#A78BFA"
+                               HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"/>
+                </Grid>
 
                 <!-- Music, compact -->
                 <Grid x:Name="MusicCompact" Width="204" Height="34">
@@ -239,6 +242,36 @@
                     </Grid>
                 </Grid>
 
+                <!-- Clock and system, expanded -->
+                <Grid x:Name="SystemExpanded" Width="372" Height="150">
+                    <Grid Margin="22,16,22,20">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="132"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock x:Name="ClockBig" FontSize="44" FontWeight="Bold" Typography.NumeralAlignment="Tabular"/>
+                            <TextBlock x:Name="ClockDate" Style="{StaticResource Caption}" FontSize="13" Margin="2,2,0,0"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <Grid>
+                                <TextBlock x:Name="CpuLabel" Style="{StaticResource Caption}" FontSize="11"/>
+                                <TextBlock x:Name="CpuText" FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Right" Typography.NumeralAlignment="Tabular"/>
+                            </Grid>
+                            <Border Height="5" CornerRadius="2.5" Background="#33FFFFFF" Margin="0,4,0,12">
+                                <Border x:Name="CpuFill" HorizontalAlignment="Left" CornerRadius="2.5" Background="#0A84FF" Width="0"/>
+                            </Border>
+                            <Grid>
+                                <TextBlock x:Name="MemoryLabel" Style="{StaticResource Caption}" FontSize="11"/>
+                                <TextBlock x:Name="MemoryText" FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Right" Typography.NumeralAlignment="Tabular"/>
+                            </Grid>
+                            <Border Height="5" CornerRadius="2.5" Background="#33FFFFFF" Margin="0,4,0,0">
+                                <Border x:Name="MemoryFill" HorizontalAlignment="Left" CornerRadius="2.5" Background="#30D158" Width="0"/>
+                            </Border>
+                        </StackPanel>
+                    </Grid>
+                </Grid>
+
                 <!-- Claude, expanded -->
                 <Grid x:Name="ClaudeExpanded" Width="372" Height="156">
                     <Grid Margin="20,18,20,16">
@@ -340,8 +373,19 @@
                 <Grid x:Name="Toast" Width="184" Height="36">
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                         <TextBlock x:Name="ToastGlyph" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="15" Foreground="White" VerticalAlignment="Center" Margin="0,0,9,0"/>
-                        <TextBlock x:Name="ToastText" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="ToastText" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" MaxWidth="136" TextTrimming="CharacterEllipsis"/>
                     </StackPanel>
+                </Grid>
+
+                <!-- Volume or brightness while it changes -->
+                <Grid x:Name="Level" Width="220" Height="36">
+                    <TextBlock x:Name="LevelGlyph" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="16" Foreground="White"
+                               HorizontalAlignment="Left" VerticalAlignment="Center" Margin="14,0,0,0"/>
+                    <Border Height="6" CornerRadius="3" Background="#40FFFFFF" VerticalAlignment="Center" Margin="42,0,52,0">
+                        <Border x:Name="LevelFill" HorizontalAlignment="Left" CornerRadius="3" Background="White" Width="0"/>
+                    </Border>
+                    <TextBlock x:Name="LevelText" FontSize="12" FontWeight="SemiBold" HorizontalAlignment="Right" VerticalAlignment="Center"
+                               Margin="0,0,14,0" Typography.NumeralAlignment="Tabular"/>
                 </Grid>
 
                 <!-- Alert banner: Claude alerts and Windows notifications -->
@@ -361,6 +405,7 @@
                                 <TextBlock x:Name="BannerGlyph" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="21" Foreground="White"
                                            HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"/>
                                 <Image x:Name="BannerCodex" Source="Assets/codex.png" Width="30" Height="30" Visibility="Collapsed"/>
+                                <Image x:Name="BannerAppIcon" Width="30" Height="30" Visibility="Collapsed" RenderOptions.BitmapScalingMode="HighQuality"/>
                             </Grid>
                         </Border>
                         <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
