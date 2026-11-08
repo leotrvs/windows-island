@@ -32,6 +32,7 @@ A Dynamic Island for Windows. Music, Claude Code, its usage limits and your noti
 - **Local API and command line** (off by default) so your scripts and apps can show their own activities and alerts, see [docs/API.md](docs/API.md), plus a small [browser extension](extension/README.md) that gives web audio the site's icon
 - **Keyboard shortcut** to open and close the island (off by default, configurable)
 - **Alerts** when Claude finishes a task or needs you
+- **Limit alerts:** a note when the Claude 5-hour or weekly limit reaches 75%, 90% and 100%, and when it renews
 - **Windows notifications** in the island, with the sending app's icon, if you turn them on
 - **Two activities at once:** the second one splits off into a bubble beside the island
 - **Several Claude chats at once:** the island counts them (for example `2 · 0:58`, or `1/2 · Waiting` when one of two waits for you) and the Claude page lists each chat with its own state and time
@@ -59,6 +60,9 @@ A Dynamic Island for Windows. Music, Claude Code, its usage limits and your noti
 | Battery low | <img src="docs/images/battery-low-en.png" alt="Low battery alert" width="420"> |
 | Claude expanded, with the limits | <img src="docs/images/claudeexpanded-en.png" alt="Claude expanded with usage rings" width="460"> |
 | Claude needs you (a permission or a question) | <img src="docs/images/banner-waiting-en.png" alt="Claude needs you (a permission or a question)" width="420"> |
+| Claude limit at 75% or 90% | <img src="docs/images/usage-90-en.png" alt="Claude limit at 75% or 90%" width="420"> |
+| Claude limit reached | <img src="docs/images/usage-100-en.png" alt="Claude limit reached" width="420"> |
+| Claude limit renewed | <img src="docs/images/usage-reset5-en.png" alt="Claude limit renewed" width="420"> |
 | Several chats working at once | <img src="docs/images/chats-working-compact-en.png" alt="Several chats working at once" width="320"> |
 | One of two chats waiting for you | <img src="docs/images/chats-waiting-compact-en.png" alt="One of two chats waiting for you" width="320"> |
 | The Claude page lists each chat | <img src="docs/images/chats-waiting-expanded-en.png" alt="The Claude page lists each chat" width="460"> |
@@ -90,6 +94,7 @@ To try it without installing, run `WindowsIsland.exe --portable`.
 | Show Claude | Shows Claude Code activity and limits |
 | Claude alerts | Expands the island when Claude finishes or needs you |
 | Show Codex, Codex alerts | Codex activity and limits, and the alert when it finishes. Only appear while Codex is working |
+| Limit alerts | A note when the 5-hour or weekly Claude limit reaches 75%, 90% and 100%, and when it renews |
 | Microphone and camera dots | Shows a small dot beside the island while an app uses the microphone (orange) or the camera (green) |
 | Battery alerts | Charger connected or removed, low battery and fully charged. Laptops only |
 | Show Windows notifications | Shows new notifications in the island. Off by default |

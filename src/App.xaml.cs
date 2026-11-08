@@ -220,6 +220,7 @@ namespace WindowsIsland
                 api.MediaHint += h => media.ApplyHint(h);
             }
             levels.Changed += (kind, percent, muted) => MainIsland?.ShowLevel(kind, percent, muted);
+            claude.LimitAlert += (weekly, level, percent, resets) => MainIsland?.ShowLimitAlert(weekly, level, percent, resets);
             screenshots.Taken += () => MainIsland?.ShowToast(Strings.ScreenshotTaken, "\uE722", 2.2);
             battery.Alert += (title, body, kind) => MainIsland?.ShowSystemBanner(title, body, kind);
             Action applySettings = () =>

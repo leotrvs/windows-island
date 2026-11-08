@@ -32,6 +32,7 @@ Una Dynamic Island para Windows. La música, Claude Code, sus límites de uso y 
 - **API local y línea de comandos** (desactivadas por defecto) para que tus scripts y apps muestren sus propias actividades y avisos, mira [docs/API.md](docs/API.md), y una pequeña [extensión de navegador](extension/README.md) que da al audio web el icono del sitio
 - **Atajo de teclado** para abrir y cerrar la isla (desactivado por defecto, configurable)
 - **Avisos** cuando Claude termina una tarea o te necesita
+- **Avisos de límite:** un aviso cuando el límite de Claude de 5 horas o el semanal llega al 75%, 90% y 100%, y cuando se renueva
 - **Notificaciones de Windows** en la isla, con el icono de la app que las envió, si las activas
 - **Dos actividades a la vez:** la segunda se separa en una burbuja junto a la isla
 - **Varios chats de Claude a la vez:** la isla los cuenta (por ejemplo `2 · 0:58`, o `1/2 · Esperando` cuando uno de dos te espera) y la página de Claude lista cada chat con su estado y tiempo
@@ -59,6 +60,9 @@ Una Dynamic Island para Windows. La música, Claude Code, sus límites de uso y 
 | Batería baja | <img src="docs/images/battery-low-en.png" alt="Aviso de batería baja" width="420"> |
 | Claude expandido, con los límites | <img src="docs/images/claudeexpanded-en.png" alt="Claude expandido con los anillos de uso" width="460"> |
 | Claude te necesita (un permiso o una pregunta) | <img src="docs/images/banner-waiting-en.png" alt="Claude te necesita (un permiso o una pregunta)" width="420"> |
+| Límite de Claude al 75% o 90% | <img src="docs/images/usage-90-en.png" alt="Límite de Claude al 75% o 90%" width="420"> |
+| Límite de Claude alcanzado | <img src="docs/images/usage-100-en.png" alt="Límite de Claude alcanzado" width="420"> |
+| Límite de Claude renovado | <img src="docs/images/usage-reset5-en.png" alt="Límite de Claude renovado" width="420"> |
 | Varios chats trabajando a la vez | <img src="docs/images/chats-working-compact-en.png" alt="Varios chats trabajando a la vez" width="320"> |
 | Uno de dos chats te espera | <img src="docs/images/chats-waiting-compact-en.png" alt="Uno de dos chats te espera" width="320"> |
 | La página de Claude lista cada chat | <img src="docs/images/chats-waiting-expanded-en.png" alt="La página de Claude lista cada chat" width="460"> |

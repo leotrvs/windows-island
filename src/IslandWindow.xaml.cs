@@ -716,15 +716,14 @@ namespace WindowsIsland
                 SaveSnapshot(System.IO.Path.Combine(folder, "battery-" + kind + suffix + ".png"));
             }
 
-            // How limit alerts could look (a preview only, not part of the README images)
-            if (Environment.GetEnvironmentVariable("WI_USAGE_PREVIEW") == "1")
+            // The limit alerts
             {
                 DateTime fiveReset = DateTime.Now.AddHours(2.5), weekReset = DateTime.Now.Date.AddDays(3).AddHours(9);
                 (string key, string title, string sub, string side, Brush color)[] specs =
                 {
                     ("75", Strings.LimitFiveHour, Strings.Resets(fiveReset), "75%", RingBrush(75)),
                     ("90", Strings.LimitFiveHour, Strings.Resets(fiveReset), "90%", RingBrush(90)),
-                    ("100", Strings.LimitReached(Strings.LimitFiveHour), Strings.Resets(fiveReset), "100%", RingBrush(100)),
+                    ("100", Strings.LimitReachedTitle, Strings.WindowFiveHour + " · " + Strings.Resets(fiveReset), "100%", RingBrush(100)),
                     ("week90", Strings.LimitWeekly, Strings.Resets(weekReset), "90%", RingBrush(90)),
                     ("reset5", Strings.LimitRenewed(Strings.LimitFiveHour), Strings.LimitFull, "0%", Green),
                     ("resetweek", Strings.LimitRenewed(Strings.LimitWeekly), Strings.LimitFull, "0%", Green),
@@ -1236,6 +1235,33 @@ namespace WindowsIsland
             ToastGlyph.Text = glyph;
             toastUntil = DateTime.Now.AddSeconds(seconds);
             Recompute();
+        }
+
+        // The Claude 5-hour or weekly limit reached a level, or renewed (level 0).
+        internal void ShowLimitAlert(bool weekly, int level, int percent, DateTime? resets)
+        {
+            if (!settings.ShowClaude || !settings.ShowLimitAlerts) return;
+            string window = weekly ? Strings.LimitWeekly : Strings.LimitFiveHour;
+            BannerItem item = new BannerItem { FromClaude = true, Seconds = settings.AlertSeconds + 1, Side = percent + "%" };
+            if (level == 0)
+            {
+                item.Title = Strings.LimitRenewed(window);
+                item.Subtitle = Strings.LimitFull;
+                item.GlyphBrush = Green;
+            }
+            else if (level >= 100)
+            {
+                item.Title = Strings.LimitReachedTitle;
+                item.Subtitle = (weekly ? Strings.WindowWeekly : Strings.WindowFiveHour) + " · " + Strings.Resets(resets);
+                item.GlyphBrush = RingBrush(100);
+            }
+            else
+            {
+                item.Title = window;
+                item.Subtitle = Strings.Resets(resets);
+                item.GlyphBrush = RingBrush(level);
+            }
+            Enqueue(item);
         }
 
         internal void ShowSystemBanner(string title, string body, string kind = null)

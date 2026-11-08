@@ -50,6 +50,8 @@ namespace WindowsIsland
         static readonly TimeSpan MinimumWorkForAlert = TimeSpan.FromSeconds(5);
 
         public event Action Changed;
+        // weekly?, level (75, 90, 100, or 0 when the limit renewed), percent now, when it renews
+        public event Action<bool, int, int, DateTime?> LimitAlert;
         public event Action<bool, string> Alert; // true when Claude is waiting for the user, false when it finished
 
         public int Running { get; private set; }
@@ -223,12 +225,30 @@ namespace WindowsIsland
             BusyName = busyName;
             WaitingName = waitingName;
             if (usage != null) TakeUsage(usage);
+            CheckLimit(0, Session);
+            CheckLimit(1, Weekly);
 
             string next = Running + "|" + busy + "|" + waiting + "|" + busySince + "|" + busyName + "|" + waitingName + "|" + usageVersion;
             foreach (ActiveSession a in active) next += "|" + a.Name + a.Since.Ticks + a.Waiting;
             if (next == signature) return;
             signature = next;
             Changed?.Invoke();
+        }
+
+        // The level each limit has reached (0, 75, 90 or 100) as last seen; -1 before the first reading, which is
+        // only a starting point, so opening the island at 92% does not announce it.
+        readonly int[] limitLevel = { -1, -1 };
+
+        void CheckLimit(int index, UsageWindow window)
+        {
+            if (window == null || !window.Percent.HasValue) return;
+            int percent = window.EffectivePercent;
+            int level = percent >= 100 ? 100 : percent >= 90 ? 90 : percent >= 75 ? 75 : 0;
+            int before = limitLevel[index];
+            limitLevel[index] = level;
+            if (before < 0 || level == before) return;
+            if (level > before) LimitAlert?.Invoke(index == 1, level, percent, window.EffectiveReset);
+            else if (level == 0 && before >= 75) LimitAlert?.Invoke(index == 1, 0, percent, window.EffectiveReset); // Renewed
         }
 
         // Called when the user opens the Claude panel, so the limits are fresh when someone looks.

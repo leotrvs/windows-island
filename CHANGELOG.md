@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.4.0
+
+- **Limit alerts:** a note when the Claude 5-hour or weekly limit reaches 75%, 90% and 100% and when it renews (after it had reached 75% or more). The 100% note says "Limit reached" with the window below. On by default; turn it off in Settings, Activities, Limit alerts. The first reading when the island starts is never announced
+- **New defaults** (for new installs; an existing settings file keeps its values): alert duration 3 s, auto-hide when idle after 5 s, paused music hidden at once
+
+
 ## 2.3.5
 
 - **Claude Desktop questions:** a chat that ends its turn with a question for you (the yellow dot in Claude Desktop, such as "Publish?") now shows as waiting for you in the island, and the alert says Claude needs you instead of only "finished"

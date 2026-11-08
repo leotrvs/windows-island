@@ -225,6 +225,14 @@ namespace WindowsIsland
         public static string GroupApiMore => T("Token, guide and browser extension", "Token, guia e extensão do navegador", "Token, guía y extensión del navegador", "Токен, руководство и расширение браузера");
         public static string LimitFiveHour => T("5-hour limit", "Limite de 5 horas", "Límite de 5 horas", "Лимит 5 часов");
         public static string LimitWeekly => T("Weekly limit", "Limite semanal", "Límite semanal", "Недельный лимит");
+        public static string LimitReachedTitle => T("Limit reached", "Limite atingido", "Límite alcanzado", "Лимит исчерпан");
+        public static string WindowFiveHour => T("5 hours", "5 horas", "5 horas", "5 часов");
+        public static string WindowWeekly => T("Weekly", "Semanal", "Semanal", "Недельный");
+        public static string MenuLimitAlerts => T("Limit alerts", "Avisos de limite", "Avisos de límite", "Оповещения о лимитах");
+        public static string HintLimitAlerts => T("Warns when the 5-hour or weekly limit reaches 75%, 90% and 100%, and when it renews",
+                                                  "Avisa quando o limite de 5 horas ou o semanal chega a 75%, 90% e 100%, e quando renova",
+                                                  "Avisa cuando el límite de 5 horas o el semanal llega al 75%, 90% y 100%, y cuando se renueva",
+                                                  "Сообщает, когда лимит за 5 часов или недельный достигает 75%, 90% и 100%, и когда он обновляется");
         public static string LimitReached(string window) => T(window + " reached", window + " atingido", window + " alcanzado", window + ": достигнут");
         public static string LimitRenewed(string window) => T(window + " renewed", window + " renovado", window + " renovado", window + ": обновлён");
         public static string LimitFull => T("Your full limit is available again", "Seu limite está cheio de novo", "Tu límite está completo otra vez", "Лимит снова полный");

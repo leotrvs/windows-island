@@ -32,6 +32,7 @@ Uma Dynamic Island para o Windows. Música, Claude Code, os limites de uso e sua
 - **API local e linha de comando** (desligadas por padrão) para seus scripts e apps mostrarem atividades e avisos próprios, veja [docs/API.md](docs/API.md), e uma pequena [extensão de navegador](extension/README.md) que dá ao áudio da web o ícone do site
 - **Atalho de teclado** para abrir e fechar a ilha (desligado por padrão, configurável)
 - **Avisos** quando o Claude termina uma tarefa ou precisa de você
+- **Avisos de limite:** um aviso quando o limite do Claude de 5 horas ou semanal chega a 75%, 90% e 100%, e quando renova
 - **Notificações do Windows** na ilha, com o ícone do app que as enviou, se você ligar
 - **Duas atividades ao mesmo tempo:** a segunda se separa numa bolha ao lado da ilha
 - **Vários chats do Claude ao mesmo tempo:** a ilha os conta (por exemplo `2 · 0:58`, ou `1/2 · Aguardando` quando um de dois espera você) e a página do Claude lista cada chat com seu estado e tempo
@@ -59,6 +60,9 @@ Uma Dynamic Island para o Windows. Música, Claude Code, os limites de uso e sua
 | Bateria baixa | <img src="docs/images/battery-low-pt.png" alt="Aviso de bateria baixa" width="420"> |
 | Claude expandido, com os limites | <img src="docs/images/claudeexpanded-pt.png" alt="Claude expandido com os anéis de uso" width="460"> |
 | Claude precisa de você (uma permissão ou uma pergunta) | <img src="docs/images/banner-waiting-pt.png" alt="Claude precisa de você (uma permissão ou uma pergunta)" width="420"> |
+| Limite do Claude em 75% ou 90% | <img src="docs/images/usage-90-pt.png" alt="Limite do Claude em 75% ou 90%" width="420"> |
+| Limite do Claude atingido | <img src="docs/images/usage-100-pt.png" alt="Limite do Claude atingido" width="420"> |
+| Limite do Claude renovado | <img src="docs/images/usage-reset5-pt.png" alt="Limite do Claude renovado" width="420"> |
 | Vários chats trabalhando ao mesmo tempo | <img src="docs/images/chats-working-compact-pt.png" alt="Vários chats trabalhando ao mesmo tempo" width="320"> |
 | Um de dois chats esperando você | <img src="docs/images/chats-waiting-compact-pt.png" alt="Um de dois chats esperando você" width="320"> |
 | A página do Claude lista cada chat | <img src="docs/images/chats-waiting-expanded-pt.png" alt="A página do Claude lista cada chat" width="460"> |
@@ -90,6 +94,7 @@ Para testar sem instalar, rode `WindowsIsland.exe --portable`.
 | Mostrar Claude | Mostra a atividade e os limites do Claude Code |
 | Avisos do Claude | Expande a ilha quando o Claude termina ou precisa de você |
 | Mostrar Codex, Avisos do Codex | Atividade e limites do Codex, e o aviso quando ele termina. Só aparecem enquanto o Codex está trabalhando |
+| Avisos de limite | Um aviso quando o limite do Claude de 5 horas ou o semanal chega a 75%, 90% e 100%, e quando renova |
 | Pontos de microfone e câmera | Mostra um pontinho ao lado da ilha enquanto um app usa o microfone (laranja) ou a câmera (verde) |
 | Avisos de bateria | Carregador conectado ou removido, bateria baixa e carregada. Só em notebooks |
 | Mostrar notificações do Windows | Mostra as notificações novas na ilha. Vem desligado |

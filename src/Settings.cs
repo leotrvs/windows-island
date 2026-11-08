@@ -15,13 +15,14 @@ namespace WindowsIsland
         public double ExpandedScale { get; set; } = 0.95;     // Expanded island and alerts
         public bool ShowIdlePill { get; set; } = true;
         public bool EmptyIsland { get; set; } = false; // Plain pill only; activities show when it expands
-        public int AlertSeconds { get; set; } = 5;       // Claude alerts, notifications and app messages
-        public int PausedMusicSeconds { get; set; } = 5; // How long a paused song stays on the island
-        public int AutoHideSeconds { get; set; } = 0;    // Hide the idle island after this long; 0 = never
+        public int AlertSeconds { get; set; } = 3;       // Claude alerts, notifications and app messages
+        public int PausedMusicSeconds { get; set; } = 0; // How long a paused song stays on the island
+        public int AutoHideSeconds { get; set; } = 5;    // Hide the idle island after this long; 0 = never
         public bool ExpandOnHover { get; set; } = true;
         public bool ShowMusic { get; set; } = true;
         public bool ShowClaude { get; set; } = true;
         public bool ClaudeBanners { get; set; } = true;
+        public bool ShowLimitAlerts { get; set; } = true; // Claude 5-hour and weekly limits at 75, 90 and 100% and when they renew
         public bool ShowCodex { get; set; } = true;     // Only shows anything once Codex is installed
         public bool CodexBanners { get; set; } = true;
         public string Language { get; set; } = "Auto";   // Auto follows Windows; or en, pt, es, ru
