@@ -1,6 +1,6 @@
 # Changelog
 
-## 2.0.0 (unreleased)
+## 2.0.0
 
 - **App names on the dots:** hover the island to see which app uses the microphone or camera, beside the dot. Settings can also show the name by itself for 1, 2 or 3 seconds when an app starts (off by default)
 - **Battery as an activity:** while the charger is plugged in and the battery is not full, the island shows the charge level like any other activity

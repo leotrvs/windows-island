@@ -23,9 +23,14 @@ Uma Dynamic Island para o Windows. Música, Claude Code, os limites de uso e sua
 - **Páginas:** com a ilha expandida, role o mouse sobre ela ou clique nos pontinhos para alternar entre música, Claude e timer, que também tem seus botões ali
 - **Timer e cronômetro:** inicie um pelo menu da bandeja; ele aparece como atividade ao vivo e avisa quando o tempo acaba
 - **Pontos de microfone e câmera:** laranja com o microfone em uso, verde com a câmera, como no iPhone
-- **Avisos de bateria** em notebooks: carregador conectado ou removido, bateria baixa e carregada
+- **Bateria** em notebooks: aparece como atividade ao carregar, mais avisos de carregador conectado ou removido, bateria baixa e carregada
+- **Nomes dos apps nos pontos:** veja qual app usa o microfone ou a câmera ao passar o mouse sobre a ilha
+- **Barra de volume e brilho**, avisos de **Bluetooth, USB e rede** e uma lua para **Não perturbe**
+- **Página de relógio e sistema** com hora, data, carga do processador e da memória
+- **API local e linha de comando** (desligadas por padrão) para seus scripts e apps mostrarem atividades e avisos próprios, veja [docs/API.md](docs/API.md), e uma pequena [extensão de navegador](extension/README.md) que dá ao áudio da web o ícone do site
+- **Atalho de teclado** para abrir e fechar a ilha (desligado por padrão, configurável)
 - **Avisos** quando o Claude termina uma tarefa ou precisa de você
-- **Notificações do Windows** na ilha, se você ligar
+- **Notificações do Windows** na ilha, com o ícone do app que as enviou, se você ligar
 - **Duas atividades ao mesmo tempo:** a segunda se separa numa bolha ao lado da ilha
 - **Movimento fluido:** forma e conteúdo mudam com molas, nunca com transições de tempo fixo
 - **Discreta:** nunca rouba o foco, cliques ao redor chegam à janela de baixo, vira uma linha fina quando há uma janela maximizada na frente e some em tela cheia

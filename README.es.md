@@ -23,9 +23,14 @@ Una Dynamic Island para Windows. La música, Claude Code, sus límites de uso y 
 - **Páginas:** con la isla expandida, desplaza la rueda sobre ella o haz clic en los puntos para cambiar entre música, Claude y temporizador, que también tiene sus botones allí
 - **Temporizador y cronómetro:** inícialos desde el menú de la bandeja; aparecen como actividad en vivo y avisan cuando se acaba el tiempo
 - **Puntos de micrófono y cámara:** naranja con el micrófono en uso, verde con la cámara, como en el iPhone
-- **Avisos de batería** en portátiles: cargador conectado o retirado, batería baja y carga completa
+- **Batería** en portátiles: aparece como actividad al cargar, además de avisos de cargador conectado o retirado, batería baja y carga completa
+- **Nombres de las apps en los puntos:** mira qué app usa el micrófono o la cámara al pasar el ratón por la isla
+- **Barra de volumen y brillo**, avisos de **Bluetooth, USB y red** y una luna para **No molestar**
+- **Página de reloj y sistema** con la hora, la fecha, la carga del procesador y de la memoria
+- **API local y línea de comandos** (desactivadas por defecto) para que tus scripts y apps muestren sus propias actividades y avisos, mira [docs/API.md](docs/API.md), y una pequeña [extensión de navegador](extension/README.md) que da al audio web el icono del sitio
+- **Atajo de teclado** para abrir y cerrar la isla (desactivado por defecto, configurable)
 - **Avisos** cuando Claude termina una tarea o te necesita
-- **Notificaciones de Windows** en la isla, si las activas
+- **Notificaciones de Windows** en la isla, con el icono de la app que las envió, si las activas
 - **Dos actividades a la vez:** la segunda se separa en una burbuja junto a la isla
 - **Movimiento fluido:** la forma y el contenido cambian con resortes, nunca con transiciones de duración fija
 - **Discreta:** nunca toma el foco, los clics a su alrededor llegan a la ventana de abajo, se reduce a una línea fina cuando hay una ventana maximizada delante y se oculta en pantalla completa
