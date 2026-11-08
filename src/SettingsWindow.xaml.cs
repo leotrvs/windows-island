@@ -469,8 +469,13 @@ namespace WindowsIsland
             if (Math.Abs(want - ActualHeight) < 1) return;
 
             // Keep it inside the screen: when it would pass the bottom edge, it grows upwards instead
+            // The edge nearest the taskbar stays where it is: a window in the lower half of the screen keeps its
+            // bottom edge (growing and shrinking upwards), one in the upper half keeps its top edge.
             double top = animate ? Top : restingTop;
-            double newTop = Math.Min(top, work.Bottom - 12 - want);
+            double now = animate ? ActualHeight : Height;
+            bool bottomFixed = top + now / 2 > work.Top + work.Height / 2;
+            double newTop = bottomFixed ? top + now - want : top;
+            newTop = Math.Min(newTop, work.Bottom - 12 - want);
             newTop = Math.Max(newTop, work.Top + 12);
 
             if (!animate)

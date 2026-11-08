@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.2.3
+
+- Settings window keeps the edge nearest the taskbar in place when it grows or shrinks: near the bottom it stays anchored there (and goes back down when a group is folded); in the upper half it keeps its top
+
+
 ## 2.2.2
 
 - Settings window now also shrinks when a group is folded or a shorter tab is opened (it only grew before)
