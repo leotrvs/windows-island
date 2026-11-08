@@ -323,6 +323,14 @@
                     </Grid>
                 </Grid>
 
+                <!-- A very small note, such as for a screenshot -->
+                <Grid x:Name="Toast" Width="184" Height="36">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <TextBlock x:Name="ToastGlyph" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="15" Foreground="White" VerticalAlignment="Center" Margin="0,0,9,0"/>
+                        <TextBlock x:Name="ToastText" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Grid>
+
                 <!-- Alert banner: Claude alerts and Windows notifications -->
                 <Grid x:Name="Banner" Width="352" Height="74">
                     <Viewbox Stretch="Uniform"><Grid Width="352" Height="74">

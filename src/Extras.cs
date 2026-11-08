@@ -1,6 +1,8 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Windows.Threading;
+using System.Diagnostics;
+using System.Windows.Interop;
 using Microsoft.Win32;
 
 namespace WindowsIsland
@@ -353,6 +355,72 @@ namespace WindowsIsland
             {
             }
             return false;
+        }
+    }
+
+    // Tells when a screenshot lands on the clipboard, such as from Print Screen or Win+Shift+S. It does not watch
+    // the keyboard and never reads the picture: it only learns that an image arrived and which program put it there.
+    sealed class ScreenshotService : IDisposable
+    {
+        const int WM_CLIPBOARDUPDATE = 0x031D;
+        const uint CF_BITMAP = 2, CF_DIB = 8, CF_DIBV5 = 17;
+        static readonly string[] Screenshotters = { "explorer", "screenclippinghost", "snippingtool", "screensketch" };
+
+        [DllImport("user32.dll")] static extern bool AddClipboardFormatListener(IntPtr hwnd);
+        [DllImport("user32.dll")] static extern bool RemoveClipboardFormatListener(IntPtr hwnd);
+        [DllImport("user32.dll")] static extern IntPtr GetClipboardOwner();
+        [DllImport("user32.dll")] static extern bool IsClipboardFormatAvailable(uint format);
+        [DllImport("user32.dll")] static extern uint GetWindowThreadProcessId(IntPtr hwnd, out uint processId);
+
+        public event Action Taken;
+
+        HwndSource window;
+        DateTime last = DateTime.MinValue;
+
+        public void Start()
+        {
+            if (window != null) return;
+            HwndSourceParameters parameters = new HwndSourceParameters("WindowsIslandClipboard") { ParentWindow = new IntPtr(-3), WindowStyle = 0, Width = 0, Height = 0 };
+            window = new HwndSource(parameters);
+            window.AddHook(WndProc);
+            AddClipboardFormatListener(window.Handle);
+        }
+
+        public void Stop()
+        {
+            if (window == null) return;
+            RemoveClipboardFormatListener(window.Handle);
+            window.RemoveHook(WndProc);
+            window.Dispose();
+            window = null;
+        }
+
+        public void Dispose() { Stop(); }
+
+        IntPtr WndProc(IntPtr hwnd, int message, IntPtr wParam, IntPtr lParam, ref bool handled)
+        {
+            if (message == WM_CLIPBOARDUPDATE) OnClipboard();
+            return IntPtr.Zero;
+        }
+
+        void OnClipboard()
+        {
+            try
+            {
+                if (!IsClipboardFormatAvailable(CF_BITMAP) && !IsClipboardFormatAvailable(CF_DIB) && !IsClipboardFormatAvailable(CF_DIBV5)) return;
+                IntPtr owner = GetClipboardOwner();
+                uint pid;
+                if (owner == IntPtr.Zero || GetWindowThreadProcessId(owner, out pid) == 0) return;
+                string name;
+                using (Process process = Process.GetProcessById((int)pid)) name = process.ProcessName.ToLowerInvariant();
+                if (Array.IndexOf(Screenshotters, name) < 0) return;
+                if (DateTime.Now - last < TimeSpan.FromSeconds(1.5)) return; // A burst of screenshots is one alert
+                last = DateTime.Now;
+                Taken?.Invoke();
+            }
+            catch (Exception)
+            {
+            }
         }
     }
 }

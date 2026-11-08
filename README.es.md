@@ -76,6 +76,7 @@ Para probarla sin instalar, ejecuta `WindowsIsland.exe --portable`.
 | Battery alerts | Cargador conectado o retirado, batería baja y carga completa. Solo en portátiles |
 | Show Windows notifications | Muestra las notificaciones nuevas en la isla. Desactivado por defecto |
 | Alert size | Avisos y notificaciones pequeños o normales |
+| Screenshot alert | Una nota muy pequeña cuando haces una captura con Impr Pant o Win+Mayús+S |
 | Usage ring color | Azul, verde o morado. Los anillos pasan a ámbar y rojo cerca del límite |
 | Language | Sigue a Windows por defecto. Inglés, portugués, español y ruso |
 | Empty island | Mantiene la isla contraída como una píldora simple, sin actividades. Pasa el ratón o haz clic para verlas |

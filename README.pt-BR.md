@@ -76,6 +76,7 @@ Para testar sem instalar, rode `WindowsIsland.exe --portable`.
 | Avisos de bateria | Carregador conectado ou removido, bateria baixa e carregada. Só em notebooks |
 | Mostrar notificações do Windows | Mostra as notificações novas na ilha. Vem desligado |
 | Tamanho dos avisos | Avisos e notificações pequenos ou normais |
+| Aviso de captura de tela | Uma nota bem pequena quando você tira um print com Print Screen ou Win+Shift+S |
 | Cor dos anéis de uso | Azul, verde ou roxo. Os anéis ficam amarelos e vermelhos perto do limite |
 | Idioma | Segue o Windows por padrão. Inglês, português, espanhol e russo |
 | Ilha vazia | Mantém a ilha recolhida como uma pílula simples, sem atividades. Passe o mouse ou clique para vê-las |

@@ -22,6 +22,7 @@ Ideas planned for upcoming releases, in the order they are expected to land. Not
 
 ## Done
 
+- Screenshot alert, sliding tab pills, sharper Settings text (1.12.0)
 - Update flow with progress, languages (en, pt, es, ru), Inter font, smaller alerts, icons in Settings (1.11.0)
 - Animated README GIF from sample data, and Settings that opens like a tray flyout (1.10.1)
 - Codex icon, usage ring colors, black Settings header, narrower music view (1.10.0)

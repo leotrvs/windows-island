@@ -18,7 +18,7 @@ namespace WindowsIsland
 {
     public partial class IslandWindow : Window
     {
-        enum View { Hidden, Minimal, Idle, MusicCompact, ClaudeCompact, CodexCompact, TimerCompact, MusicExpanded, ClaudeExpanded, TimerExpanded, Banner }
+        enum View { Hidden, Minimal, Idle, MusicCompact, ClaudeCompact, CodexCompact, TimerCompact, MusicExpanded, ClaudeExpanded, TimerExpanded, Banner, Toast }
         enum Activity { None, Music, Claude, Codex, Timer }
 
         static readonly Dictionary<View, Size> Sizes = new Dictionary<View, Size>
@@ -34,6 +34,7 @@ namespace WindowsIsland
             [View.TimerExpanded] = new Size(372, 150),
             [View.ClaudeExpanded] = new Size(372, 156),
             [View.Banner] = new Size(352, 74),
+            [View.Toast] = new Size(184, 36),
         };
 
         const double MaxRadius = 38;
@@ -116,6 +117,7 @@ namespace WindowsIsland
             panels[View.MusicExpanded] = MusicExpanded;
             panels[View.ClaudeExpanded] = ClaudeExpanded;
             panels[View.Banner] = Banner;
+            panels[View.Toast] = Toast;
             foreach (FrameworkElement panel in panels.Values)
             {
                 presence[panel] = new Spring(0, 0.002, 300, 0.85);
@@ -576,6 +578,7 @@ namespace WindowsIsland
                      : settings.ShowMusic && media.HasSession ? View.MusicExpanded
                      : View.Idle);
             else if (DateTime.Now < bannerUntil) next = View.Banner;
+            else if (DateTime.Now < toastUntil) next = View.Toast;
             // Empty island: the collapsed island stays a plain pill. Activities only show when it expands.
             else if (primary == Activity.Music && !settings.EmptyIsland) next = View.MusicCompact;
             else if (primary == Activity.Claude && !settings.EmptyIsland) next = View.ClaudeCompact;
@@ -794,6 +797,17 @@ namespace WindowsIsland
         }
 
         // Messages from the app itself, such as update results. Not gated by the notifications option.
+        DateTime toastUntil;
+
+        // A short note that never queues: a new one just restarts the time.
+        internal void ShowToast(string text, string glyph, double seconds)
+        {
+            ToastText.Text = text;
+            ToastGlyph.Text = glyph;
+            toastUntil = DateTime.Now.AddSeconds(seconds);
+            Recompute();
+        }
+
         internal void ShowSystemBanner(string title, string body, string kind = null)
         {
             BannerItem item = new BannerItem { App = Installer.Name, Title = title, Subtitle = body, Seconds = settings.AlertSeconds };

@@ -219,8 +219,14 @@ namespace WindowsIsland
         public static string BatteryFull => T("Battery full", "Bateria carregada", "Batería cargada", "Батарея заряжена");
         public static string BatteryLow => T("Battery low", "Bateria baixa", "Batería baja", "Низкий заряд батареи");
 
+        public static string MenuScreenshot => T("Screenshot alert", "Aviso de captura de tela", "Aviso de captura de pantalla", "Оповещение о скриншоте");
+        public static string HintScreenshot => T("A small note when a screenshot is taken with Print Screen or Win+Shift+S",
+                                                 "Um aviso pequeno quando você tira um print com Print Screen ou Win+Shift+S",
+                                                 "Un aviso pequeño cuando haces una captura con Impr Pant o Win+Mayús+S",
+                                                 "Небольшое сообщение, когда делается скриншот клавишей Print Screen или Win+Shift+S");
+        public static string ScreenshotTaken => T("Screenshot taken", "Tela capturada", "Captura hecha", "Скриншот сделан");
         public static string LanguageLabel => T("Language", "Idioma", "Idioma", "Язык");
-        public static string LanguageAuto => T("Automatic", "Automático", "Automático", "Автоматически");
+        public static string LanguageAuto => T("Auto", "Auto", "Auto", "Авто");
         public static string BannerSizeLabel => T("Alert size", "Tamanho dos avisos", "Tamaño de los avisos", "Размер оповещений");
         public static string BannerSmall => T("Small", "Pequeno", "Pequeño", "Малый");
         public static string BannerNormal => T("Normal", "Normal", "Normal", "Обычный");

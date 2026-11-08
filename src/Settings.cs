@@ -29,6 +29,7 @@ namespace WindowsIsland
         public string RingColor { get; set; } = "Blue";  // Usage rings: Blue, Green or Purple
         public bool ShowPrivacyDots { get; set; } = true;
         public bool BatteryAlerts { get; set; } = true;
+        public bool ShowScreenshotAlert { get; set; } = true;
         public bool ShowNotifications { get; set; } = false; // Reads notification content, so it is opt-in
         public bool HideInFullscreen { get; set; } = true;
         public bool StartWithWindows { get; set; } = false;

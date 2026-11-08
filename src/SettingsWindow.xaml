@@ -6,7 +6,7 @@
         WindowStartupLocation="Manual" ResizeMode="CanResize" Icon="Assets/app.ico" WindowStyle="None"
         Background="#FF000000" Foreground="White"
         FontFamily="Segoe UI Variable Text, Segoe UI" FontSize="14"
-        TextOptions.TextRenderingMode="Grayscale" UseLayoutRounding="True">
+        TextOptions.TextRenderingMode="Auto" TextOptions.TextFormattingMode="Ideal" RenderOptions.ClearTypeHint="Enabled" UseLayoutRounding="True">
 
     <shell:WindowChrome.WindowChrome>
         <shell:WindowChrome CaptionHeight="52" ResizeBorderThickness="6" GlassFrameThickness="0" CornerRadius="0" UseAeroCaptionButtons="False"/>

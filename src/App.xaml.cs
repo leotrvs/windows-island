@@ -28,6 +28,7 @@ namespace WindowsIsland
         TimerService timer;
         PrivacyService privacy;
         BatteryService battery;
+        ScreenshotService screenshots;
         readonly List<IslandWindow> islands = new List<IslandWindow>();
         readonly DispatcherTimer followTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(300) };
         DispatcherTimer updateTimer;
@@ -39,6 +40,7 @@ namespace WindowsIsland
         // Arguments:
         //   --preview=<State>   shows one state with sample data (Idle, MusicCompact, ClaudeExpanded...)
         //   --frames <folder>   writes the README animation as numbered PNG frames with sample data, then quits
+        //   --dev               runs beside the installed copy (its own instance), for testing a build
         //   --render <folder>   writes every state to PNG files with sample data, then quits
         //   --lang=en|pt        forces the language
         //   --portable          runs without installing
@@ -94,7 +96,8 @@ namespace WindowsIsland
                 return;
             }
 
-            singleInstance = new Mutex(true, sample ? @"Local\WindowsIsland.Preview." + Guid.NewGuid() : @"Local\WindowsIsland.SingleInstance", out ownsMutex);
+            bool dev = Array.IndexOf(e.Args, "--dev") >= 0; // A development copy that can run beside the installed one
+            singleInstance = new Mutex(true, sample || dev ? @"Local\WindowsIsland.Preview." + Guid.NewGuid() : @"Local\WindowsIsland.SingleInstance", out ownsMutex);
             if (!ownsMutex && afterUpdate) ownsMutex = WaitForPreviousVersion();
             if (!ownsMutex)
             {
@@ -118,6 +121,7 @@ namespace WindowsIsland
             timer = new TimerService(Dispatcher);
             privacy = new PrivacyService(Dispatcher);
             battery = new BatteryService(Dispatcher);
+            screenshots = new ScreenshotService();
             if (sample)
             {
                 media.UseSample();
@@ -179,6 +183,7 @@ namespace WindowsIsland
             {
                 foreach (IslandWindow island in islands) island.ShowSystemBanner(Strings.TimerFinished, "");
             };
+            screenshots.Taken += () => MainIsland?.ShowToast(Strings.ScreenshotTaken, "\uE722", 2.2);
             battery.Alert += (title, body, kind) => MainIsland?.ShowSystemBanner(title, body, kind);
             Action applySettings = () =>
             {
@@ -187,6 +192,8 @@ namespace WindowsIsland
                 else privacy.Stop();
                 if (settings.BatteryAlerts && !sample) battery.Start();
                 else battery.Stop();
+                if (settings.ShowScreenshotAlert && !sample) screenshots.Start();
+                else screenshots.Stop();
                 if (!sample) ReconcileIslands();
                 foreach (IslandWindow island in islands) island.SettingsChanged();
                 if (settings.ShowNotifications && !sample) notifications.Start();
@@ -217,10 +224,14 @@ namespace WindowsIsland
             if (sample) return;
             if (settings.ShowPrivacyDots) privacy.Start();
             if (settings.BatteryAlerts) battery.Start();
+            if (settings.ShowScreenshotAlert) screenshots.Start();
 
-            showSettings = new EventWaitHandle(false, EventResetMode.AutoReset, ShowSettingsEvent);
-            ThreadPool.RegisterWaitForSingleObject(showSettings,
-                (state, timedOut) => Dispatcher.BeginInvoke(openSettings), null, Timeout.Infinite, false);
+            if (!dev)
+            {
+                showSettings = new EventWaitHandle(false, EventResetMode.AutoReset, ShowSettingsEvent);
+                ThreadPool.RegisterWaitForSingleObject(showSettings,
+                    (state, timedOut) => Dispatcher.BeginInvoke(openSettings), null, Timeout.Infinite, false);
+            }
 
             _ = media.StartAsync();
             claude.Start();
@@ -314,6 +325,7 @@ namespace WindowsIsland
         protected override void OnExit(ExitEventArgs e)
         {
             tray?.Dispose();
+            screenshots?.Dispose();
             if (ownsMutex)
             {
                 try { singleInstance.ReleaseMutex(); }

@@ -76,6 +76,7 @@ To try it without installing, run `WindowsIsland.exe --portable`.
 | Battery alerts | Charger connected or removed, low battery and fully charged. Laptops only |
 | Show Windows notifications | Shows new notifications in the island. Off by default |
 | Alert size | Small or normal alerts and notifications |
+| Screenshot alert | A very small note when a screenshot is taken with Print Screen or Win+Shift+S |
 | Usage ring color | Blue, green or purple. The rings turn amber and red near the limit |
 | Language | Follows Windows by default. English, Portuguese, Spanish and Russian |
 | Empty island | Keeps the collapsed island a plain pill, with no live activities. Hover or click to see them |

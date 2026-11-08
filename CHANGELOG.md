@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.12.0
+
+- **Screenshot alert:** a very small note, "Screenshot taken", when you take a screenshot with Print Screen or Win+Shift+S. It does not queue up or repeat for a burst of screenshots, and it can be turned off in Settings, Activities. It only notices that an image reached the clipboard from Windows' own screenshot tools: it never reads the picture and does not watch the keyboard
+- **Tabs and options slide:** every tab bar and choice in Settings now has a pill that slides to the one you pick
+- The language choice is now just **Auto**, English, Português, Español and Русский
+- Sharper text in Settings (ClearType instead of grayscale smoothing)
+- Fixed the spinning update icon turning around a point outside itself
+- The Claude and Codex rows in Settings use their own marks
+- `--dev` runs a build beside the installed copy, for testing
+
 ## 1.11.0
 
 - **Check for updates** now shows what it is doing: a spinning icon and "Checking for updates…", then a download icon and "Download update 1.x" when one is found. Nothing is downloaded until you click. Automatic updates still install by themselves

@@ -122,7 +122,7 @@ namespace WindowsIsland
         void UpdateRow()
         {
             spin = new RotateTransform();
-            updateGlyph = new TextBlock { FontFamily = IconFont, FontSize = 16, Width = 30, VerticalAlignment = VerticalAlignment.Center, RenderTransform = spin, RenderTransformOrigin = new Point(0.43, 0.5) };
+            updateGlyph = new TextBlock { FontFamily = IconFont, FontSize = 16, Margin = new Thickness(0, 0, 14, 0), VerticalAlignment = VerticalAlignment.Center, RenderTransform = spin, RenderTransformOrigin = new Point(0.5, 0.5) };
             updateText = new TextBlock { VerticalAlignment = VerticalAlignment.Center };
             StackPanel line = new StackPanel { Orientation = Orientation.Horizontal, Background = Brushes.Transparent, Cursor = System.Windows.Input.Cursors.Hand };
             line.Children.Add(updateGlyph);
@@ -200,22 +200,78 @@ Top = taskbarTop ? work.Top + 12 : work.Bottom - Height - 12;
         void BuildTabs()
         {
             string[] names = { Strings.SectionActivities, Strings.SectionBehavior, Strings.SectionAppearance, Strings.SectionSystem };
+            TabBar.Content = SlidingBar(names, tab, index => { tab = index; Rebuild(); }, Color.FromRgb(0x1C, 0x1C, 0x1E), HorizontalAlignment.Left, new Thickness(0));
+        }
+
+        // Choices in a rounded track, with a pill that slides to the one picked.
+        FrameworkElement SlidingBar(string[] names, int current, Action<int> pick, Color track, HorizontalAlignment align, Thickness margin)
+        {
+            Grid host = new Grid();
+            Border pill = new Border
+            {
+                Background = new SolidColorBrush(Color.FromRgb(0x63, 0x63, 0x66)),
+                CornerRadius = new CornerRadius(7),
+                HorizontalAlignment = HorizontalAlignment.Left,
+                Margin = new Thickness(0, 1.5, 0, 1.5),
+                Width = 0,
+            };
+            TranslateTransform move = new TranslateTransform();
+            pill.RenderTransform = move;
             StackPanel items = new StackPanel { Orientation = Orientation.Horizontal };
-            string group = Guid.NewGuid().ToString();
+            int selected = Math.Clamp(current, 0, names.Length - 1);
+
+            Action<bool> place = animate =>
+            {
+                Border chip = (Border)items.Children[selected];
+                if (chip.ActualWidth <= 0) return;
+                double x = chip.TranslatePoint(new Point(0, 0), host).X, w = chip.ActualWidth;
+                if (!animate)
+                {
+                    move.BeginAnimation(TranslateTransform.XProperty, null);
+                    pill.BeginAnimation(FrameworkElement.WidthProperty, null);
+                    move.X = x;
+                    pill.Width = w;
+                    return;
+                }
+                System.Windows.Media.Animation.CubicEase ease = new System.Windows.Media.Animation.CubicEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut };
+                move.BeginAnimation(TranslateTransform.XProperty, new System.Windows.Media.Animation.DoubleAnimation(x, TimeSpan.FromMilliseconds(260)) { EasingFunction = ease });
+                pill.BeginAnimation(FrameworkElement.WidthProperty, new System.Windows.Media.Animation.DoubleAnimation(w, TimeSpan.FromMilliseconds(260)) { EasingFunction = ease });
+            };
+
             for (int i = 0; i < names.Length; i++)
             {
                 int index = i;
-                RadioButton item = new RadioButton { Content = names[i], GroupName = group, Style = (Style)FindResource("Segment"), IsChecked = i == tab };
-                item.Checked += (s, e) => { tab = index; Rebuild(); };
-                items.Children.Add(item);
+                Border chip = new Border
+                {
+                    Padding = new Thickness(9, 5, 9, 5),
+                    Margin = new Thickness(1.5),
+                    Background = Brushes.Transparent,
+                    Cursor = System.Windows.Input.Cursors.Hand,
+                    Child = new TextBlock { Text = names[i], FontSize = 12, Foreground = Brushes.White },
+                };
+                chip.MouseLeftButtonUp += (s, e) =>
+                {
+                    if (index == selected) return;
+                    selected = index;
+                    place(true);
+                    pick(index);
+                };
+                items.Children.Add(chip);
             }
-            TabBar.Content = new Border
+            host.Children.Add(pill);
+            host.Children.Add(items);
+            host.Loaded += (s, e) => { host.UpdateLayout(); place(false); };
+            host.SizeChanged += (s, e) => place(false);
+
+            return new Border
             {
-                Background = new SolidColorBrush(Color.FromRgb(0x1C, 0x1C, 0x1E)),
+                Background = new SolidColorBrush(track),
                 CornerRadius = new CornerRadius(9),
                 Padding = new Thickness(1),
-                HorizontalAlignment = HorizontalAlignment.Left,
-                Child = items,
+                HorizontalAlignment = align,
+                VerticalAlignment = VerticalAlignment.Center,
+                Margin = margin,
+                Child = host,
             };
         }
 
@@ -235,12 +291,13 @@ Top = taskbarTop ? work.Top + 12 : work.Bottom - Height - 12;
         {
             Section(Strings.SectionActivities);
             Toggle("\uE8D6", Strings.MenuMusic, null, () => settings.ShowMusic, v => settings.ShowMusic = v);
-            Toggle("\uE8BD", Strings.MenuClaude, null, () => settings.ShowClaude, v => settings.ShowClaude = v);
+            Toggle("img:claude", Strings.MenuClaude, null, () => settings.ShowClaude, v => settings.ShowClaude = v);
             Toggle("\uEA8F", Strings.MenuBanners, null, () => settings.ClaudeBanners, v => settings.ClaudeBanners = v);
-            Toggle("\uE756", Strings.MenuCodex, null, () => settings.ShowCodex, v => settings.ShowCodex = v);
+            Toggle("img:codex", Strings.MenuCodex, null, () => settings.ShowCodex, v => settings.ShowCodex = v);
             Toggle("\uEA8F", Strings.MenuCodexBanners, null, () => settings.CodexBanners, v => settings.CodexBanners = v);
             Toggle("\uE720", Strings.MenuPrivacyDots, Strings.HintPrivacyDots, () => settings.ShowPrivacyDots, v => settings.ShowPrivacyDots = v);
             Toggle("\uE83F", Strings.MenuBatteryAlerts, Strings.HintBatteryAlerts, () => settings.BatteryAlerts, v => settings.BatteryAlerts = v);
+            Toggle("\uE722", Strings.MenuScreenshot, Strings.HintScreenshot, () => settings.ShowScreenshotAlert, v => settings.ShowScreenshotAlert = v);
             Toggle("\uE7E7", Strings.MenuNotifications, Strings.HintNotifications, () => settings.ShowNotifications, v => settings.ShowNotifications = v);
         }
 
@@ -350,7 +407,22 @@ Top = taskbarTop ? work.Top + 12 : work.Bottom - Height - 12;
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
-            if (icon != null)
+            if (icon != null && icon.StartsWith("img:"))
+            {
+                Image mark = new Image
+                {
+                    Source = new System.Windows.Media.Imaging.BitmapImage(new Uri("pack://application:,,,/Assets/" + icon.Substring(4) + "-mark.png")),
+                    Width = 16,
+                    Height = 16,
+                    Opacity = 0.72,
+                    HorizontalAlignment = HorizontalAlignment.Left,
+                    Margin = new Thickness(0, 0, 14, 0),
+                    VerticalAlignment = VerticalAlignment.Center,
+                };
+                RenderOptions.SetBitmapScalingMode(mark, BitmapScalingMode.HighQuality);
+                grid.Children.Add(mark);
+            }
+            else if (icon != null)
             {
                 grid.Children.Add(new TextBlock
                 {
@@ -456,25 +528,9 @@ Top = taskbarTop ? work.Top + 12 : work.Bottom - Height - 12;
 
         FrameworkElement SegmentBar(string[] names, int current, Action<int> set, bool inline = false)
         {
-            WrapPanel items = new WrapPanel { Orientation = Orientation.Horizontal }; // Wraps when a language needs the room
-            string group = Guid.NewGuid().ToString();
-            for (int i = 0; i < names.Length; i++)
-            {
-                int index = i;
-                RadioButton item = new RadioButton { Content = names[i], GroupName = group, Style = (Style)FindResource("Segment"), IsChecked = i == current };
-                item.Checked += (s, e) => { set(index); Apply(); };
-                items.Children.Add(item);
-            }
-            return new Border
-            {
-                Background = new SolidColorBrush(Color.FromRgb(0x2C, 0x2C, 0x2E)),
-                CornerRadius = new CornerRadius(9),
-                Padding = new Thickness(1),
-                HorizontalAlignment = inline ? HorizontalAlignment.Right : HorizontalAlignment.Left,
-                VerticalAlignment = VerticalAlignment.Center,
-                Margin = inline ? new Thickness(0) : new Thickness(14, 0, 14, 12),
-                Child = items,
-            };
+            return SlidingBar(names, current, i => { set(i); Apply(); }, Color.FromRgb(0x2C, 0x2C, 0x2E),
+                inline ? HorizontalAlignment.Right : HorizontalAlignment.Left,
+                inline ? new Thickness(0) : new Thickness(14, 0, 14, 12));
         }
 
         void SliderRow(string icon, string label, double min, double max, double step, Func<double, string> format,
