@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.2.1
+
+- **Settings window** fits its content: it opens, switches tabs and unfolds groups at the height it needs, so nothing has to be scrolled (as far as the screen allows); it grows upwards when it reaches the bottom edge
+- Cards stacked in a tab (Behavior and Pages) now have a clear gap between them
+
+
 ## 2.2.0
 
 - **Tray icon:** a second left click now closes the Settings window

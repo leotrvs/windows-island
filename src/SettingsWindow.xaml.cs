@@ -92,6 +92,7 @@ namespace WindowsIsland
             PlaceNearTray();
             BuildTabs();
             Build(tab);
+            Loaded += (s, e) => FitHeight(false); // Before the first frame, so it opens at the right height
         }
 
         static readonly FontFamily IconFont = new FontFamily("Segoe Fluent Icons, Segoe MDL2 Assets");
@@ -443,6 +444,51 @@ namespace WindowsIsland
         {
             Content.Children.Clear();
             Build(tab);
+            FitSoon();
+        }
+
+        // The window grows or shrinks to the height its content needs, so nothing has to be scrolled
+        // (as far as the screen allows). Done after the layout has settled.
+        void FitSoon()
+        {
+            Dispatcher.BeginInvoke(new Action(() => FitHeight(true)), DispatcherPriority.Loaded);
+        }
+
+        void FitHeight(bool animate)
+        {
+            if (!IsLoaded && animate) return;
+            UpdateLayout();
+            double chrome = ActualHeight - Scroller.ActualHeight;
+            double want = chrome + Content.ActualHeight + Content.Margin.Top + Content.Margin.Bottom;
+            double cx = Left + Width / 2;
+            Rect work = Displays.Primary().WorkArea;
+            foreach (Display d in Displays.All()) if (cx >= d.WorkArea.Left && cx <= d.WorkArea.Right) { work = d.WorkArea; break; }
+            want = Math.Clamp(Math.Ceiling(want), MinHeight, Math.Max(MinHeight, work.Height - 24));
+            if (Math.Abs(want - ActualHeight) < 1) return;
+
+            // Keep it inside the screen: when it would pass the bottom edge, it grows upwards instead
+            double top = animate ? Top : restingTop;
+            double newTop = Math.Min(top, work.Bottom - 12 - want);
+            newTop = Math.Max(newTop, work.Top + 12);
+
+            if (!animate)
+            {
+                Height = want;
+                restingTop = newTop;
+                Top = newTop + (SystemParameters.ClientAreaAnimation ? 22 : 0);
+                return;
+            }
+            System.Windows.Media.Animation.CubicEase ease = new System.Windows.Media.Animation.CubicEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut };
+            TimeSpan time = TimeSpan.FromMilliseconds(SystemParameters.ClientAreaAnimation ? 200 : 1);
+            System.Windows.Media.Animation.DoubleAnimation grow = new System.Windows.Media.Animation.DoubleAnimation(ActualHeight, want, time) { EasingFunction = ease };
+            grow.Completed += (a, b) => { BeginAnimation(HeightProperty, null); Height = want; };
+            BeginAnimation(HeightProperty, grow);
+            if (Math.Abs(newTop - Top) > 0.5)
+            {
+                System.Windows.Media.Animation.DoubleAnimation move = new System.Windows.Media.Animation.DoubleAnimation(Top, newTop, time) { EasingFunction = ease };
+                move.Completed += (a, b) => { BeginAnimation(TopProperty, null); Top = newTop; restingTop = newTop; };
+                BeginAnimation(TopProperty, move);
+            }
         }
 
         void Apply()
@@ -469,6 +515,7 @@ namespace WindowsIsland
             {
                 Background = (Brush)FindResource("Card"),
                 CornerRadius = new CornerRadius(12),
+                Margin = new Thickness(0, !showTitles && Content.Children.Count > 0 ? 14 : 0, 0, 0), // Cards stacked without a title keep a gap
                 Child = card,
             });
         }
@@ -503,6 +550,7 @@ namespace WindowsIsland
                 if (now) openGroups.Add(title); else openGroups.Remove(title);
                 ((RotateTransform)arrow.RenderTransform).BeginAnimation(RotateTransform.AngleProperty,
                     new System.Windows.Media.Animation.DoubleAnimation(now ? 180 : 0, TimeSpan.FromMilliseconds(180)));
+                FitSoon();
             };
 
             StackPanel outer = card;
