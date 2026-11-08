@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.1.7
+
+- Website audio: the island now uses the site's own touch icon (apple-touch-icon.png) when it has one, so WhatsApp shows its logo instead of a blurry tab icon with the unread badge. Downloaded once per site, HTTPS only (see SECURITY.md)
+
+
 ## 2.1.6
 
 - **Tidier Settings:** related options fold under arrows (Privacy, Battery, System alerts, Volume and brightness, Times, Size and position; and the API token, guide and browser extension). The system monitor style only shows while the monitor is on

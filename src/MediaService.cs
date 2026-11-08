@@ -291,8 +291,70 @@ namespace WindowsIsland
             hint = value;
             if (session == null || !IsBrowser(sourceApp) || !string.IsNullOrWhiteSpace(Artist)) return;
             if (!HintMatches(Title, value) || !(value.Favicon is BitmapSource icon)) return;
-            Art = Smooth(icon);
-            Accent = SafeAccent(icon, Accent); // The equalizer takes the site icon's color (WhatsApp green)
+            BitmapSource best = BestIcon(value);
+            Art = best;
+            Accent = SafeAccent(best, Accent); // The equalizer takes the site icon's color (WhatsApp green)
+            Changed?.Invoke();
+            if (!siteIcons.ContainsKey(HostKey(value))) _ = FetchSiteIconAsync(value);
+        }
+
+        // Some sites draw a badge into their tab icon (WhatsApp's unread count), and tab icons are tiny. The
+        // site's own touch icon, when it has one, is sharper and clean; it is fetched once per site.
+        readonly Dictionary<string, BitmapSource> siteIcons = new Dictionary<string, BitmapSource>();
+        static readonly System.Net.Http.HttpClient web = new System.Net.Http.HttpClient(new System.Net.Http.HttpClientHandler { AllowAutoRedirect = false }) { Timeout = TimeSpan.FromSeconds(4) };
+
+        static string HostKey(ApiMediaHint h) { return (h.Host ?? "").ToLowerInvariant(); }
+
+        BitmapSource BestIcon(ApiMediaHint h)
+        {
+            BitmapSource site;
+            if (siteIcons.TryGetValue(HostKey(h), out site) && site != null) return site;
+            return Smooth((BitmapSource)h.Favicon);
+        }
+
+        async Task FetchSiteIconAsync(ApiMediaHint value)
+        {
+            string host = HostKey(value);
+            if (host.Length == 0 || host.IndexOf('.') < 0 || host.EndsWith(".local") || host.EndsWith(".internal") || Regex.IsMatch(host, @"^[0-9.]+$"))
+            {
+                siteIcons[host] = null;
+                return;
+            }
+            siteIcons[host] = null; // Marks it as tried, so a failure is not retried while it plays
+            BitmapSource icon = null;
+            try
+            {
+                icon = await Task.Run(async () =>
+                {
+                    using (System.Net.Http.HttpResponseMessage response = await web.GetAsync("https://" + host + "/apple-touch-icon.png", System.Net.Http.HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false))
+                    {
+                        if (response.StatusCode != System.Net.HttpStatusCode.OK) return null;
+                        long? length = response.Content.Headers.ContentLength;
+                        if (length.HasValue && length.Value > 256 * 1024) return null;
+                        byte[] data = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
+                        if (data.Length < 100 || data.Length > 256 * 1024) return null;
+                        bool png = data[0] == 0x89 && data[1] == 0x50 && data[2] == 0x4E && data[3] == 0x47;
+                        if (!png) return null;
+                        using (MemoryStream stream = new MemoryStream(data, false))
+                        {
+                            BitmapImage image = new BitmapImage();
+                            image.BeginInit();
+                            image.CacheOption = BitmapCacheOption.OnLoad;
+                            image.DecodePixelWidth = 160;
+                            image.StreamSource = stream;
+                            image.EndInit();
+                            image.Freeze();
+                            return (BitmapSource)(image.PixelWidth >= 48 ? image : null);
+                        }
+                    }
+                }).ConfigureAwait(true);
+            }
+            catch (Exception) { icon = null; }
+            if (icon == null) return;
+            siteIcons[host] = icon;
+            if (hint == null || HostKey(hint) != host || session == null || !string.IsNullOrWhiteSpace(Artist) || !HintMatches(Title, hint)) return;
+            Art = icon;
+            Accent = SafeAccent(icon, Accent);
             Changed?.Invoke();
         }
 
@@ -354,8 +416,9 @@ namespace WindowsIsland
             {
                 Color tile = TileColor(title);
                 bool hasIcon = hint != null && HintMatches(title, hint) && hint.Favicon is BitmapSource;
-                Art = hasIcon ? Smooth((BitmapSource)hint.Favicon) : LetterTile(title, tile);
-                Accent = hasIcon ? SafeAccent((BitmapSource)hint.Favicon, tile) : tile;
+                BitmapSource chosen = hasIcon ? BestIcon(hint) : null;
+                Art = hasIcon ? chosen : LetterTile(title, tile);
+                Accent = hasIcon ? SafeAccent(chosen, tile) : tile;
                 Changed?.Invoke();
                 return;
             }

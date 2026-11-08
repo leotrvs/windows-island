@@ -32,6 +32,8 @@
 
 The island itself makes one kind of connection: about 30 seconds after it opens and then every hour, it downloads release files from this repository on GitHub, unless you turn off **Automatic updates**. It does the same when you click **Check for updates**. GitHub can see your IP address, as with any download. No Claude or personal data is sent. An update is installed only when its RSA signature matches the public key built into the app and the file's SHA-256 matches the signed manifest.
 
+When the browser extension is installed and a tab is playing sound, the island also downloads that site's public `/apple-touch-icon.png` (HTTPS only, no redirects, PNG up to 256 KB, once per site) to show a sharp icon. The site sees an ordinary request from your IP address and nothing else is sent.
+
 The `/usage` command is part of Claude Code, which connects to Anthropic with your own login. The island never sees that login.
 
 ## Report a vulnerability
