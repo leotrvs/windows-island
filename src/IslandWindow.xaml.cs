@@ -1347,9 +1347,13 @@ namespace WindowsIsland
             TrackTitle.Text = string.IsNullOrEmpty(media.Title) ? Strings.UnknownTrack : media.Title;
             TrackArtist.Text = media.Artist;
 
-            Brush art = media.Art != null
-                ? Freeze(new ImageBrush(media.Art) { Stretch = Stretch.UniformToFill })
-                : (Brush)FindResource("ArtPlaceholder");
+            ImageBrush artBrush = null;
+            if (media.Art != null)
+            {
+                artBrush = new ImageBrush(media.Art) { Stretch = Stretch.UniformToFill };
+                RenderOptions.SetBitmapScalingMode(artBrush, BitmapScalingMode.HighQuality); // Small icons stay smooth, not blocky
+            }
+            Brush art = artBrush != null ? Freeze(artBrush) : (Brush)FindResource("ArtPlaceholder");
             CompactArt.Background = art;
             ExpandedArt.Background = art;
             BubbleArt.Fill = art;
@@ -1563,10 +1567,14 @@ namespace WindowsIsland
             BubbleScale.ScaleX = BubbleScale.ScaleY = Math.Max(0, bubbleScale.Value * s);
             Bubble.Opacity = Math.Clamp(bubbleOpacity.Value, 0, 1) * visible;
 
-            privacyShift.Target = -(w / 2 + BubbleGap + PrivacyDots.Width / 2) * s;
+            // The microphone and camera dots stay where they are while the island is put away or auto-hidden
+            // (they must never hide), and keep the idle island's spot instead of sliding with its shrinking width.
+            bool away = view == View.Hidden && !(fullscreen && settings.HideInFullscreen);
+            double dotsBase = away ? SizeOf(View.Idle).Width : w;
+            privacyShift.Target = -(dotsBase / 2 + BubbleGap + PrivacyDots.Width / 2) * s;
             PrivacyShift.X = privacyShift.Value;
             PrivacyShift.Y = (bottom ? -1 : 1) * (Math.Min(h, 34) * s - PrivacyDots.Height) / 2; // Level with a compact island
-            PrivacyDots.Opacity = Math.Clamp(privacyOpacity.Value, 0, 1) * visible;
+            PrivacyDots.Opacity = Math.Clamp(privacyOpacity.Value, 0, 1) * (away ? 1 : visible);
 
             if (PageDots.Visibility == Visibility.Visible)
             {

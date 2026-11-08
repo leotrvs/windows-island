@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.1.3
+
+- **Website audio:** the equalizer takes the color of the site icon (WhatsApp is green, not purple); icons are drawn smoother and the extension sends a larger one (reload the extension to get it)
+- **Website notifications** from Chrome/Edge now show the site icon and name instead of the browser logo
+- **Microphone/camera dots** no longer hide or slide when the island is tucked away or auto-hidden; they stay in place
+
+
 ## 2.1.2
 
 - **Browser extension button:** opens the extensions page itself (browsers ignore chrome:// addresses from the command line and show a blank tab, so the address is typed into that tab, only when a blank new tab is in front)

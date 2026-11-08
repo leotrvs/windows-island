@@ -183,13 +183,52 @@ namespace WindowsIsland
                     .Where(t => t.Length > 0)
                     .ToList();
                 if (texts.Count == 0) return null;
+                // A website's notification (through Chrome or Edge) carries the site's own icon as a file in the
+                // browser's Notification Resources folder and the site name as attribution.
+                System.Windows.Media.ImageSource siteIcon = SiteIcon(xml);
+                string site = xml.Descendants("text").Where(t => (string)t.Attribute("placement") == "attribution").Select(t => t.Value.Trim()).FirstOrDefault();
                 return new IslandNotification
                 {
-                    App = Shorten(FriendlyName(handler), 60),
+                    App = Shorten(siteIcon != null && !string.IsNullOrEmpty(site) ? site : FriendlyName(handler), 60),
                     Title = Shorten(texts[0], MaxTextLength),
                     Body = texts.Count > 1 ? Shorten(string.Join(" ", texts.Skip(1)), MaxTextLength) : "",
-                    Icon = AppIcons.Load(handler), // Validates the id itself; never opens paths from the database
+                    Icon = siteIcon ?? AppIcons.Load(handler), // Validates the id itself; never opens paths from the database
                 };
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        // The icon file of a browser notification. The path comes from a database any app can write to, so it
+        // is only opened when it is a plain file directly inside a "Notification Resources" folder under the
+        // user's local app data, and small.
+        static System.Windows.Media.ImageSource SiteIcon(XDocument xml)
+        {
+            try
+            {
+                string src = xml.Descendants("image").Where(i => (string)i.Attribute("placement") == "appLogoOverride")
+                    .Select(i => (string)i.Attribute("src")).FirstOrDefault();
+                if (string.IsNullOrEmpty(src) || src.Length > 400 || src.StartsWith("file:", StringComparison.OrdinalIgnoreCase)) return null;
+                string full = Path.GetFullPath(src);
+                string root = Path.GetFullPath(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)) + Path.DirectorySeparatorChar;
+                string folder = Path.GetFileName(Path.GetDirectoryName(full) ?? "");
+                if (!full.StartsWith(root, StringComparison.OrdinalIgnoreCase) || !string.Equals(folder, "Notification Resources", StringComparison.OrdinalIgnoreCase)) return null;
+                FileInfo info = new FileInfo(full);
+                if (!info.Exists || info.Length == 0 || info.Length > 512 * 1024) return null;
+                byte[] bytes = File.ReadAllBytes(full);
+                using (MemoryStream stream = new MemoryStream(bytes))
+                {
+                    System.Windows.Media.Imaging.BitmapImage image = new System.Windows.Media.Imaging.BitmapImage();
+                    image.BeginInit();
+                    image.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad;
+                    image.DecodePixelWidth = 128;
+                    image.StreamSource = stream;
+                    image.EndInit();
+                    image.Freeze();
+                    return image;
+                }
             }
             catch (Exception)
             {

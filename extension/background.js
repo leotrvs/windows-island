@@ -21,9 +21,9 @@ async function faviconOf(pageUrl) {
   try {
     const url = new URL(chrome.runtime.getURL("/_favicon/"));
     url.searchParams.set("pageUrl", pageUrl);
-    url.searchParams.set("size", "64");
+    url.searchParams.set("size", "128"); // Sharper when the island shows it large
     const blob = await (await fetch(url.toString())).blob();
-    if (blob.size === 0 || blob.size > 24 * 1024) return null;
+    if (blob.size === 0 || blob.size > 30 * 1024) return null;
     const bytes = new Uint8Array(await blob.arrayBuffer());
     let binary = "";
     for (const b of bytes) binary += String.fromCharCode(b);

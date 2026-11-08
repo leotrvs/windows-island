@@ -292,7 +292,13 @@ namespace WindowsIsland
             if (session == null || !IsBrowser(sourceApp) || !string.IsNullOrWhiteSpace(Artist)) return;
             if (!HintMatches(Title, value) || !(value.Favicon is BitmapSource icon)) return;
             Art = icon;
+            Accent = SafeAccent(icon, Accent); // The equalizer takes the site icon's color (WhatsApp green)
             Changed?.Invoke();
+        }
+
+        static Color SafeAccent(BitmapSource icon, Color fallback)
+        {
+            try { return AccentOf(icon); } catch (Exception) { return fallback; }
         }
 
         static bool HintMatches(string title, ApiMediaHint value)
@@ -328,8 +334,9 @@ namespace WindowsIsland
             if (fromBrowser && string.IsNullOrWhiteSpace(artist))
             {
                 Color tile = TileColor(title);
-                Art = hint != null && HintMatches(title, hint) && hint.Favicon is BitmapSource icon ? icon : LetterTile(title, tile);
-                Accent = tile;
+                bool hasIcon = hint != null && HintMatches(title, hint) && hint.Favicon is BitmapSource;
+                Art = hasIcon ? (BitmapSource)hint.Favicon : LetterTile(title, tile);
+                Accent = hasIcon ? SafeAccent((BitmapSource)hint.Favicon, tile) : tile;
                 Changed?.Invoke();
                 return;
             }
