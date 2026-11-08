@@ -38,7 +38,9 @@ namespace WindowsIsland
             public long Length;
             public DateTime Write;
             public Pending Oldest;
-            public bool Asking; // The last thing Claude did was ask a blocking question that has no answer yet
+            public bool Asking; // The last thing Claude did was ask a question that has no answer yet
+            public string AskText; // The question (shortened) and the names of its answer buttons
+            public List<string> AskButtons;
             public DateTime SearchedAt; // When the transcript was last looked for in vain
         }
 
@@ -46,13 +48,18 @@ namespace WindowsIsland
 
         // True when the chat's last turn ended with a question that needs an answer (Claude Desktop's wrap-up
         // with a blocking question, which is what turns the chat's dot yellow) and nothing was said after it.
-        public static bool IsAsking(string sessionId)
+        public static bool IsAsking(string sessionId, out string question, out List<string> buttons)
         {
+            question = null;
+            buttons = null;
             try
             {
                 OldestPending(sessionId);
                 Cached entry;
-                return cache.TryGetValue(sessionId, out entry) && entry.Asking;
+                if (!cache.TryGetValue(sessionId, out entry) || !entry.Asking) return false;
+                question = entry.AskText;
+                buttons = entry.AskButtons;
+                return true;
             }
             catch (Exception)
             {
@@ -119,14 +126,20 @@ namespace WindowsIsland
             entry.Length = info.Length;
             entry.Write = info.LastWriteTimeUtc;
             bool asking;
-            entry.Oldest = Scan(entry.Path, info.Length, out asking);
+            string askText;
+            List<string> askButtons;
+            entry.Oldest = Scan(entry.Path, info.Length, out asking, out askText, out askButtons);
             entry.Asking = asking;
+            entry.AskText = askText;
+            entry.AskButtons = askButtons;
             return entry.Oldest;
         }
 
-        static Pending Scan(string path, long length, out bool asking)
+        static Pending Scan(string path, long length, out bool asking, out string askText, out List<string> askButtons)
         {
             asking = false;
+            askText = null;
+            askButtons = null;
             byte[] bytes;
             using (FileStream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete))
             {
@@ -151,7 +164,7 @@ namespace WindowsIsland
                 bool assistant = line.Contains("\"type\":\"assistant\"", StringComparison.Ordinal);
                 bool result = line.Contains("\"tool_result\"", StringComparison.Ordinal);
                 // Something the user said (not a tool's result) answers any question asked before it
-                if (!assistant && !result && line.Contains("\"type\":\"user\"", StringComparison.Ordinal) && !line.Contains("\"isSidechain\":true", StringComparison.Ordinal)) asking = false;
+                if (!assistant && !result && line.Contains("\"type\":\"user\"", StringComparison.Ordinal) && !line.Contains("\"isSidechain\":true", StringComparison.Ordinal)) { asking = false; askText = null; askButtons = null; }
                 if (!assistant && !result) continue;
                 try
                 {
@@ -176,10 +189,29 @@ namespace WindowsIsland
                                 JsonElement id, name;
                                 if (block.TryGetProperty("id", out id) && block.TryGetProperty("name", out name) && id.ValueKind == JsonValueKind.String)
                                     open[id.GetString()] = new Pending { Name = name.GetString() ?? "", Since = when };
-                                JsonElement input, blocked;
+                                // Claude Desktop's wrap-up carries the question for you and the answer buttons it shows
+                                JsonElement input, ask, actions;
                                 if (block.TryGetProperty("name", out name) && name.GetString() == "mcp__ccd_turn__wrap_up" &&
-                                    block.TryGetProperty("input", out input) && input.ValueKind == JsonValueKind.Object &&
-                                    input.TryGetProperty("blocked", out blocked) && blocked.ValueKind == JsonValueKind.True) asking = true;
+                                    block.TryGetProperty("input", out input) && input.ValueKind == JsonValueKind.Object)
+                                {
+                                    string text = input.TryGetProperty("ask", out ask) && ask.ValueKind == JsonValueKind.String ? ask.GetString() : null;
+                                    bool hard = input.TryGetProperty("blocked", out ask) && ask.ValueKind == JsonValueKind.True;
+                                    if (!string.IsNullOrWhiteSpace(text) || hard)
+                                    {
+                                        asking = true;
+                                        text = (text ?? "").Trim();
+                                        askText = text.Length > 140 ? text.Substring(0, 139) + "\u2026" : text;
+                                        askButtons = new List<string>();
+                                        if (input.TryGetProperty("actions", out actions) && actions.ValueKind == JsonValueKind.Array)
+                                            foreach (JsonElement action in actions.EnumerateArray())
+                                            {
+                                                JsonElement label;
+                                                if (action.ValueKind == JsonValueKind.Object && action.TryGetProperty("label", out label) && label.ValueKind == JsonValueKind.String)
+                                                    askButtons.Add(label.GetString());
+                                            }
+                                    }
+                                    else { asking = false; askText = null; askButtons = null; }
+                                }
                             }
                             else if (kind == "tool_result")
                             {

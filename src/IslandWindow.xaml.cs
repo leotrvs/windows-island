@@ -169,6 +169,8 @@ namespace WindowsIsland
             Pill.MouseLeave += OnPillLeave;
             Pill.MouseLeftButtonUp += OnPillClick;
             enterTimer.Tick += (s, e) => { enterTimer.Stop(); SetHovering(true); };
+            OpenClaudeLink.MouseLeftButtonUp += (s, e) => { e.Handled = true; ClaudeWindow.Focus(); };
+            OpenClaudeLink.MouseLeftButtonDown += (s, e) => e.Handled = true;
             // Resting the mouse on the small second activity opens the island straight on that activity's page
             bubbleTimer.Tick += (s, e) =>
             {
@@ -691,7 +693,7 @@ namespace WindowsIsland
             SaveSnapshot(System.IO.Path.Combine(folder, "notification" + suffix + ".png"));
 
             // Claude asking for you (a permission or a question), on the same banner
-            banners.Enqueue(new BannerItem { FromClaude = true, Title = Strings.ClaudeNeedsYou, Subtitle = Strings.SampleSessionTwo, Seconds = 5 });
+            banners.Enqueue(new BannerItem { FromClaude = true, Title = Strings.ClaudeNeedsYou, Subtitle = Strings.SampleQuestion, Seconds = 5 });
             NextBanner();
             Root.UpdateLayout();
             ApplyFrame();
@@ -1183,7 +1185,7 @@ namespace WindowsIsland
             {
                 FromClaude = true,
                 Title = waiting ? Strings.ClaudeNeedsYou : Strings.ClaudeDone,
-                Subtitle = name,
+                Subtitle = waiting && !string.IsNullOrWhiteSpace(claude.LastQuestion) ? claude.LastQuestion : name,
                 Seconds = settings.AlertSeconds + (waiting ? 1 : 0), // A question waits a little longer
             });
         }
@@ -1517,6 +1519,8 @@ namespace WindowsIsland
             }
 
             ClaudeTitle.Visibility = many > 1 ? Visibility.Collapsed : Visibility.Visible; // The lines take its place
+            OpenClaudeLink.Visibility = waiting ? Visibility.Visible : Visibility.Collapsed; // A question is answered in the Claude app
+            if (waiting && OpenClaudeLink.Text.Length == 0) OpenClaudeLink.Text = Strings.OpenClaude;
             string status;
             if (many > 1)
             {
@@ -1525,7 +1529,7 @@ namespace WindowsIsland
                 for (int i = 0; i < Math.Min(3, many); i++)
                 {
                     ClaudeService.ActiveSession item = claude.Active[i];
-                    lines.Add(item.Waiting ? Join(Strings.WaitingForYou, item.Name) : Join(Strings.Working + " " + FormatTime(DateTime.Now - item.Since), item.Name));
+                    lines.Add(item.Waiting ? Join(Strings.WaitingForYou, string.IsNullOrWhiteSpace(item.Question) ? item.Name : item.Name + ": " + item.Question) : Join(Strings.Working + " " + FormatTime(DateTime.Now - item.Since), item.Name));
                 }
                 if (many > 3) lines.Add("+" + (many - 3));
                 status = string.Join(Environment.NewLine, lines);

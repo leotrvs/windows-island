@@ -36,7 +36,7 @@ A Dynamic Island for Windows. Music, Claude Code, its usage limits and your noti
 - **Windows notifications** in the island, with the sending app's icon, if you turn them on
 - **Two activities at once:** the second one splits off into a bubble beside the island
 - **Several Claude chats at once:** the island counts them (for example `2 · 0:58`, or `1/2 · Waiting` when one of two waits for you) and the Claude page lists each chat with its own state and time
-- **Claude Desktop permissions:** a chat in the Claude desktop app that asks for a permission or puts a question shows as waiting for you, like in the terminal
+- **Claude Desktop permissions:** a chat in the Claude desktop app that asks for a permission or puts a question shows as waiting for you, like in the terminal The question (when it is short) is shown in the alert, with an **Open Claude** link on the Claude page that brings the app to the front to answer.
 - **Website icons:** with the browser extension, web audio shows the site's own icon, and website notifications show the site's icon and name
 - **Fluid motion:** shape and content morph with springs, never with fixed-time fades
 - **Discreet:** it never takes focus, clicks around it reach the window below, it shrinks to a thin line when a maximized window is in front and it hides in fullscreen

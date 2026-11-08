@@ -376,7 +376,8 @@
                             </Border>
                             <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
                                 <TextBlock x:Name="ClaudeTitle" Text="Claude Code" FontSize="15" FontWeight="SemiBold"/>
-                                <TextBlock x:Name="ClaudeStatus" Style="{StaticResource Caption}" Margin="0,1,0,0"/>
+                                <TextBlock x:Name="ClaudeStatus" Style="{StaticResource Caption}" Margin="0,1,0,0" TextTrimming="CharacterEllipsis"/>
+                                <TextBlock x:Name="OpenClaudeLink" FontSize="12" Foreground="#0A84FF" Cursor="Hand" Margin="0,3,0,0" Visibility="Collapsed"/>
                             </StackPanel>
                         </Grid>
 

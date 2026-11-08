@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.4.3
+
+- **Questions from Claude Desktop:** a chat that ends with a question (such as "Publish?") is now recognized even when it is not marked as blocking, which is why the last one showed as idle. The alert and the Claude page show the question (shortened) and an **Open Claude** link brings the desktop app to the front to answer it. The island cannot click the answer for you
+
+
 ## 2.4.2
 
 - The uninstall button in Settings is now the last row and all in red, to mark it as dangerous

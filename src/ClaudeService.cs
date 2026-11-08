@@ -37,6 +37,7 @@ namespace WindowsIsland
             public string Id;
             public string Name;
             public string Status;
+            public string Question;
             public DateTime StatusSince;
         }
 
@@ -66,7 +67,9 @@ namespace WindowsIsland
             public string Name;
             public bool Waiting;
             public DateTime Since;
+            public string Question; // What a waiting chat asks, when it asked a question
         }
+        public string LastQuestion { get; private set; } // The question of the chat that just started waiting
         public List<ActiveSession> Active { get; private set; } = new List<ActiveSession>();
         public string WaitingName { get; private set; }
         public UsageWindow Session { get; private set; }
@@ -134,7 +137,7 @@ namespace WindowsIsland
         {
             DateTime now = DateTime.Now;
             Active = new List<ActiveSession>();
-            if (waiting > 0) Active.Add(new ActiveSession { Name = Strings.SampleSessionTwo, Waiting = true, Since = now.AddSeconds(-20) });
+            if (waiting > 0) Active.Add(new ActiveSession { Name = Strings.SampleSessionTwo, Waiting = true, Since = now.AddSeconds(-20), Question = Strings.SampleQuestion });
             Active.Add(new ActiveSession { Name = Strings.SampleSession, Since = now.AddSeconds(-84) });
             Running = 2;
             Busy = waiting > 0 ? 1 : 2;
@@ -183,7 +186,7 @@ namespace WindowsIsland
             {
                 present.Add(session.Id);
                 if (session.Status == "busy" || session.Status == "waiting")
-                    active.Add(new ActiveSession { Name = session.Name, Waiting = session.Status == "waiting", Since = session.StatusSince });
+                    active.Add(new ActiveSession { Name = session.Name, Waiting = session.Status == "waiting", Since = session.StatusSince, Question = session.Question });
                 if (session.Status == "busy")
                 {
                     busy++;
@@ -203,7 +206,10 @@ namespace WindowsIsland
                 if (seen.TryGetValue(session.Id, out previous) && previous.Status != session.Status && primed)
                 {
                     if (session.Status == "waiting")
+                    {
+                        LastQuestion = session.Question;
                         Alert?.Invoke(true, session.Name);
+                    }
                     else if (previous.Status == "busy" && session.Status == "idle" &&
                              session.StatusSince - previous.Since >= MinimumWorkForAlert)
                         Alert?.Invoke(false, session.Name);
@@ -347,7 +353,16 @@ namespace WindowsIsland
                         // Claude Desktop keeps a session "busy" while it asks for a permission, so look at the transcript too
                         if (session.Status == "busy" && ClaudeWaiting.IsWaiting(session.Id, processId)) session.Status = "waiting";
                         // A chat that ended its turn with a question for you (the yellow dot in Claude Desktop) also waits
-                        else if ((session.Status == "idle" || session.Status == "busy") && ClaudeWaiting.IsAsking(session.Id)) session.Status = "waiting";
+                        else if (session.Status == "idle" || session.Status == "busy")
+                        {
+                            string question;
+                            System.Collections.Generic.List<string> buttons;
+                            if (ClaudeWaiting.IsAsking(session.Id, out question, out buttons))
+                            {
+                                session.Status = "waiting";
+                                session.Question = question;
+                            }
+                        }
                         sessions.Add(session);
                     }
                 }
