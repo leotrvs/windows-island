@@ -57,6 +57,15 @@ namespace WindowsIsland
         public int Waiting { get; private set; }
         public DateTime? BusySince { get; private set; }
         public string BusyName { get; private set; }
+
+        // Every session that is working or waiting, waiting ones first, then the longest running.
+        public sealed class ActiveSession
+        {
+            public string Name;
+            public bool Waiting;
+            public DateTime Since;
+        }
+        public List<ActiveSession> Active { get; private set; } = new List<ActiveSession>();
         public string WaitingName { get; private set; }
         public UsageWindow Session { get; private set; }
         public UsageWindow Weekly { get; private set; }
@@ -146,6 +155,7 @@ namespace WindowsIsland
         void Apply(List<SessionInfo> sessions, UsageSnapshot usage)
         {
             int busy = 0, waiting = 0;
+            List<ActiveSession> active = new List<ActiveSession>();
             DateTime? busySince = null;
             string busyName = null, waitingName = null;
             HashSet<string> present = new HashSet<string>();
@@ -153,6 +163,8 @@ namespace WindowsIsland
             foreach (SessionInfo session in sessions)
             {
                 present.Add(session.Id);
+                if (session.Status == "busy" || session.Status == "waiting")
+                    active.Add(new ActiveSession { Name = session.Name, Waiting = session.Status == "waiting", Since = session.StatusSince });
                 if (session.Status == "busy")
                 {
                     busy++;
@@ -185,6 +197,8 @@ namespace WindowsIsland
                 if (!present.Contains(id)) seen.Remove(id);
             primed = true;
 
+            active.Sort((a, b) => a.Waiting != b.Waiting ? (a.Waiting ? -1 : 1) : a.Since.CompareTo(b.Since));
+            Active = active;
             Running = sessions.Count;
             Busy = busy;
             Waiting = waiting;
@@ -194,6 +208,7 @@ namespace WindowsIsland
             if (usage != null) TakeUsage(usage);
 
             string next = Running + "|" + busy + "|" + waiting + "|" + busySince + "|" + busyName + "|" + waitingName + "|" + usageVersion;
+            foreach (ActiveSession a in active) next += "|" + a.Name + a.Since.Ticks + a.Waiting;
             if (next == signature) return;
             signature = next;
             Changed?.Invoke();
@@ -292,6 +307,8 @@ namespace WindowsIsland
                         session.StatusSince = root.TryGetProperty("statusUpdatedAt", out since) && since.TryGetInt64(out milliseconds)
                             ? DateTimeOffset.FromUnixTimeMilliseconds(milliseconds).LocalDateTime
                             : DateTime.Now;
+                        // Claude Desktop keeps a session "busy" while it asks for a permission, so look at the transcript too
+                        if (session.Status == "busy" && ClaudeWaiting.IsWaiting(session.Id, processId)) session.Status = "waiting";
                         sessions.Add(session);
                     }
                 }

@@ -1409,7 +1409,9 @@ namespace WindowsIsland
             string elapsed = claude.BusySince.HasValue ? FormatTime(DateTime.Now - claude.BusySince.Value) : "";
             bool waiting = claude.Waiting > 0;
 
-            string compact = waiting ? Strings.Waiting : elapsed;
+            // With several chats working, a count comes before the time so it is clear it is more than one
+            int many = claude.Active.Count;
+            string compact = (many > 1 ? many + " · " : "") + (waiting ? Strings.Waiting : elapsed);
             if (compact != lastCompactText)
             {
                 lastCompactText = compact;
@@ -1417,7 +1419,21 @@ namespace WindowsIsland
                 ClaudeCompactText.Foreground = waiting ? Orange : White;
             }
 
-            string status = waiting ? Join(Strings.WaitingForYou, claude.WaitingName)
+            ClaudeTitle.Visibility = many > 1 ? Visibility.Collapsed : Visibility.Visible; // The lines take its place
+            string status;
+            if (many > 1)
+            {
+                // One line per chat (up to three): what it is doing and for how long
+                System.Collections.Generic.List<string> lines = new System.Collections.Generic.List<string>();
+                for (int i = 0; i < Math.Min(3, many); i++)
+                {
+                    ClaudeService.ActiveSession item = claude.Active[i];
+                    lines.Add(item.Waiting ? Join(Strings.WaitingForYou, item.Name) : Join(Strings.Working + " " + FormatTime(DateTime.Now - item.Since), item.Name));
+                }
+                if (many > 3) lines.Add("+" + (many - 3));
+                status = string.Join(Environment.NewLine, lines);
+            }
+            else status = waiting ? Join(Strings.WaitingForYou, claude.WaitingName)
                           : claude.Busy > 0 ? Join(Strings.Working + " " + elapsed, claude.BusyName)
                           : claude.Running > 0 ? Strings.IdleSessions(claude.Running)
                           : Strings.NoSession;

@@ -375,7 +375,7 @@
                                 <local:ClaudeSpark x:Name="ExpandedSpark" Width="24" Height="24"/>
                             </Border>
                             <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
-                                <TextBlock Text="Claude Code" FontSize="15" FontWeight="SemiBold"/>
+                                <TextBlock x:Name="ClaudeTitle" Text="Claude Code" FontSize="15" FontWeight="SemiBold"/>
                                 <TextBlock x:Name="ClaudeStatus" Style="{StaticResource Caption}" Margin="0,1,0,0"/>
                             </StackPanel>
                         </Grid>

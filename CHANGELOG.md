@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.3.0
+
+- **Claude Desktop permissions:** the island now shows "waiting for you" when a chat in Claude Desktop is asking for a permission or putting a question (Desktop reports those chats as busy). It reads only tool names and times from the chat transcript
+- **Several chats at once:** with more than one chat working, the compact island shows a count before the time (for example 2 · 0:58) and the Claude panel lists up to three chats, each with its own state and time
+
+
 ## 2.2.3
 
 - Settings window keeps the edge nearest the taskbar in place when it grows or shrinks: near the bottom it stays anchored there (and goes back down when a group is folded); in the upper half it keeps its top
