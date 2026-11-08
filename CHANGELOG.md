@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.1.6
+
+- **Tidier Settings:** related options fold under arrows (Privacy, Battery, System alerts, Volume and brightness, Times, Size and position; and the API token, guide and browser extension). The system monitor style only shows while the monitor is on
+
+
 ## 2.1.5
 
 - Notification icons (apps and websites) no longer sit on a gray tile: they show directly on the island with rounded corners, so transparent icons blend in

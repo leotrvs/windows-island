@@ -215,6 +215,13 @@ namespace WindowsIsland
                                                    "Pasa el ratón por los puntos para ver qué app usa el micrófono o la cámara. Aquí elige cuánto tiempo su nombre aparece también solo cuando una app empieza",
                                                    "Наведите мышь на точки, чтобы увидеть, какое приложение использует микрофон или камеру. Здесь выберите, сколько секунд название показывается само, когда приложение начинает");
         public static string Off => T("Off", "Desligado", "Desactivado", "Выкл");
+        public static string GroupPrivacy => T("Privacy (microphone and camera)", "Privacidade (microfone e câmera)", "Privacidad (micrófono y cámara)", "Конфиденциальность (микрофон и камера)");
+        public static string GroupBattery => T("Battery", "Bateria", "Batería", "Батарея");
+        public static string GroupAlerts => T("System alerts", "Avisos do sistema", "Avisos del sistema", "Системные уведомления");
+        public static string GroupLevels => T("Volume and brightness", "Volume e brilho", "Volumen y brillo", "Громкость и яркость");
+        public static string GroupTimes => T("Times", "Tempos", "Tiempos", "Время");
+        public static string GroupSizePos => T("Size and position", "Tamanho e posição", "Tamaño y posición", "Размер и положение");
+        public static string GroupApiMore => T("Token, guide and browser extension", "Token, guia e extensão do navegador", "Token, guía y extensión del navegador", "Токен, руководство и расширение браузера");
         public static string SectionPages => T("Pages", "Páginas", "Páginas", "Страницы");
         public static string HintPages => T("The pages you can switch between when the island is open",
                                             "As páginas entre as quais você alterna com a ilha aberta",

@@ -320,20 +320,32 @@ namespace WindowsIsland
             Toggle("\uEA8F", Strings.MenuBanners, null, () => settings.ClaudeBanners, v => settings.ClaudeBanners = v);
             Toggle("img:codex", Strings.MenuCodex, null, () => settings.ShowCodex, v => settings.ShowCodex = v);
             Toggle("\uEA8F", Strings.MenuCodexBanners, null, () => settings.CodexBanners, v => settings.CodexBanners = v);
-            Toggle("\uE720", Strings.MenuPrivacyDots, Strings.HintPrivacyDots, () => settings.ShowPrivacyDots, v => settings.ShowPrivacyDots = v);
-            int[] nameSeconds = { 0, 1, 2, 3 };
-            string[] nameLabels = { Strings.Off, Strings.Duration(1, false), Strings.Duration(2, false), Strings.Duration(3, false) };
-            Row("\uE77B", Strings.MenuPrivacyNames, Strings.HintPrivacyNames, null,
-                SegmentBar(nameLabels, Math.Max(0, Array.IndexOf(nameSeconds, settings.PrivacyNameSeconds)), i => settings.PrivacyNameSeconds = nameSeconds[i]));
-            Toggle("\uE83E", Strings.MenuBatteryActivity, Strings.HintBatteryActivity, () => settings.BatteryActivity, v => settings.BatteryActivity = v);
-            Toggle("\uE83F", Strings.MenuBatteryAlerts, Strings.HintBatteryAlerts, () => settings.BatteryAlerts, v => settings.BatteryAlerts = v);
-            Toggle("\uE702", Strings.MenuDevices, Strings.HintDevices, () => settings.ShowDeviceAlerts, v => settings.ShowDeviceAlerts = v);
-            Toggle("\uE701", Strings.MenuNetworkAlerts, Strings.HintNetworkAlerts, () => settings.ShowNetworkAlerts, v => settings.ShowNetworkAlerts = v);
-            Toggle("\uE708", Strings.MenuFocus, Strings.HintFocus, () => settings.ShowFocus, v => settings.ShowFocus = v);
-            Toggle("\uE767", Strings.MenuLevels, Strings.HintLevels, () => settings.ShowLevels, v => settings.ShowLevels = v);
-            Toggle("\uE74F", Strings.MenuHideOsd, Strings.HintHideOsd, () => settings.HideWindowsOsd, v => settings.HideWindowsOsd = v);
-            Toggle("\uE722", Strings.MenuScreenshot, Strings.HintScreenshot, () => settings.ShowScreenshotAlert, v => settings.ShowScreenshotAlert = v);
-            Toggle("\uE7E7", Strings.MenuNotifications, Strings.HintNotifications, () => settings.ShowNotifications, v => settings.ShowNotifications = v);
+            Group("\uE720", Strings.GroupPrivacy, () =>
+            {
+                Toggle("\uE720", Strings.MenuPrivacyDots, Strings.HintPrivacyDots, () => settings.ShowPrivacyDots, v => settings.ShowPrivacyDots = v);
+                int[] nameSeconds = { 0, 1, 2, 3 };
+                string[] nameLabels = { Strings.Off, Strings.Duration(1, false), Strings.Duration(2, false), Strings.Duration(3, false) };
+                Row("\uE77B", Strings.MenuPrivacyNames, Strings.HintPrivacyNames, null,
+                    SegmentBar(nameLabels, Math.Max(0, Array.IndexOf(nameSeconds, settings.PrivacyNameSeconds)), i => settings.PrivacyNameSeconds = nameSeconds[i]));
+            });
+            Group("\uE83E", Strings.GroupBattery, () =>
+            {
+                Toggle("\uE83E", Strings.MenuBatteryActivity, Strings.HintBatteryActivity, () => settings.BatteryActivity, v => settings.BatteryActivity = v);
+                Toggle("\uE83F", Strings.MenuBatteryAlerts, Strings.HintBatteryAlerts, () => settings.BatteryAlerts, v => settings.BatteryAlerts = v);
+            });
+            Group("\uEA8F", Strings.GroupAlerts, () =>
+            {
+                Toggle("\uE702", Strings.MenuDevices, Strings.HintDevices, () => settings.ShowDeviceAlerts, v => settings.ShowDeviceAlerts = v);
+                Toggle("\uE701", Strings.MenuNetworkAlerts, Strings.HintNetworkAlerts, () => settings.ShowNetworkAlerts, v => settings.ShowNetworkAlerts = v);
+                Toggle("\uE708", Strings.MenuFocus, Strings.HintFocus, () => settings.ShowFocus, v => settings.ShowFocus = v);
+                Toggle("\uE722", Strings.MenuScreenshot, Strings.HintScreenshot, () => settings.ShowScreenshotAlert, v => settings.ShowScreenshotAlert = v);
+                Toggle("\uE7E7", Strings.MenuNotifications, Strings.HintNotifications, () => settings.ShowNotifications, v => settings.ShowNotifications = v);
+            });
+            Group("\uE767", Strings.GroupLevels, () =>
+            {
+                Toggle("\uE767", Strings.MenuLevels, Strings.HintLevels, () => settings.ShowLevels, v => settings.ShowLevels = v);
+                Toggle("\uE74F", Strings.MenuHideOsd, Strings.HintHideOsd, () => settings.HideWindowsOsd, v => settings.HideWindowsOsd = v);
+            });
         }
 
         void BuildBehavior()
@@ -345,9 +357,12 @@ namespace WindowsIsland
             Toggle("\uE740", Strings.MenuFullscreen, null, () => settings.HideInFullscreen, v => settings.HideInFullscreen = v);
             Toggle("\uE765", Strings.MenuHotkey, Strings.HintHotkey, () => settings.HotkeyEnabled, v => { settings.HotkeyEnabled = v; Dispatcher.BeginInvoke(new Action(Rebuild), DispatcherPriority.Background); });
             if (settings.HotkeyEnabled) HotkeyRow();
-            Choice("\uE916", Strings.MenuAutoHide, Strings.HintAutoHide, new[] { 0, 5, 10, 30, 60, 300 }, true, () => settings.AutoHideSeconds, v => settings.AutoHideSeconds = v);
-            Choice("\uE81C", Strings.MenuAlertDuration, null, new[] { 3, 5, 8, 12, 20 }, false, () => settings.AlertSeconds, v => settings.AlertSeconds = v);
-            Choice("\uE769", Strings.MenuPausedMusic, null, new[] { 0, 2, 5, 15, 30, 60 }, false, () => settings.PausedMusicSeconds, v => settings.PausedMusicSeconds = v);
+            Group("\uE916", Strings.GroupTimes, () =>
+            {
+                Choice("\uE916", Strings.MenuAutoHide, Strings.HintAutoHide, new[] { 0, 5, 10, 30, 60, 300 }, true, () => settings.AutoHideSeconds, v => settings.AutoHideSeconds = v);
+                Choice("\uE81C", Strings.MenuAlertDuration, null, new[] { 3, 5, 8, 12, 20 }, false, () => settings.AlertSeconds, v => settings.AlertSeconds = v);
+                Choice("\uE769", Strings.MenuPausedMusic, null, new[] { 0, 2, 5, 15, 30, 60 }, false, () => settings.PausedMusicSeconds, v => settings.PausedMusicSeconds = v);
+            });
 
             Section(Strings.SectionPages);
             Toggle("\uE8D6", Strings.PageMusicLabel, Strings.HintPages, () => settings.PageMusic, v => settings.PageMusic = v);
@@ -367,24 +382,34 @@ namespace WindowsIsland
             Segmented("\uE790", Strings.RingColorLabel, new[] { Strings.ColorBlue, Strings.ColorGreen, Strings.ColorPurple },
                 () => Math.Max(0, Array.FindIndex(ringValues, v => string.Equals(v, settings.RingColor, StringComparison.OrdinalIgnoreCase))),
                 i => settings.RingColor = ringValues[i]);
-            Toggle("\uE9D9", Strings.MenuSystemMonitor, Strings.HintSystemMonitor, () => settings.SystemMonitor, v => settings.SystemMonitor = v);
-            string[] monitorValues = { "Rings", "Bars", "Numbers" };
-            Segmented("\uE790", Strings.MonitorStyleLabel, new[] { Strings.StyleRings, Strings.StyleBars, Strings.StyleNumbers },
-                () => Math.Max(0, Array.FindIndex(monitorValues, v => string.Equals(v, settings.MonitorStyle, StringComparison.OrdinalIgnoreCase))),
-                i => settings.MonitorStyle = monitorValues[i]);
+            Toggle("\uE9D9", Strings.MenuSystemMonitor, Strings.HintSystemMonitor, () => settings.SystemMonitor, v =>
+            {
+                settings.SystemMonitor = v;
+                Dispatcher.BeginInvoke(new Action(Rebuild), DispatcherPriority.Background);
+            });
+            if (settings.SystemMonitor)
+            {
+                string[] monitorValues = { "Rings", "Bars", "Numbers" };
+                Segmented("\uE790", Strings.MonitorStyleLabel, new[] { Strings.StyleRings, Strings.StyleBars, Strings.StyleNumbers },
+                    () => Math.Max(0, Array.FindIndex(monitorValues, v => string.Equals(v, settings.MonitorStyle, StringComparison.OrdinalIgnoreCase))),
+                    i => settings.MonitorStyle = monitorValues[i]);
+            }
             string[] bannerValues = { "Small", "Normal" };
             Segmented("\uE8A1", Strings.BannerSizeLabel, new[] { Strings.BannerSmall, Strings.BannerNormal },
                 () => string.Equals(settings.BannerSize, "Normal", StringComparison.OrdinalIgnoreCase) ? 1 : 0,
                 i => settings.BannerSize = bannerValues[i]);
-            SliderRow("\uE740", Strings.CollapsedSize, Settings.MinScale, Settings.MaxScale, 0.05, Percent, () => settings.CollapsedScale, v => settings.CollapsedScale = v, false);
-            SliderRow("\uE740", Strings.ExpandedSize, Settings.MinScale, Settings.MaxScale, 0.05, Percent, () => settings.ExpandedScale, v => settings.ExpandedScale = v, true);
-            SliderRow("\uE745", Strings.DistanceFromEdge, Settings.MinOffsetY, Settings.MaxOffsetY, 1, Pixels, () => settings.OffsetY, v => settings.OffsetY = v, false);
-            SliderRow("\uE7C9", Strings.HorizontalPosition, -Settings.MaxOffsetX, Settings.MaxOffsetX, 10, Horizontal, () => settings.OffsetX, v => settings.OffsetX = v, false);
-            ActionRow("\uE777", Strings.ResetAppearance, () =>
+            Group("\uE740", Strings.GroupSizePos, () =>
             {
-                settings.ResetAppearance();
-                Apply();
-                Rebuild();
+                SliderRow("\uE740", Strings.CollapsedSize, Settings.MinScale, Settings.MaxScale, 0.05, Percent, () => settings.CollapsedScale, v => settings.CollapsedScale = v, false);
+                SliderRow("\uE740", Strings.ExpandedSize, Settings.MinScale, Settings.MaxScale, 0.05, Percent, () => settings.ExpandedScale, v => settings.ExpandedScale = v, true);
+                SliderRow("\uE745", Strings.DistanceFromEdge, Settings.MinOffsetY, Settings.MaxOffsetY, 1, Pixels, () => settings.OffsetY, v => settings.OffsetY = v, false);
+                SliderRow("\uE7C9", Strings.HorizontalPosition, -Settings.MaxOffsetX, Settings.MaxOffsetX, 10, Horizontal, () => settings.OffsetX, v => settings.OffsetX = v, false);
+                ActionRow("\uE777", Strings.ResetAppearance, () =>
+                {
+                    settings.ResetAppearance();
+                    Apply();
+                    Rebuild();
+                });
             });
         }
 
@@ -446,6 +471,45 @@ namespace WindowsIsland
                 CornerRadius = new CornerRadius(12),
                 Child = card,
             });
+        }
+
+        static readonly System.Collections.Generic.HashSet<string> openGroups = new System.Collections.Generic.HashSet<string>(); // Remembered while the app runs
+
+        // A row with an arrow that folds away the rows inside it, so a tab shows the main choices first.
+        void Group(string icon, string title, Action build)
+        {
+            bool open = openGroups.Contains(title);
+            TextBlock arrow = new TextBlock
+            {
+                Text = "\uE70D",
+                FontFamily = IconFont,
+                FontSize = 12,
+                Foreground = (Brush)FindResource("Secondary"),
+                VerticalAlignment = VerticalAlignment.Center,
+                RenderTransformOrigin = new Point(0.5, 0.5),
+                RenderTransform = new RotateTransform(open ? 180 : 0),
+            };
+            Row(icon, title, null, arrow);
+            StackPanel header = (StackPanel)card.Children[card.Children.Count - 1];
+            header.Background = Brushes.Transparent;
+            header.Cursor = System.Windows.Input.Cursors.Hand;
+
+            StackPanel body = new StackPanel { Visibility = open ? Visibility.Visible : Visibility.Collapsed };
+            card.Children.Add(body);
+            header.MouseLeftButtonUp += (s, e) =>
+            {
+                bool now = body.Visibility != Visibility.Visible;
+                body.Visibility = now ? Visibility.Visible : Visibility.Collapsed;
+                if (now) openGroups.Add(title); else openGroups.Remove(title);
+                ((RotateTransform)arrow.RenderTransform).BeginAnimation(RotateTransform.AngleProperty,
+                    new System.Windows.Media.Animation.DoubleAnimation(now ? 180 : 0, TimeSpan.FromMilliseconds(180)));
+            };
+
+            StackPanel outer = card;
+            card = body;
+            body.Children.Add(new Border { Height = 1, Background = (Brush)FindResource("Separator"), Margin = new Thickness(16, 0, 0, 0), SnapsToDevicePixels = true });
+            try { build(); }
+            finally { card = outer; }
         }
 
         // One row: label (and hint) on the left, a control on the right, a hairline above all but the first.
@@ -633,6 +697,11 @@ namespace WindowsIsland
             if (!settings.ApiEnabled) return;
             LocalApi api = (Application.Current as App)?.Api;
             if (api == null) return;
+            Group("\uE8C8", Strings.GroupApiMore, () => ApiDetails(api));
+        }
+
+        void ApiDetails(LocalApi api)
+        {
 
             TextBlock note = new TextBlock { FontSize = 12, Foreground = (Brush)FindResource("Secondary"), TextWrapping = TextWrapping.Wrap, Visibility = Visibility.Collapsed, Margin = new Thickness(60, 0, 14, 10) };
             Button copy = new Button { Content = Strings.ApiCopyToken, Style = (Style)FindResource("LinkButton"), HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Center };
