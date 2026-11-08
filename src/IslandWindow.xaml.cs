@@ -1411,7 +1411,9 @@ namespace WindowsIsland
 
             // With several chats working, a count comes before the time so it is clear it is more than one
             int many = claude.Active.Count;
-            string compact = (many > 1 ? many + " · " : "") + (waiting ? Strings.Waiting : elapsed);
+            // "1/2 · Waiting" reads as one of two chats waiting; "2 · 0:58" as two chats working
+            string compact = waiting ? (many > 1 ? claude.Waiting + "/" + many + " · " : "") + Strings.Waiting
+                                     : (many > 1 ? many + " · " : "") + elapsed;
             if (compact != lastCompactText)
             {
                 lastCompactText = compact;
