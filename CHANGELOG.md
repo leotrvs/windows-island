@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.2.0
+
+- **Tray icon:** a second left click now closes the Settings window
+- **Tray menu:** redrawn to match the Settings window (dark, rounded, with a soft entrance and exit); the Timer choices fold open under their row; Esc or a click elsewhere closes it
+
+
 ## 2.1.9
 
 - **YouTube and other video sites:** the island no longer stays on the browser logo. The video preview is read again when it arrives late, and a preview already shown is kept instead of flipping back to the logo

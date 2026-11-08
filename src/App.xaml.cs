@@ -263,12 +263,19 @@ namespace WindowsIsland
                 settingsWindow.Activate();
             };
 
-            tray = new Tray(settings, applySettings, openSettings, () =>
+            Action toggleSettings = () =>
+            {
+                if (settingsWindow != null) settingsWindow.Close();
+                else openSettings();
+            };
+
+            tray = new Tray(settings, applySettings, openSettings, toggleSettings, () =>
             {
                 openSettings();
                 if (settingsWindow != null) settingsWindow.GoToSystem();
                 _ = updates.CheckAsync(true);
             }, () => Shutdown(), timer);
+            if (dev && Array.IndexOf(e.Args, "--show-menu") >= 0) Dispatcher.BeginInvoke(new Action(() => tray.ShowMenu()), DispatcherPriority.Background); // For looking at the tray menu
             if (sample) return;
             if (settings.ShowPrivacyDots) privacy.Start();
             battery.AlertsOn = settings.BatteryAlerts;

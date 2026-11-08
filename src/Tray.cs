@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
@@ -65,19 +66,20 @@ namespace WindowsIsland
 
         readonly Settings settings;
         readonly Action changed;
-        readonly Action openSettings, checkForUpdates, quit;
+        readonly Action openSettings, toggleSettings, checkForUpdates, quit;
         readonly TimerService timer;
         readonly HwndSource window;
         readonly int taskbarCreated;
         IntPtr hIcon;
         bool added;
 
-        public Tray(Settings settings, Action changed, Action openSettings, Action checkForUpdates, Action quit, TimerService timer)
+        public Tray(Settings settings, Action changed, Action openSettings, Action toggleSettings, Action checkForUpdates, Action quit, TimerService timer)
         {
             this.timer = timer;
             this.settings = settings;
             this.changed = changed;
             this.openSettings = openSettings;
+            this.toggleSettings = toggleSettings;
             this.checkForUpdates = checkForUpdates;
             this.quit = quit;
 
@@ -123,7 +125,7 @@ namespace WindowsIsland
             if (message == WM_APP_TRAY)
             {
                 int mouse = (int)(lParam.ToInt64() & 0xFFFF);
-                if (mouse == WM_LBUTTONUP) openSettings();
+                if (mouse == WM_LBUTTONUP) toggleSettings(); // A second click closes it again
                 else if (mouse == WM_RBUTTONUP) ShowMenu();
                 handled = true;
             }
@@ -134,53 +136,34 @@ namespace WindowsIsland
             return IntPtr.Zero;
         }
 
-        void ShowMenu()
+        internal void ShowMenu()
         {
-            IntPtr menu = CreatePopupMenu();
-            if (menu == IntPtr.Zero) return;
-            try
+            List<TrayMenu.Item> timerItems = new List<TrayMenu.Item>();
+            foreach (int minutes in TimerMinutes)
             {
-                AppendMenu(menu, MF_STRING, (UIntPtr)CmdSettings, Strings.MenuSettings);
-                AppendMenu(menu, MF_STRING | (settings.EmptyIsland ? MF_CHECKED : 0), (UIntPtr)CmdEmpty, Strings.MenuEmptyIsland);
-                IntPtr timerMenu = CreatePopupMenu();
-                for (int i = 0; i < TimerMinutes.Length; i++)
-                    AppendMenu(timerMenu, MF_STRING, (UIntPtr)(CmdMinutes + TimerMinutes[i]), Strings.MenuTimerMinutes(TimerMinutes[i]));
-                AppendMenu(timerMenu, MF_SEPARATOR, UIntPtr.Zero, null);
-                AppendMenu(timerMenu, MF_STRING, (UIntPtr)CmdStopwatch, Strings.MenuStopwatch);
-                if (timer.Running) AppendMenu(timerMenu, MF_STRING, (UIntPtr)CmdStopTimer, Strings.MenuStopTimer);
-                AppendMenu(menu, MF_POPUP, (UIntPtr)(uint)timerMenu.ToInt64(), Strings.MenuTimer);
-                AppendMenu(menu, MF_SEPARATOR, UIntPtr.Zero, null);
-                AppendMenu(menu, MF_STRING, (UIntPtr)CmdUpdates, Strings.MenuCheckUpdates);
-                AppendMenu(menu, MF_STRING, (UIntPtr)CmdQuit, Strings.MenuQuit);
-                SetMenuDefaultItem(menu, CmdSettings, 0);
+                int m = minutes;
+                timerItems.Add(new TrayMenu.Item { Text = Strings.MenuTimerMinutes(m), Click = () => timer.StartCountdown(m) });
+            }
+            timerItems.Add(new TrayMenu.Item { Separator = true });
+            timerItems.Add(new TrayMenu.Item { Text = Strings.MenuStopwatch, Click = () => timer.StartStopwatch() });
+            if (timer.Running) timerItems.Add(new TrayMenu.Item { Text = Strings.MenuStopTimer, Click = () => timer.Stop() });
 
-                POINT cursor;
-                GetCursorPos(out cursor);
-                SetForegroundWindow(window.Handle); // Without this the menu would not close on an outside click
-                int command = TrackPopupMenuEx(menu, TPM_RETURNCMD | TPM_RIGHTBUTTON | TPM_BOTTOMALIGN, cursor.X, cursor.Y, window.Handle, IntPtr.Zero);
-                PostMessage(window.Handle, WM_NULL, IntPtr.Zero, IntPtr.Zero);
-
-                switch (command)
+            List<TrayMenu.Item> items = new List<TrayMenu.Item>
+            {
+                new TrayMenu.Item { Text = Strings.MenuSettings, Click = openSettings },
+                new TrayMenu.Item
                 {
-                    case CmdSettings: openSettings(); break;
-                    case CmdEmpty:
-                        settings.EmptyIsland = !settings.EmptyIsland;
-                        settings.Save();
-                        changed();
-                        break;
-                    case CmdUpdates: checkForUpdates(); break;
-                    case CmdQuit: quit(); break;
-                    case CmdStopwatch: timer.StartStopwatch(); break;
-                    case CmdStopTimer: timer.Stop(); break;
-                    default:
-                        if (command > CmdMinutes) timer.StartCountdown(command - CmdMinutes);
-                        break;
-                }
-            }
-            finally
-            {
-                DestroyMenu(menu);
-            }
+                    Text = Strings.MenuEmptyIsland, Checked = settings.EmptyIsland,
+                    Click = () => { settings.EmptyIsland = !settings.EmptyIsland; settings.Save(); changed(); },
+                },
+                new TrayMenu.Item { Text = Strings.MenuTimer, Sub = timerItems },
+                new TrayMenu.Item { Separator = true },
+                new TrayMenu.Item { Text = Strings.MenuCheckUpdates, Click = checkForUpdates },
+                new TrayMenu.Item { Text = Strings.MenuQuit, Click = quit },
+            };
+            POINT cursor;
+            GetCursorPos(out cursor);
+            TrayMenu.Open(items, new Point(cursor.X, cursor.Y));
         }
 
         // A small dark pill with a light outline, readable on both light and dark taskbars.
