@@ -70,9 +70,13 @@ namespace WindowsIsland
         bool noBrightness;
         int brightnessTick;
 
+        // Slow while nothing changes (little power), fast for two seconds after a change so a held key moves smoothly
+        const int IdleMs = 250, FastMs = 40;
+        DateTime fastUntil;
+
         public LevelService(Dispatcher dispatcher)
         {
-            timer = new DispatcherTimer(DispatcherPriority.Background, dispatcher) { Interval = TimeSpan.FromMilliseconds(40) };
+            timer = new DispatcherTimer(DispatcherPriority.Background, dispatcher) { Interval = TimeSpan.FromMilliseconds(IdleMs) };
             timer.Tick += (s, e) => Poll();
         }
 
@@ -92,12 +96,18 @@ namespace WindowsIsland
             bool muted;
             if (ReadVolume(out volume, out muted)) // Every 40 ms, so a held key shows every step
             {
-                if (lastVolume >= 0 && (volume != lastVolume || muted != lastMuted)) Changed?.Invoke(Kind.Volume, volume, muted);
+                if (lastVolume >= 0 && (volume != lastVolume || muted != lastMuted))
+                {
+                    fastUntil = DateTime.Now.AddSeconds(2);
+                    timer.Interval = TimeSpan.FromMilliseconds(FastMs);
+                    Changed?.Invoke(Kind.Volume, volume, muted);
+                }
+                else if (timer.Interval.TotalMilliseconds < IdleMs && DateTime.Now > fastUntil) timer.Interval = TimeSpan.FromMilliseconds(IdleMs);
                 lastVolume = volume;
                 lastMuted = muted;
             }
 
-            if (!noBrightness && ++brightnessTick % 25 == 0) // About once a second
+            if (!noBrightness && ++brightnessTick % 12 == 0) // About every three seconds when idle, a bit more often while the volume moves
             {
                 int brightness = ReadBrightness();
                 if (brightness < 0) { if (lastBrightness < 0) noBrightness = true; }

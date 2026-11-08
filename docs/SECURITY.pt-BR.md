@@ -8,6 +8,8 @@
 |---|---|---|
 | Controles de mídia do Windows | Lê título, artista, capa, posição e estado do player atual. Envia tocar, pausar, próxima, anterior e avançar quando você clica | Mostrar e controlar a música |
 | `~/.claude/sessions` | Lê tipo, ID do processo, status, nome e horário do status de cada sessão, a cada segundo | Mostrar se o Claude Code está trabalhando ou esperando você. Nada é guardado. |
+| `~/.claude/projects/*/<sessão>.jsonl` (chats do Claude Desktop) | Com um chat ocupado, lê o final do histórico uma vez por segundo, só quando o arquivo mudou | Encontra uma chamada de ferramenta ainda sem resultado, para mostrar "aguardando você" quando o Claude Desktop pede uma permissão. Pega só nomes de ferramentas e horários, nunca o que foi dito. Nada é guardado |
+| Pasta `Notification Resources` do Chrome e do Edge | Lê o único arquivo de ícone para o qual uma notificação de site aponta, só em notificações do Chrome ou do Edge e só dentro das pastas de perfil do próprio navegador (sem links, PNG, JPEG ou ICO, até 512 KB) | Mostra o ícone do site na notificação. Nada é guardado |
 | Comando `/usage` do Claude Code | Roda a cada 2 minutos e quando você abre o painel do Claude | Guarda só as porcentagens e os horários de renovação, em memória. Não chama o modelo e não gasta tokens. |
 | `%LOCALAPPDATA%\ClaudeUsageTaskbar\usage.json` | Lê quando o arquivo muda, se existir | Usar os limites do Claude Usage Taskbar quando forem mais recentes |
 | `%LOCALAPPDATA%\Microsoft\Windows\Notifications\wpndatabase.db` | Lê, somente leitura, a cada 1,5 segundo, só com **Mostrar notificações do Windows** ligado | Mostrar app, título e texto das notificações que chegam com a ilha aberta. Nada é guardado. |
@@ -30,7 +32,9 @@
 
 ## Acesso à rede
 
-A própria ilha faz um único tipo de conexão: uns 30 segundos depois de abrir e depois a cada hora, ela baixa os arquivos de release deste repositório no GitHub, a menos que você desligue **Atualizações automáticas**. Faz o mesmo quando você clica em **Procurar atualizações**. O GitHub vê seu endereço IP, como em qualquer download. Nenhum dado do Claude ou pessoal é enviado. Uma atualização só é instalada quando a assinatura RSA bate com a chave pública embutida no app e o SHA-256 do arquivo bate com o manifesto assinado.
+A própria ilha faz um tipo principal de conexão (a segunda, abaixo, é opcional): uns 30 segundos depois de abrir e depois a cada hora, ela baixa os arquivos de release deste repositório no GitHub, a menos que você desligue **Atualizações automáticas**. Faz o mesmo quando você clica em **Procurar atualizações**. O GitHub vê seu endereço IP, como em qualquer download. Nenhum dado do Claude ou pessoal é enviado. Uma atualização só é instalada quando a assinatura RSA bate com a chave pública embutida no app e o SHA-256 do arquivo bate com o manifesto assinado.
+
+Se a extensão de navegador estiver instalada e uma aba estiver tocando som, a ilha também baixa o `/apple-touch-icon.png` público do site (só HTTPS, sem redirecionamentos, PNG de até 256 KB, uma vez por site) para mostrar um ícone nítido. O site vê um pedido comum vindo do seu endereço IP e nada mais é enviado. Esse download sai direto do seu computador, sem passar pelo proxy ou pela VPN do navegador, e também acontece em abas anônimas se a extensão estiver liberada nelas. A ilha recusa endereços que apontam para este computador ou para a rede local e dá a cada download quatro segundos e 256 KB.
 
 O comando `/usage` faz parte do Claude Code, que se conecta à Anthropic com o seu próprio login. A ilha nunca vê esse login.
 

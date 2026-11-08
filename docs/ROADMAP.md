@@ -18,6 +18,7 @@ Ideas planned for upcoming releases, in the order they are expected to land. Not
 
 ## Done
 
+- Install button for the browser extension, system monitor, tuck away, several Claude chats and Claude Desktop permissions, site icons for web audio and notifications, styled tray menu, folding Settings groups that fit their content, smoother volume bar (2.0.1 to 2.3.3)
 - Local API and command line, app names on the dots, battery as an activity, page choice, app icons on notifications, volume and brightness, device and network notes, Do not disturb moon, clock and system page, keyboard shortcut, browser extension (2.0.0)
 - Sharp islands on monitors with different display scales (1.13.0)
 - Screenshot alert, sliding tab pills, sharper Settings text (1.12.0)

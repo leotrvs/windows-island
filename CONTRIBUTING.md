@@ -17,7 +17,7 @@ pwsh -File scripts/build.ps1
 ## Rules
 
 - **Never read Claude credentials or call Anthropic's private endpoints.** Claude data comes only from the session status files Claude Code keeps, Claude Code's own `/usage` command and the limits file Claude Usage Taskbar saves. Pull requests that change this will be declined.
-- **No network access beyond updates.** The only connection is the signed update check against this repository's releases, and it can be turned off.
+- **No network access beyond updates.** The only connections are the signed update check against this repository's releases (it can be turned off) and, with the browser extension, one small icon download per site, described in SECURITY.md.
 - **Privacy-sensitive features are opt-in.** Reading notifications stays off until the user turns it on.
 - **Add every user-visible text in both English and Portuguese** in `src\Strings.cs`.
 - **Keep it light.** The island is always on screen: the render loop must stop when nothing moves, and nothing should allocate per frame without need.

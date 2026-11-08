@@ -38,6 +38,7 @@ namespace WindowsIsland
             public long Length;
             public DateTime Write;
             public Pending Oldest;
+            public DateTime SearchedAt; // When the transcript was last looked for in vain
         }
 
         static readonly Dictionary<string, Cached> cache = new Dictionary<string, Cached>();
@@ -88,8 +89,13 @@ namespace WindowsIsland
             if (string.IsNullOrEmpty(sessionId) || sessionId.IndexOfAny(new[] { '/', '\\', ':', '.' }) >= 0) return null;
             Cached entry;
             if (!cache.TryGetValue(sessionId, out entry)) { entry = new Cached(); cache[sessionId] = entry; }
-            if (entry.Path == null || !File.Exists(entry.Path)) { entry.Path = FindTranscript(sessionId); entry.Length = -1; }
-            if (entry.Path == null) return null;
+            if (entry.Path == null || !File.Exists(entry.Path))
+            {
+                if (entry.Path == null && DateTime.Now - entry.SearchedAt < TimeSpan.FromSeconds(30)) return null; // Not looked for every second
+                entry.Path = FindTranscript(sessionId);
+                entry.Length = -1;
+                if (entry.Path == null) { entry.SearchedAt = DateTime.Now; return null; }
+            }
 
             FileInfo info = new FileInfo(entry.Path);
             if (info.Length == entry.Length && info.LastWriteTimeUtc == entry.Write) return entry.Oldest;

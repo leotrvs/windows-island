@@ -303,6 +303,24 @@ namespace WindowsIsland
         readonly Dictionary<string, BitmapSource> siteIcons = new Dictionary<string, BitmapSource>();
         static readonly System.Net.Http.HttpClient web = new System.Net.Http.HttpClient(new System.Net.Http.HttpClientHandler { AllowAutoRedirect = false }) { Timeout = TimeSpan.FromSeconds(4) };
 
+        static bool IsPublic(System.Net.IPAddress address)
+        {
+            if (System.Net.IPAddress.IsLoopback(address)) return false;
+            if (address.IsIPv4MappedToIPv6) address = address.MapToIPv4();
+            byte[] b = address.GetAddressBytes();
+            if (b.Length == 4)
+            {
+                if (b[0] == 0 || b[0] == 10 || b[0] == 127 || b[0] >= 224) return false;
+                if (b[0] == 169 && b[1] == 254) return false;
+                if (b[0] == 172 && b[1] >= 16 && b[1] <= 31) return false;
+                if (b[0] == 192 && b[1] == 168) return false;
+                if (b[0] == 100 && b[1] >= 64 && b[1] <= 127) return false; // Carrier-grade NAT
+                return true;
+            }
+            if (address.IsIPv6LinkLocal || address.IsIPv6SiteLocal || address.IsIPv6Multicast || address.IsIPv6UniqueLocal) return false;
+            return true;
+        }
+
         static string HostKey(ApiMediaHint h) { return (h.Host ?? "").ToLowerInvariant(); }
 
         BitmapSource BestIcon(ApiMediaHint h)
@@ -315,7 +333,8 @@ namespace WindowsIsland
         async Task FetchSiteIconAsync(ApiMediaHint value)
         {
             string host = HostKey(value);
-            if (host.Length == 0 || host.IndexOf('.') < 0 || host.EndsWith(".local") || host.EndsWith(".internal") || Regex.IsMatch(host, @"^[0-9.]+$"))
+            if (host.Length == 0 || host.IndexOf('.') < 0 || host.IndexOf(':') >= 0 || host.EndsWith(".local") || host.EndsWith(".internal") || host.EndsWith(".lan") ||
+                Regex.IsMatch(host, @"^[0-9.]+$"))
             {
                 siteIcons[host] = null;
                 return;
@@ -326,13 +345,31 @@ namespace WindowsIsland
             {
                 icon = await Task.Run(async () =>
                 {
-                    using (System.Net.Http.HttpResponseMessage response = await web.GetAsync("https://" + host + "/apple-touch-icon.png", System.Net.Http.HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false))
+                    // Names that point at this computer or the local network are never fetched, and the whole
+                    // download (headers and body) has four seconds and 256 KB.
+                    System.Net.IPAddress[] addresses = await System.Net.Dns.GetHostAddressesAsync(host).ConfigureAwait(false);
+                    if (addresses.Length == 0) return null;
+                    foreach (System.Net.IPAddress address in addresses) if (!IsPublic(address)) return null;
+                    using (System.Threading.CancellationTokenSource limit = new System.Threading.CancellationTokenSource(TimeSpan.FromSeconds(4)))
+                    using (System.Net.Http.HttpResponseMessage response = await web.GetAsync("https://" + host + "/apple-touch-icon.png", System.Net.Http.HttpCompletionOption.ResponseHeadersRead, limit.Token).ConfigureAwait(false))
                     {
                         if (response.StatusCode != System.Net.HttpStatusCode.OK) return null;
                         long? length = response.Content.Headers.ContentLength;
                         if (length.HasValue && length.Value > 256 * 1024) return null;
-                        byte[] data = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
-                        if (data.Length < 100 || data.Length > 256 * 1024) return null;
+                        byte[] data;
+                        using (Stream body = await response.Content.ReadAsStreamAsync(limit.Token).ConfigureAwait(false))
+                        using (MemoryStream collected = new MemoryStream())
+                        {
+                            byte[] chunk = new byte[16 * 1024];
+                            int read;
+                            while ((read = await body.ReadAsync(chunk, 0, chunk.Length, limit.Token).ConfigureAwait(false)) > 0)
+                            {
+                                if (collected.Length + read > 256 * 1024) return null;
+                                collected.Write(chunk, 0, read);
+                            }
+                            data = collected.ToArray();
+                        }
+                        if (data.Length < 100) return null;
                         bool png = data[0] == 0x89 && data[1] == 0x50 && data[2] == 0x4E && data[3] == 0x47;
                         if (!png) return null;
                         using (MemoryStream stream = new MemoryStream(data, false))

@@ -8,6 +8,8 @@
 |---|---|---|
 | Windows media controls | Reads the title, artist, artwork, position and playback state of the current player. Sends play, pause, next, previous and seek when you click them | Shows and controls music |
 | `~/.claude/sessions` | Reads the kind, process ID, status, name and status time of each session, every second | Shows whether Claude Code is working or waiting for you. Nothing is stored. |
+| `~/.claude/projects/*/<session>.jsonl` (Claude Desktop chats) | While a chat is busy, reads the end of its transcript once per second, only when the file changed | Finds a tool call that has no result yet, to show "waiting for you" when Claude Desktop asks for a permission. It takes only tool names and times, never what was said. Nothing is stored |
+| Chrome's and Edge's `Notification Resources` folder | Reads the one icon file a website notification points to, only for Chrome or Edge notifications and only inside the browser's own profile folders (no links, PNG, JPEG or ICO, at most 512 KB) | Shows the site's icon on the notification. Nothing is stored |
 | Claude Code's `/usage` command | Runs it every 2 minutes and when you open the Claude panel | Keeps only the limit percentages and reset times, in memory. It makes no model call and spends no tokens. |
 | `%LOCALAPPDATA%\ClaudeUsageTaskbar\usage.json` | Reads it when it changes, if it exists | Uses Claude Usage Taskbar's limits when they are fresher |
 | `%LOCALAPPDATA%\Microsoft\Windows\Notifications\wpndatabase.db` | Reads it, read-only, every 1.5 seconds, only when **Show Windows notifications** is on | Shows the app name, title and text of notifications that arrive while the island runs. Nothing is stored. |
@@ -30,9 +32,11 @@
 
 ## Network access
 
-The island itself makes one kind of connection: about 30 seconds after it opens and then every hour, it downloads release files from this repository on GitHub, unless you turn off **Automatic updates**. It does the same when you click **Check for updates**. GitHub can see your IP address, as with any download. No Claude or personal data is sent. An update is installed only when its RSA signature matches the public key built into the app and the file's SHA-256 matches the signed manifest.
+The island itself makes one kind of connection (the second one below is optional): about 30 seconds after it opens and then every hour, it downloads release files from this repository on GitHub, unless you turn off **Automatic updates**. It does the same when you click **Check for updates**. GitHub can see your IP address, as with any download. No Claude or personal data is sent. An update is installed only when its RSA signature matches the public key built into the app and the file's SHA-256 matches the signed manifest.
 
 When the browser extension is installed and a tab is playing sound, the island also downloads that site's public `/apple-touch-icon.png` (HTTPS only, no redirects, PNG up to 256 KB, once per site) to show a sharp icon. The site sees an ordinary request from your IP address and nothing else is sent.
+
+Privacy note: this download goes out directly from your computer, not through the browser's proxy or VPN, and also happens for tabs in private windows if the extension is allowed there. The island refuses addresses that point to this computer or the local network and gives each download four seconds and 256 KB.
 
 The `/usage` command is part of Claude Code, which connects to Anthropic with your own login. The island never sees that login.
 

@@ -34,13 +34,16 @@ Uma Dynamic Island para o Windows. Música, Claude Code, os limites de uso e sua
 - **Avisos** quando o Claude termina uma tarefa ou precisa de você
 - **Notificações do Windows** na ilha, com o ícone do app que as enviou, se você ligar
 - **Duas atividades ao mesmo tempo:** a segunda se separa numa bolha ao lado da ilha
+- **Vários chats do Claude ao mesmo tempo:** a ilha os conta (por exemplo `2 · 0:58`, ou `1/2 · Aguardando` quando um de dois espera você) e a página do Claude lista cada chat com seu estado e tempo
+- **Permissões no Claude Desktop:** um chat do app de desktop do Claude que pede uma permissão ou faz uma pergunta aparece como esperando você, como no terminal
+- **Ícones de sites:** com a extensão de navegador, o áudio da web mostra o ícone do próprio site, e as notificações de sites mostram o ícone e o nome do site
 - **Movimento fluido:** forma e conteúdo mudam com molas, nunca com transições de tempo fixo
 - **Discreta:** nunca rouba o foco, cliques ao redor chegam à janela de baixo, vira uma linha fina quando há uma janela maximizada na frente e some em tela cheia
 - **Leve:** cerca de 40 MB de memória e menos de 1% de CPU com música tocando
 - Instala só para o seu usuário, com atalhos no menu Iniciar e na Área de Trabalho e início com o Windows
 - Inglês e português do Brasil
 - Atualizações automáticas assinadas
-- **Nunca lê seu login ou token do Claude**. A única conexão é a verificação de atualizações neste repositório
+- **Nunca lê seu login ou token do Claude**. As únicas conexões são a verificação de atualizações neste repositório e, se você usa a extensão de navegador, o download de um ícone pequeno por site
 
 ## Estados
 
@@ -55,6 +58,10 @@ Uma Dynamic Island para o Windows. Música, Claude Code, os limites de uso e sua
 | Bateria carregando | <img src="docs/images/battery-charging-pt.png" alt="Aviso de carregamento" width="420"> |
 | Bateria baixa | <img src="docs/images/battery-low-pt.png" alt="Aviso de bateria baixa" width="420"> |
 | Claude expandido, com os limites | <img src="docs/images/claudeexpanded-pt.png" alt="Claude expandido com os anéis de uso" width="460"> |
+| Monitor do sistema: anéis, barras ou números | <img src="docs/images/systemcompact-pt.png" alt="Monitor do sistema: anéis, barras ou números" width="260"> |
+|  | <img src="docs/images/systemcompact-bars-pt.png" alt="Monitor do sistema: anéis, barras ou números" width="260"> |
+|  | <img src="docs/images/systemcompact-numbers-pt.png" alt="Monitor do sistema: anéis, barras ou números" width="260"> |
+| Volume ou brilho mudando | <img src="docs/images/level-pt.png" alt="Volume bar" width="260"> |
 
 ## Instalar
 
@@ -69,7 +76,7 @@ Para testar sem instalar, rode `WindowsIsland.exe --portable`.
 1. **Passe o mouse** sobre a ilha para expandir, ou **clique** nela. Tire o mouse e ela recolhe.
 2. **Clique** na barra de progresso para ir até aquele ponto da música.
 3. **Clique** num aviso ou notificação para dispensar.
-4. **Clique** no ícone da bandeja, ou abra o atalho do Windows Island com ele rodando, para abrir os **Ajustes**. Clique com o botão direito no ícone para as ações rápidas e **Sair**.
+4. **Clique** no ícone da bandeja, ou abra o atalho do Windows Island com ele rodando, para abrir os **Ajustes**. Clique com o botão direito no ícone para as ações rápidas e **Sair**. Clique de novo no ícone da bandeja para fechar os Ajustes.
 
 <img src="docs/images/settings-pt.png" alt="A janela de ajustes" width="320">
 
@@ -102,10 +109,11 @@ Para testar sem instalar, rode `WindowsIsland.exe --portable`.
 
 ## Como os dados são lidos
 
-- **Atividade do Claude:** o Claude Code mantém um arquivo pequeno por sessão aberta em `~/.claude/sessions`. A ilha lê apenas o tipo, o ID do processo, o status, o nome e o horário do status. Funciona com o terminal e com o app de desktop.
+- **Atividade do Claude:** o Claude Code mantém um arquivo pequeno por sessão aberta em `~/.claude/sessions`. A ilha lê apenas o tipo, o ID do processo, o status, o nome e o horário do status. Funciona com o terminal e com o app de desktop. O app de desktop mantém um chat como ocupado enquanto pede uma permissão, então a ilha também lê o histórico do chat, só nomes de ferramentas e horários, nunca o que foi dito, para saber que uma ferramenta espera a sua resposta.
 - **Limites do Claude:** a cada 2 minutos, e quando você abre o painel do Claude, a ilha roda `claude -p /usage` em segundo plano, os mesmos números que você vê no Claude Code. Não chama o modelo e não gasta tokens. Se o [Claude Usage Taskbar](https://github.com/leotrvs/claude-usage-taskbar) estiver instalado e tiver números mais recentes, a ilha usa esses.
 - **Codex:** o Codex guarda cada sessão como um arquivo em `~/.codex/sessions`. A cada 2 segundos a ilha lê o final do mais recente e pega só se a última tarefa começou ou terminou e as porcentagens de limite que o Codex registrou. Elas se atualizam sempre que você usa o Codex. O login do Codex nunca é lido.
 - **Notificações:** a API oficial do Windows para ler notificações exige um pacote assinado, então a ilha lê, somente leitura, o banco local onde o Windows as guarda. Mostra só as notificações que chegam enquanto ela está aberta e não guarda nada. O Windows continua mostrando o próprio aviso: desligue **Mostrar faixas de notificação** de um app nas Configurações do Windows se quiser só a ilha.
+- **Ícones de sites:** com a extensão de navegador instalada e uma aba tocando som, a ilha baixa uma vez o `apple-touch-icon.png` público do site (só HTTPS, sem redirecionamentos, um PNG pequeno) para mostrar um ícone nítido. O site vê um pedido comum vindo do seu endereço IP. As notificações de sites do Chrome ou do Edge trazem o ícone do site como um arquivo que o próprio navegador salva na pasta `Notification Resources`; a ilha lê só esse arquivo.
 
 Detalhes em [SECURITY.md](docs/SECURITY.pt-BR.md).
 

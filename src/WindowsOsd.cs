@@ -9,8 +9,8 @@ namespace WindowsIsland
     // XamlExplorerHostIslandWindow) that becomes visible for a moment. A window-event hook (the same call
     // screen readers use) tells this app the moment such a window is shown, and it is hidden at once, so there
     // is no polling and no visible flash even while a key is held. Only small windows of that class are touched,
-    // and Windows shows the window again by itself the next time, so quitting the island or turning this off
-    // restores the normal popup. A Windows update may change the window and stop this from working.
+    // and the island gives the popup back when this is turned off, when it quits and at its next start, even
+    // after a crash. A Windows update may change the window and stop this from working.
     sealed class WindowsOsd
     {
         const string ClassName = "XamlExplorerHostIslandWindow";
@@ -30,6 +30,7 @@ namespace WindowsIsland
         [DllImport("user32.dll")] static extern int GetWindowLong(IntPtr h, int index);
         [DllImport("user32.dll")] static extern int SetWindowLong(IntPtr h, int index, int value);
         [DllImport("user32.dll")] static extern bool SetLayeredWindowAttributes(IntPtr h, uint key, byte alpha, uint flags);
+        [DllImport("user32.dll")] static extern bool GetLayeredWindowAttributes(IntPtr h, out uint key, out byte alpha, out uint flags);
         const int GWL_EXSTYLE = -20, WS_EX_LAYERED = 0x80000;
         const uint LWA_ALPHA = 2;
 
@@ -52,6 +53,30 @@ namespace WindowsIsland
         public WindowsOsd()
         {
             callback = OnEvent;
+            RestoreStale();
+        }
+
+        // If a earlier run of the island ended without turning this off (a crash, or being closed from the Task
+        // Manager), its popup window may still be fully transparent. Any such window is given back at start-up.
+        void RestoreStale()
+        {
+            try
+            {
+                for (IntPtr found = FindWindowEx(IntPtr.Zero, IntPtr.Zero, ClassName, null); found != IntPtr.Zero; found = FindWindowEx(IntPtr.Zero, found, ClassName, null))
+                {
+                    RECT box;
+                    if (!IsPopup(found, out box)) continue;
+                    int style = GetWindowLong(found, GWL_EXSTYLE);
+                    uint key, flags;
+                    byte alpha;
+                    if ((style & WS_EX_LAYERED) != 0 && GetLayeredWindowAttributes(found, out key, out alpha, out flags) && alpha == 0)
+                    {
+                        SetLayeredWindowAttributes(found, 0, 255, LWA_ALPHA);
+                        SetWindowLong(found, GWL_EXSTYLE, style & ~WS_EX_LAYERED);
+                    }
+                }
+            }
+            catch (Exception) { }
         }
 
         // The popup's window stays around between uses. Making it fully transparent ahead of time means that even
@@ -127,6 +152,7 @@ namespace WindowsIsland
             else if (!on && thread != null)
             {
                 PostThreadMessage(threadId, WM_QUIT, IntPtr.Zero, IntPtr.Zero);
+                thread.Join(2000); // The hook is gone before the window is given back, so it cannot be hidden again
                 thread = null;
                 Restore();
             }

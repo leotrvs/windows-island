@@ -38,7 +38,18 @@ namespace WindowsIsland
                 using (FileStream target = File.Create(Path.Combine(dir, file)))
                     source.CopyTo(target);
             }
-            File.WriteAllText(Path.Combine(dir, "config.json"), "{\"port\":" + port + ",\"token\":\"" + token + "\"}");
+            string config = Path.Combine(dir, "config.json");
+            File.WriteAllText(config, "{\"port\":" + port + ",\"token\":\"" + token + "\"}");
+            try
+            {
+                // Only this Windows user may read the token
+                System.Security.AccessControl.FileSecurity security = new System.Security.AccessControl.FileSecurity();
+                security.SetAccessRuleProtection(true, false);
+                using (System.Security.Principal.WindowsIdentity me = System.Security.Principal.WindowsIdentity.GetCurrent())
+                    security.AddAccessRule(new System.Security.AccessControl.FileSystemAccessRule(me.User, System.Security.AccessControl.FileSystemRights.FullControl, System.Security.AccessControl.AccessControlType.Allow));
+                new FileInfo(config).SetAccessControl(security);
+            }
+            catch (Exception) { }
             return dir;
         }
 
@@ -109,9 +120,15 @@ namespace WindowsIsland
                     if (!NewTabInFront(processName)) continue;
                     Thread.Sleep(350); // The address bar needs a moment to take the focus
                     if (!NewTabInFront(processName)) return;
-                    Press(VK_CONTROL, VK_L); // Select the address bar
-                    foreach (char ch in address) Unicode(ch);
-                    Tap(VK_RETURN);
+                    // One batch, so nothing can come between the keys and the focus cannot move halfway
+                    System.Collections.Generic.List<INPUT> keys = new System.Collections.Generic.List<INPUT>
+                    {
+                        Key(VK_CONTROL, 0, 0), Key(VK_L, 0, 0), Key(VK_L, 0, KEYEVENTF_KEYUP), Key(VK_CONTROL, 0, KEYEVENTF_KEYUP),
+                    };
+                    foreach (char ch in address) { keys.Add(Key(0, ch, KEYEVENTF_UNICODE)); keys.Add(Key(0, ch, KEYEVENTF_UNICODE | KEYEVENTF_KEYUP)); }
+                    keys.Add(Key(VK_RETURN, 0, 0)); keys.Add(Key(VK_RETURN, 0, KEYEVENTF_KEYUP));
+                    if (!NewTabInFront(processName)) return;
+                    SendInput((uint)keys.Count, keys.ToArray(), Marshal.SizeOf(typeof(INPUT)));
                     return;
                 }
             }

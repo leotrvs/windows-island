@@ -34,13 +34,16 @@ Una Dynamic Island para Windows. La música, Claude Code, sus límites de uso y 
 - **Avisos** cuando Claude termina una tarea o te necesita
 - **Notificaciones de Windows** en la isla, con el icono de la app que las envió, si las activas
 - **Dos actividades a la vez:** la segunda se separa en una burbuja junto a la isla
+- **Varios chats de Claude a la vez:** la isla los cuenta (por ejemplo `2 · 0:58`, o `1/2 · Esperando` cuando uno de dos te espera) y la página de Claude lista cada chat con su estado y tiempo
+- **Permisos en Claude Desktop:** un chat de la app de escritorio de Claude que pide un permiso o hace una pregunta aparece como esperándote, igual que en el terminal
+- **Iconos de sitios:** con la extensión del navegador, el audio web muestra el icono del propio sitio, y las notificaciones de sitios muestran el icono y el nombre del sitio
 - **Movimiento fluido:** la forma y el contenido cambian con resortes, nunca con transiciones de duración fija
 - **Discreta:** nunca toma el foco, los clics a su alrededor llegan a la ventana de abajo, se reduce a una línea fina cuando hay una ventana maximizada delante y se oculta en pantalla completa
 - **Ligera:** unos 40 MB de memoria y menos del 1% de CPU con música sonando
 - Se instala solo para tu usuario, con accesos directos en el menú Inicio y el Escritorio e inicio con Windows
 - Inglés y portugués de Brasil
 - Actualizaciones automáticas firmadas
-- **Nunca lee tu inicio de sesión ni tu token de Claude**. Su única conexión es buscar actualizaciones en este repositorio
+- **Nunca lee tu inicio de sesión ni tu token de Claude**. Sus únicas conexiones son buscar actualizaciones en este repositorio y, si usas la extensión del navegador, la descarga de un icono pequeño por sitio
 
 ## Estados
 
@@ -55,6 +58,10 @@ Una Dynamic Island para Windows. La música, Claude Code, sus límites de uso y 
 | Batería cargando | <img src="docs/images/battery-charging-en.png" alt="Aviso de carga" width="420"> |
 | Batería baja | <img src="docs/images/battery-low-en.png" alt="Aviso de batería baja" width="420"> |
 | Claude expandido, con los límites | <img src="docs/images/claudeexpanded-en.png" alt="Claude expandido con los anillos de uso" width="460"> |
+| Monitor del sistema: anillos, barras o números | <img src="docs/images/systemcompact-en.png" alt="Monitor del sistema: anillos, barras o números" width="260"> |
+|  | <img src="docs/images/systemcompact-bars-en.png" alt="Monitor del sistema: anillos, barras o números" width="260"> |
+|  | <img src="docs/images/systemcompact-numbers-en.png" alt="Monitor del sistema: anillos, barras o números" width="260"> |
+| Volumen o brillo cambiando | <img src="docs/images/level-en.png" alt="Volume bar" width="260"> |
 
 ## Instalar
 
@@ -69,7 +76,7 @@ Para probarla sin instalar, ejecuta `WindowsIsland.exe --portable`.
 1. **Pasa el ratón** sobre la isla para expandirla, o **haz clic** en ella. Aparta el ratón y se contrae.
 2. **Haz clic** en la barra de progreso para saltar a ese punto de la canción.
 3. **Haz clic** en un aviso o notificación para descartarlo.
-4. **Haz clic** en el icono de la bandeja, o abre el acceso directo de Windows Island mientras se ejecuta, para abrir **Settings**. Haz clic derecho en el icono para las acciones rápidas y **Salir**.
+4. **Haz clic** en el icono de la bandeja, o abre el acceso directo de Windows Island mientras se ejecuta, para abrir **Settings**. Haz clic derecho en el icono para las acciones rápidas y **Salir**. Haz clic de nuevo en el icono de la bandeja para cerrar Settings.
 
 <img src="docs/images/settings-en.png" alt="La ventana de ajustes" width="320">
 
@@ -104,10 +111,11 @@ La app está en inglés y portugués, por eso las opciones aparecen en inglés.
 
 ## Cómo se leen los datos
 
-- **Actividad de Claude:** Claude Code guarda un archivo pequeño por cada sesión abierta en `~/.claude/sessions`. La isla lee solo su tipo, el ID del proceso, el estado, el nombre y la hora del estado. Funciona con la terminal y con la app de escritorio.
+- **Actividad de Claude:** Claude Code guarda un archivo pequeño por cada sesión abierta en `~/.claude/sessions`. La isla lee solo su tipo, el ID del proceso, el estado, el nombre y la hora del estado. Funciona con la terminal y con la app de escritorio. La app de escritorio mantiene un chat como ocupado mientras pide un permiso, así que la isla también lee la transcripción del chat, solo nombres de herramientas y horas y nunca lo que se dijo, para saber que una herramienta espera tu respuesta.
 - **Límites de Claude:** cada 2 minutos, y al abrir el panel de Claude, la isla ejecuta `claude -p /usage` en segundo plano, los mismos números que ves en Claude Code. No llama al modelo ni gasta tokens. Si [Claude Usage Taskbar](https://github.com/leotrvs/claude-usage-taskbar) está instalado y tiene números más recientes, la isla usa esos.
 - **Codex:** Codex guarda cada sesión como un archivo en `~/.codex/sessions`. Cada 2 segundos la isla lee el final del más reciente y toma solo si la última tarea empezó o terminó y los porcentajes de límite que Codex registró. Se actualizan cada vez que usas Codex. Nunca lee el inicio de sesión de Codex.
 - **Notificaciones:** la API oficial de Windows para leer notificaciones necesita un paquete firmado, así que la isla lee, solo lectura, la base de datos local donde Windows las guarda. Muestra solo las notificaciones que llegan mientras está abierta y no guarda nada. Windows sigue mostrando su propio aviso: desactiva los avisos de notificación de una app en la Configuración de Windows si solo quieres la isla.
+- **Iconos de sitios:** con la extensión del navegador instalada y una pestaña que reproduce sonido, la isla descarga una vez el `apple-touch-icon.png` público del sitio (solo HTTPS, sin redirecciones, un PNG pequeño) para mostrar un icono nítido. El sitio ve una petición normal desde tu dirección IP. Las notificaciones de sitios de Chrome o Edge traen el icono del sitio como un archivo que el propio navegador guarda en su carpeta `Notification Resources`; la isla lee solo ese archivo.
 
 Los detalles están en [SECURITY.md](SECURITY.md).
 

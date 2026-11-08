@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.3.4
+
+- Settings footer shows the GitHub mark and `@leotrvs/windows-island` (a link to the project)
+- **Security review:** the site-icon download refuses addresses on this computer or the local network and has a 4 second, 256 KB limit for the whole transfer; website notification icons are read only from Chrome's and Edge's own folders, never through links, and only if they are PNG, JPEG or ICO; the extension's `config.json` is readable only by your Windows user; the extension button types the address in one batch; the API token is kept out of the Win+V clipboard history; the Windows volume popup is given back at the next start even after a crash
+- **Performance:** the volume is read every 250 ms and only every 40 ms for two seconds after a change; the transcript of a chat that cannot be found is not searched for every second
+- README images and GIFs regenerated, READMEs and security notes updated for the new features
+
+
 ## 2.3.3
 
 - Settings footer: the version (Windows Island v2.3.3) on the left and a link to the project on GitHub on the right

@@ -185,7 +185,7 @@ namespace WindowsIsland
                 if (texts.Count == 0) return null;
                 // A website's notification (through Chrome or Edge) carries the site's own icon as a file in the
                 // browser's Notification Resources folder and the site name as attribution.
-                System.Windows.Media.ImageSource siteIcon = SiteIcon(xml);
+                System.Windows.Media.ImageSource siteIcon = SiteIcon(xml, handler);
                 string site = xml.Descendants("text").Where(t => (string)t.Attribute("placement") == "attribution").Select(t => t.Value.Trim()).FirstOrDefault();
                 return new IslandNotification
                 {
@@ -204,20 +204,34 @@ namespace WindowsIsland
         // The icon file of a browser notification. The path comes from a database any app can write to, so it
         // is only opened when it is a plain file directly inside a "Notification Resources" folder under the
         // user's local app data, and small.
-        static System.Windows.Media.ImageSource SiteIcon(XDocument xml)
+        static System.Windows.Media.ImageSource SiteIcon(XDocument xml, string handler)
         {
             try
             {
+                // Only notifications that come from Chrome or Edge themselves
+                string who = (handler ?? "").ToLowerInvariant();
+                bool chrome = who == "chrome" || who.StartsWith("chrome.") || who.Contains("chrome");
+                bool edge = who.Contains("msedge") || who.Contains("microsoftedge") || who == "edge";
+                if (!chrome && !edge) return null;
                 string src = xml.Descendants("image").Where(i => (string)i.Attribute("placement") == "appLogoOverride")
                     .Select(i => (string)i.Attribute("src")).FirstOrDefault();
                 if (string.IsNullOrEmpty(src) || src.Length > 400 || src.StartsWith("file:", StringComparison.OrdinalIgnoreCase)) return null;
                 string full = Path.GetFullPath(src);
-                string root = Path.GetFullPath(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)) + Path.DirectorySeparatorChar;
+                string local = Path.GetFullPath(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData));
+                string profiles = Path.Combine(local, chrome ? Path.Combine("Google", "Chrome", "User Data") : Path.Combine("Microsoft", "Edge", "User Data")) + Path.DirectorySeparatorChar;
                 string folder = Path.GetFileName(Path.GetDirectoryName(full) ?? "");
-                if (!full.StartsWith(root, StringComparison.OrdinalIgnoreCase) || !string.Equals(folder, "Notification Resources", StringComparison.OrdinalIgnoreCase)) return null;
+                if (!full.StartsWith(profiles, StringComparison.OrdinalIgnoreCase) || !string.Equals(folder, "Notification Resources", StringComparison.OrdinalIgnoreCase)) return null;
                 FileInfo info = new FileInfo(full);
-                if (!info.Exists || info.Length == 0 || info.Length > 512 * 1024) return null;
+                if (!info.Exists || info.Length < 16 || info.Length > 512 * 1024) return null;
+                // Not a link to somewhere else (a link could point at a network share)
+                if ((info.Attributes & FileAttributes.ReparsePoint) != 0) return null;
+                for (DirectoryInfo up = info.Directory; up != null && up.FullName.Length >= local.Length; up = up.Parent)
+                    if ((up.Attributes & FileAttributes.ReparsePoint) != 0) return null;
                 byte[] bytes = File.ReadAllBytes(full);
+                bool png = bytes[0] == 0x89 && bytes[1] == 0x50 && bytes[2] == 0x4E && bytes[3] == 0x47;
+                bool jpeg = bytes[0] == 0xFF && bytes[1] == 0xD8 && bytes[2] == 0xFF;
+                bool ico = bytes[0] == 0 && bytes[1] == 0 && bytes[2] == 1 && bytes[3] == 0;
+                if (!png && !jpeg && !ico) return null;
                 using (MemoryStream stream = new MemoryStream(bytes))
                 {
                     System.Windows.Media.Imaging.BitmapImage image = new System.Windows.Media.Imaging.BitmapImage();
@@ -227,6 +241,7 @@ namespace WindowsIsland
                     image.StreamSource = stream;
                     image.EndInit();
                     image.Freeze();
+                    if (image.PixelWidth > 4096 || image.PixelHeight > 4096) return null;
                     return image;
                 }
             }

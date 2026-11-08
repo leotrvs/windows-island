@@ -34,13 +34,16 @@ A Dynamic Island for Windows. Music, Claude Code, its usage limits and your noti
 - **Alerts** when Claude finishes a task or needs you
 - **Windows notifications** in the island, with the sending app's icon, if you turn them on
 - **Two activities at once:** the second one splits off into a bubble beside the island
+- **Several Claude chats at once:** the island counts them (for example `2 · 0:58`, or `1/2 · Waiting` when one of two waits for you) and the Claude page lists each chat with its own state and time
+- **Claude Desktop permissions:** a chat in the Claude desktop app that asks for a permission or puts a question shows as waiting for you, like in the terminal
+- **Website icons:** with the browser extension, web audio shows the site's own icon, and website notifications show the site's icon and name
 - **Fluid motion:** shape and content morph with springs, never with fixed-time fades
 - **Discreet:** it never takes focus, clicks around it reach the window below, it shrinks to a thin line when a maximized window is in front and it hides in fullscreen
 - **Light:** about 40 MB of memory and under 1% CPU while music plays
 - Installs for your user only, with Start menu and Desktop shortcuts and start with Windows
 - English and Brazilian Portuguese
 - Signed automatic updates
-- **Never reads your Claude login or token**. Its only connection is checking this repository for updates
+- **Never reads your Claude login or token**. Its only connections are checking this repository for updates and, if you use the browser extension, one small icon download per site
 
 ## States
 
@@ -55,6 +58,10 @@ A Dynamic Island for Windows. Music, Claude Code, its usage limits and your noti
 | Battery charging | <img src="docs/images/battery-charging-en.png" alt="Charging alert" width="420"> |
 | Battery low | <img src="docs/images/battery-low-en.png" alt="Low battery alert" width="420"> |
 | Claude expanded, with the limits | <img src="docs/images/claudeexpanded-en.png" alt="Claude expanded with usage rings" width="460"> |
+| System monitor: rings, bars or numbers | <img src="docs/images/systemcompact-en.png" alt="System monitor: rings, bars or numbers" width="260"> |
+|  | <img src="docs/images/systemcompact-bars-en.png" alt="System monitor: rings, bars or numbers" width="260"> |
+|  | <img src="docs/images/systemcompact-numbers-en.png" alt="System monitor: rings, bars or numbers" width="260"> |
+| Volume or brightness changing | <img src="docs/images/level-en.png" alt="Volume bar" width="260"> |
 
 ## Install
 
@@ -69,7 +76,7 @@ To try it without installing, run `WindowsIsland.exe --portable`.
 1. **Hover** over the island to expand it, or **click** it. Move the mouse away and it collapses.
 2. **Click** the progress bar to jump to that point of the song.
 3. **Click** an alert or notification to dismiss it.
-4. **Click** the tray icon, or open the Windows Island shortcut while it runs, to open **Settings**. Right-click the icon for quick actions and **Quit**.
+4. **Click** the tray icon, or open the Windows Island shortcut while it runs, to open **Settings**. Right-click the icon for quick actions and **Quit**. Click the tray icon again to close Settings.
 
 <img src="docs/images/settings-en.png" alt="The settings window" width="320">
 
@@ -102,10 +109,11 @@ To try it without installing, run `WindowsIsland.exe --portable`.
 
 ## How the data is read
 
-- **Claude activity:** Claude Code keeps one small file per running session in `~/.claude/sessions`. The island reads only its kind, process ID, status, name and status time. It works with the terminal and with the desktop app.
+- **Claude activity:** Claude Code keeps one small file per running session in `~/.claude/sessions`. The island reads only its kind, process ID, status, name and status time. It works with the terminal and with the desktop app. Claude Desktop keeps a chat marked busy while it asks you for a permission, so the island also reads the chat's transcript, only tool names and times and never what was said, to know that a tool is waiting for your answer.
 - **Claude limits:** every 2 minutes, and when you open the Claude panel, the island runs `claude -p /usage` in the background, the same numbers you see in Claude Code. It makes no model call and spends no tokens. If [Claude Usage Taskbar](https://github.com/leotrvs/claude-usage-taskbar) is installed and has fresher numbers, the island uses those.
 - **Codex:** Codex keeps each session as a file in `~/.codex/sessions`. Every 2 seconds the island reads the end of the newest one and takes only whether the last task started or finished and the limit percentages Codex recorded. They update whenever you use Codex. It never reads Codex's login.
 - **Notifications:** the official Windows API for reading notifications needs a signed package, so the island reads, read-only, the local database where Windows keeps them. It shows only notifications that arrive while it runs and stores nothing. Windows still shows its own banner too: turn off **Show notification banners** for an app in Windows Settings if you only want the island.
+- **Website icons:** with the browser extension installed and a tab playing sound, the island downloads that site's public `apple-touch-icon.png` once (HTTPS only, no redirects, a small PNG) to show a sharp icon. The site sees an ordinary request from your IP address. Website notifications from Chrome or Edge carry the site's icon as a file that the browser itself saves in its `Notification Resources` folder; the island reads only that file.
 
 Details are in [SECURITY.md](SECURITY.md).
 
