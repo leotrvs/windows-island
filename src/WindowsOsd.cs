@@ -26,6 +26,12 @@ namespace WindowsIsland
         [DllImport("user32.dll")] static extern bool IsWindowVisible(IntPtr h);
         [DllImport("user32.dll")] static extern bool GetWindowRect(IntPtr h, out RECT r);
         [DllImport("user32.dll")] static extern bool ShowWindow(IntPtr h, int cmd);
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)] static extern IntPtr FindWindowEx(IntPtr parent, IntPtr after, string cls, string title);
+        [DllImport("user32.dll")] static extern int GetWindowLong(IntPtr h, int index);
+        [DllImport("user32.dll")] static extern int SetWindowLong(IntPtr h, int index, int value);
+        [DllImport("user32.dll")] static extern bool SetLayeredWindowAttributes(IntPtr h, uint key, byte alpha, uint flags);
+        const int GWL_EXSTYLE = -20, WS_EX_LAYERED = 0x80000;
+        const uint LWA_ALPHA = 2;
 
         [StructLayout(LayoutKind.Sequential)] struct RECT { public int L, T, R, B; }
 
@@ -41,9 +47,54 @@ namespace WindowsIsland
         System.Threading.Thread thread;
         uint threadId;
 
+        readonly System.Collections.Generic.HashSet<IntPtr> seeded = new System.Collections.Generic.HashSet<IntPtr>();
+
         public WindowsOsd()
         {
             callback = OnEvent;
+        }
+
+        // The popup's window stays around between uses. Making it fully transparent ahead of time means that even
+        // the instant between Windows showing it and this app hiding it shows nothing, so there is no flash.
+        void Seed(IntPtr hwnd)
+        {
+            lock (seeded)
+            {
+                if (seeded.Contains(hwnd)) return;
+                int style = GetWindowLong(hwnd, GWL_EXSTYLE);
+                if ((style & WS_EX_LAYERED) != 0) return; // Already layered by something else: leave it alone
+                SetWindowLong(hwnd, GWL_EXSTYLE, style | WS_EX_LAYERED);
+                SetLayeredWindowAttributes(hwnd, 0, 0, LWA_ALPHA);
+                seeded.Add(hwnd);
+            }
+        }
+
+        // Gives the popup back exactly as Windows made it.
+        void Restore()
+        {
+            lock (seeded)
+            {
+                foreach (IntPtr hwnd in seeded)
+                {
+                    try
+                    {
+                        SetLayeredWindowAttributes(hwnd, 0, 255, LWA_ALPHA);
+                        SetWindowLong(hwnd, GWL_EXSTYLE, GetWindowLong(hwnd, GWL_EXSTYLE) & ~WS_EX_LAYERED);
+                    }
+                    catch (Exception) { }
+                }
+                seeded.Clear();
+            }
+        }
+
+        static bool IsPopup(IntPtr hwnd, out RECT r)
+        {
+            r = new RECT();
+            StringBuilder name = new StringBuilder(64);
+            if (GetClassName(hwnd, name, 64) == 0 || name.ToString() != ClassName) return false;
+            if (!GetWindowRect(hwnd, out r)) return false;
+            int w = r.R - r.L, h = r.B - r.T;
+            return w > 0 && w < 500 && h > 0 && h < 200;
         }
 
         // The hook lives on its own thread with its own message loop, so the island's animations on the
@@ -59,6 +110,11 @@ namespace WindowsIsland
                     IntPtr show = SetWinEventHook(EVENT_OBJECT_SHOW, EVENT_OBJECT_SHOW, IntPtr.Zero, callback, 0, 0, WINEVENT_OUTOFCONTEXT);
                     IntPtr uncloak = SetWinEventHook(EVENT_OBJECT_UNCLOAKED, EVENT_OBJECT_UNCLOAKED, IntPtr.Zero, callback, 0, 0, WINEVENT_OUTOFCONTEXT);
                     IntPtr move = SetWinEventHook(EVENT_OBJECT_LOCATIONCHANGE, EVENT_OBJECT_LOCATIONCHANGE, IntPtr.Zero, callback, 0, 0, WINEVENT_OUTOFCONTEXT);
+                    for (IntPtr found = FindWindowEx(IntPtr.Zero, IntPtr.Zero, ClassName, null); found != IntPtr.Zero; found = FindWindowEx(IntPtr.Zero, found, ClassName, null))
+                    {
+                        RECT box;
+                        if (IsPopup(found, out box)) Seed(found);
+                    }
                     ready.Set();
                     MSG msg;
                     while (GetMessage(out msg, IntPtr.Zero, 0, 0) > 0) { TranslateMessage(ref msg); DispatchMessage(ref msg); }
@@ -72,6 +128,7 @@ namespace WindowsIsland
             {
                 PostThreadMessage(threadId, WM_QUIT, IntPtr.Zero, IntPtr.Zero);
                 thread = null;
+                Restore();
             }
         }
 
@@ -80,11 +137,10 @@ namespace WindowsIsland
             if (idObject != OBJID_WINDOW || hwnd == IntPtr.Zero) return;
             try
             {
-                StringBuilder name = new StringBuilder(64);
-                if (GetClassName(hwnd, name, 64) == 0 || name.ToString() != ClassName) return;
-                if (!IsWindowVisible(hwnd) || !GetWindowRect(hwnd, out RECT r)) return;
-                int w = r.R - r.L, h = r.B - r.T;
-                if (w > 0 && w < 500 && h > 0 && h < 200) ShowWindow(hwnd, 0);
+                RECT r;
+                if (!IsPopup(hwnd, out r)) return;
+                Seed(hwnd);
+                if (IsWindowVisible(hwnd)) ShowWindow(hwnd, 0);
             }
             catch (Exception) { }
         }

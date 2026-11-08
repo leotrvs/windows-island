@@ -383,6 +383,7 @@ namespace WindowsIsland
             tray?.Dispose();
             screenshots?.Dispose();
             api?.Stop();
+            osd?.Apply(false); // Gives Windows its volume popup back
             if (ownsMutex)
             {
                 try { singleInstance.ReleaseMutex(); }

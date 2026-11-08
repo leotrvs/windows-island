@@ -72,7 +72,7 @@ namespace WindowsIsland
 
         public LevelService(Dispatcher dispatcher)
         {
-            timer = new DispatcherTimer(DispatcherPriority.Background, dispatcher) { Interval = TimeSpan.FromMilliseconds(250) };
+            timer = new DispatcherTimer(DispatcherPriority.Background, dispatcher) { Interval = TimeSpan.FromMilliseconds(40) };
             timer.Tick += (s, e) => Poll();
         }
 
@@ -84,20 +84,20 @@ namespace WindowsIsland
             timer.Start();
         }
 
-        public void Stop() { timer.Stop(); }
+        public void Stop() { timer.Stop(); ReleaseEndpoint(); }
 
         void Poll()
         {
             int volume;
             bool muted;
-            if (ReadVolume(out volume, out muted))
+            if (ReadVolume(out volume, out muted)) // Every 40 ms, so a held key shows every step
             {
                 if (lastVolume >= 0 && (volume != lastVolume || muted != lastMuted)) Changed?.Invoke(Kind.Volume, volume, muted);
                 lastVolume = volume;
                 lastMuted = muted;
             }
 
-            if (!noBrightness && ++brightnessTick % 4 == 0) // About once a second
+            if (!noBrightness && ++brightnessTick % 25 == 0) // About once a second
             {
                 int brightness = ReadBrightness();
                 if (brightness < 0) { if (lastBrightness < 0) noBrightness = true; }
@@ -109,35 +109,54 @@ namespace WindowsIsland
             }
         }
 
-        static bool ReadVolume(out int percent, out bool muted)
+        // The volume control is kept between readings (opening it every 40 ms would be wasteful) and renewed every
+        // few seconds, so a changed default speaker is followed.
+        object endpoint;
+        IAudioEndpointVolume endpointVolume;
+        int volumeReads;
+
+        void ReleaseEndpoint()
+        {
+            if (endpoint != null) { try { Marshal.ReleaseComObject(endpoint); } catch (Exception) { } }
+            endpoint = null;
+            endpointVolume = null;
+        }
+
+        bool ReadVolume(out int percent, out bool muted)
         {
             percent = 0;
             muted = false;
-            object endpoint = null;
-            IMMDevice device = null;
-            IMMDeviceEnumerator enumerator = null;
             try
             {
-                enumerator = (IMMDeviceEnumerator)new MMDeviceEnumerator();
-                enumerator.GetDefaultAudioEndpoint(eRender, eMultimedia, out device);
-                Guid id = typeof(IAudioEndpointVolume).GUID;
-                device.Activate(ref id, CLSCTX_ALL, IntPtr.Zero, out endpoint);
-                IAudioEndpointVolume volume = (IAudioEndpointVolume)endpoint;
+                if (endpointVolume == null || ++volumeReads % 75 == 0)
+                {
+                    ReleaseEndpoint();
+                    IMMDevice device = null;
+                    IMMDeviceEnumerator enumerator = null;
+                    try
+                    {
+                        enumerator = (IMMDeviceEnumerator)new MMDeviceEnumerator();
+                        enumerator.GetDefaultAudioEndpoint(eRender, eMultimedia, out device);
+                        Guid id = typeof(IAudioEndpointVolume).GUID;
+                        device.Activate(ref id, CLSCTX_ALL, IntPtr.Zero, out endpoint);
+                        endpointVolume = (IAudioEndpointVolume)endpoint;
+                    }
+                    finally
+                    {
+                        if (device != null) Marshal.ReleaseComObject(device);
+                        if (enumerator != null) Marshal.ReleaseComObject(enumerator);
+                    }
+                }
                 float level;
-                volume.GetMasterVolumeLevelScalar(out level);
-                volume.GetMute(out muted);
+                endpointVolume.GetMasterVolumeLevelScalar(out level);
+                endpointVolume.GetMute(out muted);
                 percent = (int)Math.Round(Math.Clamp(level, 0f, 1f) * 100);
                 return true;
             }
             catch (Exception)
             {
+                ReleaseEndpoint();
                 return false;
-            }
-            finally
-            {
-                if (endpoint != null) Marshal.ReleaseComObject(endpoint);
-                if (device != null) Marshal.ReleaseComObject(device);
-                if (enumerator != null) Marshal.ReleaseComObject(enumerator);
             }
         }
 

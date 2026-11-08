@@ -1146,7 +1146,15 @@ namespace WindowsIsland
             if (fullscreen && settings.HideInFullscreen) return;
             percent = Math.Clamp(percent, 0, 100);
             LevelGlyph.Text = kind == LevelService.Kind.Brightness ? "\uE706" : muted || percent == 0 ? "\uE74F" : percent < 34 ? "\uE992" : percent < 67 ? "\uE993" : "\uE767";
-            LevelFill.Width = Math.Max(0, 130.0 * (muted ? 0 : percent) / 100);
+            // The bar glides to each new level instead of jumping, so a held key looks smooth
+            double fill = Math.Max(0, 130.0 * (muted ? 0 : percent) / 100);
+            if (view == View.Level && !rendering)
+                LevelFill.BeginAnimation(FrameworkElement.WidthProperty, new System.Windows.Media.Animation.DoubleAnimation(fill, TimeSpan.FromMilliseconds(90)));
+            else
+            {
+                LevelFill.BeginAnimation(FrameworkElement.WidthProperty, null);
+                LevelFill.Width = fill;
+            }
             LevelText.Text = muted ? "" : percent + "%";
             levelUntil = DateTime.Now.AddSeconds(1.4);
             Recompute();

@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.1.8
+
+- **Volume bar:** reads the volume every 40 ms (was 250 ms) and glides to each level, so holding a key moves smoothly instead of in jumps
+- **Hide Windows' volume popup:** its window is made fully transparent ahead of time, so the instant before it is hidden no longer flashes; it is restored when the option is turned off or the island quits
+
+
 ## 2.1.7
 
 - Website audio: the island now uses the site's own touch icon (apple-touch-icon.png) when it has one, so WhatsApp shows its logo instead of a blurry tab icon with the unread badge. Downloaded once per site, HTTPS only (see SECURITY.md)
