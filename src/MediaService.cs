@@ -283,6 +283,26 @@ namespace WindowsIsland
             }
         }
 
+        // The browser extension's note about the tab that is playing: its small icon replaces the letter tile.
+        ApiMediaHint hint;
+
+        public void ApplyHint(ApiMediaHint value)
+        {
+            hint = value;
+            if (session == null || !IsBrowser(sourceApp) || !string.IsNullOrWhiteSpace(Artist)) return;
+            if (!HintMatches(Title, value) || !(value.Favicon is BitmapSource icon)) return;
+            Art = icon;
+            Changed?.Invoke();
+        }
+
+        static bool HintMatches(string title, ApiMediaHint value)
+        {
+            string a = (title ?? "").Trim(), b = (value.Title ?? "").Trim();
+            if (a.Length == 0 || b.Length == 0) return false;
+            b = UnreadCount.Replace(b, "");
+            return a.Equals(b, StringComparison.OrdinalIgnoreCase) || a.Contains(b, StringComparison.OrdinalIgnoreCase) || b.Contains(a, StringComparison.OrdinalIgnoreCase);
+        }
+
         async Task ReadPropertiesAsync(int expected)
         {
             GlobalSystemMediaTransportControlsSession current = session;
@@ -308,7 +328,7 @@ namespace WindowsIsland
             if (fromBrowser && string.IsNullOrWhiteSpace(artist))
             {
                 Color tile = TileColor(title);
-                Art = LetterTile(title, tile);
+                Art = hint != null && HintMatches(title, hint) && hint.Favicon is BitmapSource icon ? icon : LetterTile(title, tile);
                 Accent = tile;
                 Changed?.Invoke();
                 return;

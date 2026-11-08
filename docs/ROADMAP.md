@@ -4,23 +4,21 @@ Ideas planned for upcoming releases, in the order they are expected to land. Not
 
 ## Next
 
-- Names of the apps using the microphone or camera, shown when you hover the dots
-- Battery percentage as a live activity while charging
-- Choose which pages appear, and their order
+- Choose the order of the pages
+- A way to start the extension without loading it by hand (publishing it to the browser stores)
 
 ## Ideas, not scheduled
 
-- Windows focus sessions and Do Not Disturb: show when they are on. Windows has no official way to read the Clock app's timer or focus session, so this would only follow the focus state
+- Island themes (colors and style of the pill)
+- Calendar: the next meeting a few minutes before it starts
 
 ## Later
 
-- A way for scripts and other apps to show their own live activities
-- The real tab icon (favicon) for web audio without artwork. Windows does not report the tab or site, so this needs a small browser extension that tells the island which tab is playing
-- App icons on notification banners
 - Notifications through the official Windows listener, once the app ships as a signed package
 
 ## Done
 
+- Local API and command line, app names on the dots, battery as an activity, page choice, app icons on notifications, volume and brightness, device and network notes, Do not disturb moon, clock and system page, keyboard shortcut, browser extension (2.0.0, not released yet)
 - Sharp islands on monitors with different display scales (1.13.0)
 - Screenshot alert, sliding tab pills, sharper Settings text (1.12.0)
 - Update flow with progress, languages (en, pt, es, ru), Inter font, smaller alerts, icons in Settings (1.11.0)

@@ -18,8 +18,8 @@ namespace WindowsIsland
 {
     public partial class IslandWindow : Window
     {
-        enum View { Hidden, Minimal, Idle, MusicCompact, ClaudeCompact, CodexCompact, TimerCompact, BatteryCompact, MusicExpanded, ClaudeExpanded, TimerExpanded, SystemExpanded, Banner, Toast, Level }
-        enum Activity { None, Music, Claude, Codex, Timer, Battery, System }
+        enum View { Hidden, Minimal, Idle, MusicCompact, ClaudeCompact, CodexCompact, TimerCompact, BatteryCompact, ExternalCompact, MusicExpanded, ClaudeExpanded, TimerExpanded, SystemExpanded, ExternalExpanded, Banner, Toast, Level }
+        enum Activity { None, Music, Claude, Codex, Timer, Battery, System, External }
 
         static readonly Dictionary<View, Size> Sizes = new Dictionary<View, Size>
         {
@@ -31,6 +31,8 @@ namespace WindowsIsland
             [View.CodexCompact] = new Size(176, 34),
             [View.TimerCompact] = new Size(150, 34),
             [View.BatteryCompact] = new Size(150, 34),
+            [View.ExternalCompact] = new Size(190, 34),
+            [View.ExternalExpanded] = new Size(372, 150),
             [View.MusicExpanded] = new Size(372, 152),
             [View.TimerExpanded] = new Size(372, 150),
             [View.SystemExpanded] = new Size(372, 150),
@@ -117,6 +119,8 @@ namespace WindowsIsland
             panels[View.CodexCompact] = CodexCompact;
             panels[View.TimerCompact] = TimerCompact;
             panels[View.BatteryCompact] = BatteryCompact;
+            panels[View.ExternalCompact] = ExternalCompact;
+            panels[View.ExternalExpanded] = ExternalExpanded;
             panels[View.TimerExpanded] = TimerExpanded;
             panels[View.SystemExpanded] = SystemExpanded;
             panels[View.MusicExpanded] = MusicExpanded;
@@ -169,6 +173,8 @@ namespace WindowsIsland
             privacy.Changed += OnPrivacyChanged;
             battery = (Application.Current as App)?.Battery;
             if (battery != null) battery.Changed += OnBatteryChanged;
+            api = (Application.Current as App)?.Api;
+            if (api != null) { api.ActivityUpdated += OnApiActivity; api.ActivityEnded += OnApiEnded; }
             focusState = (Application.Current as App)?.Focus;
             if (focusState != null) focusState.Changed += OnFocusChanged;
 
@@ -220,6 +226,76 @@ namespace WindowsIsland
             MemoryFill.Width = 132.0 * systemStats.Memory / 100;
         }
         void OnFocusChanged() { UpdateFocusMoon(); }
+
+        // ---- Live activities pushed by scripts and apps through the local API ----
+        LocalApi api;
+        void OnApiActivity(ApiActivity activity) { UpdateExternal(); Recompute(); }
+        void OnApiEnded(string id) { UpdateExternal(); Recompute(); }
+        bool ApiActive { get { return api != null && api.Running && api.Activities.Count > 0; } }
+
+        static readonly Brush ApiBlue = Freeze(new SolidColorBrush(Color.FromRgb(0x0A, 0x84, 0xFF)));
+        static readonly Brush ApiGreen = Freeze(new SolidColorBrush(Color.FromRgb(0x30, 0xD1, 0x58)));
+        static readonly Brush ApiRed = Freeze(new SolidColorBrush(Color.FromRgb(0xFF, 0x45, 0x3A)));
+        static Brush StateBrush(string state) { return state == "done" ? ApiGreen : state == "error" ? ApiRed : ApiBlue; }
+        static string SideOf(ApiActivity a) { return a.State == "done" ? "\u2713" : a.State == "error" ? "\u2715" : a.Progress >= 0 ? a.Progress + "%" : "\u2026"; }
+
+        void UpdateExternal()
+        {
+            if (api == null) return;
+            List<ApiActivity> list = api.Activities.OrderByDescending(a => a.Updated).ToList();
+            if (list.Count == 0) return;
+            BuildExternal(list);
+        }
+
+        void BuildExternal(List<ApiActivity> list)
+        {
+            ApiActivity first = list[0];
+            ExternalGlyph.Text = first.IconGlyph;
+            ExternalGlyph.Foreground = StateBrush(first.State);
+            ExternalTitle.Text = first.Title;
+            ExternalSide.Text = SideOf(first);
+            ExternalSide.Foreground = first.State == "running" ? White : StateBrush(first.State);
+            BubbleExternal.Text = first.IconGlyph;
+            BubbleExternal.Foreground = StateBrush(first.State);
+
+            // The page: up to three rows, each with who sent it
+            ExternalList.Children.Clear();
+            foreach (ApiActivity a in list.Take(3))
+            {
+                Grid row = new Grid { Height = 38 };
+                row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(30) });
+                row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+                row.Children.Add(new TextBlock { Text = a.IconGlyph, FontFamily = new FontFamily("Segoe Fluent Icons, Segoe MDL2 Assets"), FontSize = 16, Foreground = StateBrush(a.State), VerticalAlignment = VerticalAlignment.Center });
+                StackPanel text = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
+                text.Children.Add(new TextBlock { Text = a.Title, FontSize = 13, FontWeight = FontWeights.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis });
+                string caption = string.IsNullOrEmpty(a.Text) ? a.App : a.App + " \u00B7 " + a.Text;
+                text.Children.Add(new TextBlock { Text = caption, FontSize = 11, Foreground = (Brush)FindResource("Secondary"), TextTrimming = TextTrimming.CharacterEllipsis });
+                if (a.Progress >= 0)
+                {
+                    Grid track = new Grid { Height = 3, Margin = new Thickness(0, 3, 0, 0) };
+                    track.Children.Add(new Border { CornerRadius = new CornerRadius(1.5), Background = new SolidColorBrush(Color.FromArgb(0x33, 0xFF, 0xFF, 0xFF)) });
+                    Border fill = new Border { CornerRadius = new CornerRadius(1.5), Background = StateBrush(a.State), HorizontalAlignment = HorizontalAlignment.Left, Width = 292.0 * a.Progress / 100 };
+                    track.Children.Add(fill);
+                    text.Children.Add(track);
+                }
+                Grid.SetColumn(text, 1);
+                row.Children.Add(text);
+                TextBlock side = new TextBlock { Text = SideOf(a), FontSize = 12.5, FontWeight = FontWeights.SemiBold, Margin = new Thickness(10, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center, Foreground = a.State == "running" ? White : StateBrush(a.State) };
+                Grid.SetColumn(side, 2);
+                row.Children.Add(side);
+                ExternalList.Children.Add(row);
+            }
+            if (list.Count > 3)
+                ExternalList.Children.Add(new TextBlock { Text = "+" + (list.Count - 3), FontSize = 11, Foreground = (Brush)FindResource("Secondary"), HorizontalAlignment = HorizontalAlignment.Right });
+        }
+
+        // An alert from a script or app: a banner that names who sent it.
+        internal void ShowApiAlert(ApiAlert alert)
+        {
+            if (fullscreen && settings.HideInFullscreen) return;
+            Enqueue(new BannerItem { App = alert.App, Title = alert.Title, Subtitle = alert.Text, Glyph = alert.IconGlyph, Seconds = alert.Seconds });
+        }
 
         FocusService focusState;
         void UpdateFocusMoon()
@@ -420,6 +496,7 @@ namespace WindowsIsland
             privacy.Changed -= OnPrivacyChanged;
             if (battery != null) battery.Changed -= OnBatteryChanged;
             if (focusState != null) focusState.Changed -= OnFocusChanged;
+            if (api != null) { api.ActivityUpdated -= OnApiActivity; api.ActivityEnded -= OnApiEnded; }
             enterTimer.Stop();
             leaveTimer.Stop();
             pollTimer.Stop();
@@ -452,6 +529,11 @@ namespace WindowsIsland
             View value;
             if (!Enum.TryParse(name, true, out value)) return;
             forced = value;
+            BuildExternal(new List<ApiActivity>
+            {
+                new ApiActivity { Id = "build", App = "PowerShell", Title = "Build", Text = "compiling", Progress = 40, IconGlyph = LocalApi.Glyph("build"), State = "running", Updated = DateTime.UtcNow },
+                new ApiActivity { Id = "dl", App = "curl", Title = "Download", Text = "", Progress = 72, IconGlyph = LocalApi.Glyph("download"), State = "running", Updated = DateTime.UtcNow },
+            });
             BatteryCompactText.Text = "54%";
             LevelGlyph.Text = ""; LevelFill.Width = 84.5; LevelText.Text = "65%";
             UpdateSystemPage();
@@ -463,9 +545,17 @@ namespace WindowsIsland
         public void RenderStates(string folder, string suffix)
         {
             Directory.CreateDirectory(folder);
-            View[] states = { View.Idle, View.MusicCompact, View.ClaudeCompact, View.CodexCompact, View.BatteryCompact, View.MusicExpanded, View.ClaudeExpanded, View.TimerExpanded, View.SystemExpanded, View.Level, View.Banner };
+            View[] states = { View.Idle, View.MusicCompact, View.ClaudeCompact, View.CodexCompact, View.BatteryCompact, View.ExternalCompact, View.ExternalExpanded, View.MusicExpanded, View.ClaudeExpanded, View.TimerExpanded, View.SystemExpanded, View.Level, View.Banner };
             double[] levels = { 0.55, 0.95, 0.4, 0.75 };
             Array.Copy(levels, eqLevel, levels.Length);
+            BuildExternal(new List<ApiActivity>
+            {
+                new ApiActivity { Id = "build", App = "PowerShell", Title = "Build", Text = "compiling", Progress = 40, IconGlyph = LocalApi.Glyph("build"), State = "running", Updated = DateTime.UtcNow },
+                new ApiActivity { Id = "dl", App = "curl", Title = "Download", Text = "", Progress = 72, IconGlyph = LocalApi.Glyph("download"), State = "running", Updated = DateTime.UtcNow },
+            });
+            BatteryCompactText.Text = "54%";
+            LevelGlyph.Text = ""; LevelFill.Width = 84.5; LevelText.Text = "65%";
+            UpdateSystemPage();
             BatteryCompactText.Text = "54%";
             BannerTitle.Text = Strings.ClaudeDone;
             BannerSubtitle.Text = Strings.SampleSession;
@@ -679,6 +769,7 @@ namespace WindowsIsland
             if (music) active.Add(Activity.Music);
             if (working && claude.Waiting == 0) active.Add(Activity.Claude);
             if (CodexActive) active.Add(Activity.Codex);
+            if (ApiActive) active.Add(Activity.External);
             if (BatteryActive) active.Add(Activity.Battery);
             if (timer.Running) active.Insert(working && claude.Waiting > 0 ? 1 : 0, Activity.Timer);
             Activity primary = active.Count > 0 ? active[0] : Activity.None;
@@ -696,6 +787,7 @@ namespace WindowsIsland
             else if (primary == Activity.Music && !settings.EmptyIsland) next = View.MusicCompact;
             else if (primary == Activity.Claude && !settings.EmptyIsland) next = View.ClaudeCompact;
             else if (primary == Activity.Codex && !settings.EmptyIsland) next = View.CodexCompact;
+            else if (primary == Activity.External && !settings.EmptyIsland) next = View.ExternalCompact;
             else if (primary == Activity.Battery && !settings.EmptyIsland) next = View.BatteryCompact;
             else if (primary == Activity.Timer) next = View.TimerCompact;
             else if (!settings.ShowIdlePill && !PrivacyOn) next = View.Hidden;
@@ -716,6 +808,7 @@ namespace WindowsIsland
                                    : next == View.CodexCompact ? Activity.Codex
                                    : next == View.TimerCompact ? Activity.Timer
                                    : next == View.BatteryCompact ? Activity.Battery
+                                   : next == View.ExternalCompact ? Activity.External
                                    : Activity.None;
             Activity other = primary == shownActivity ? second : primary;
             Activity nextBubble = shownActivity != Activity.None && other != shownActivity ? other : Activity.None;
@@ -757,6 +850,7 @@ namespace WindowsIsland
                 BubbleCodex.Visibility = bubble == Activity.Codex ? Visibility.Visible : Visibility.Collapsed;
                 BubbleTimer.Visibility = bubble == Activity.Timer ? Visibility.Visible : Visibility.Collapsed;
                 BubbleBattery.Visibility = bubble == Activity.Battery ? Visibility.Visible : Visibility.Collapsed;
+                BubbleExternal.Visibility = bubble == Activity.External ? Visibility.Visible : Visibility.Collapsed;
             }
             bubbleOpacity.Target = hasBubble ? 1 : 0;
             bubbleScale.Target = hasBubble ? 1 : 0.4;
@@ -771,6 +865,7 @@ namespace WindowsIsland
             List<Activity> pages = new List<Activity>();
             if (settings.PageMusic && settings.ShowMusic && media.HasSession) pages.Add(Activity.Music);
             if (settings.PageClaude && (settings.ShowClaude || CodexSectionVisible)) pages.Add(Activity.Claude);
+            if (ApiActive) pages.Add(Activity.External);
             if (settings.PageSystem) pages.Add(Activity.System);
             if (settings.PageTimer) pages.Add(Activity.Timer);
             return pages;
@@ -781,6 +876,7 @@ namespace WindowsIsland
         {
             Activity wanted = primary == Activity.Music ? Activity.Music
                             : primary == Activity.Timer ? Activity.Timer
+                            : primary == Activity.External ? Activity.External
                             : settings.ShowClaude || CodexSectionVisible ? Activity.Claude
                             : settings.ShowMusic && media.HasSession ? Activity.Music
                             : Activity.None;
@@ -791,12 +887,12 @@ namespace WindowsIsland
 
         static View ExpandedFor(Activity activity)
         {
-            return activity == Activity.Music ? View.MusicExpanded : activity == Activity.Timer ? View.TimerExpanded : activity == Activity.System ? View.SystemExpanded : View.ClaudeExpanded;
+            return activity == Activity.Music ? View.MusicExpanded : activity == Activity.Timer ? View.TimerExpanded : activity == Activity.System ? View.SystemExpanded : activity == Activity.External ? View.ExternalExpanded : View.ClaudeExpanded;
         }
 
         static Activity ActivityOf(View value)
         {
-            return value == View.MusicExpanded ? Activity.Music : value == View.TimerExpanded ? Activity.Timer : value == View.SystemExpanded ? Activity.System : Activity.Claude;
+            return value == View.MusicExpanded ? Activity.Music : value == View.TimerExpanded ? Activity.Timer : value == View.SystemExpanded ? Activity.System : value == View.ExternalExpanded ? Activity.External : Activity.Claude;
         }
 
         View? PickedPage()
@@ -979,7 +1075,7 @@ namespace WindowsIsland
         // True while the user is looking at or using the island, so an update restart waits.
         internal bool IsBusy
         {
-            get { return hovering || view == View.Banner || view == View.MusicExpanded || view == View.ClaudeExpanded || view == View.TimerExpanded || view == View.SystemExpanded; }
+            get { return hovering || view == View.Banner || view == View.MusicExpanded || view == View.ClaudeExpanded || view == View.TimerExpanded || view == View.SystemExpanded || view == View.ExternalExpanded; }
         }
 
         void Enqueue(BannerItem item)
@@ -1059,7 +1155,7 @@ namespace WindowsIsland
 
         static bool IsExpandedView(View value)
         {
-            return value == View.MusicExpanded || value == View.ClaudeExpanded || value == View.TimerExpanded || value == View.SystemExpanded || value == View.Banner;
+            return value == View.MusicExpanded || value == View.ClaudeExpanded || value == View.TimerExpanded || value == View.SystemExpanded || value == View.ExternalExpanded || value == View.Banner;
         }
 
         void PlaceWindow()

@@ -47,6 +47,8 @@ namespace WindowsIsland
         public bool HideInFullscreen { get; set; } = true;
         public bool StartWithWindows { get; set; } = false;
         public bool AutoUpdate { get; set; } = true;
+        public bool ApiEnabled { get; set; } = false; // Local API for scripts and apps, on 127.0.0.1 only: off by default
+        public int ApiPort { get; set; } = LocalApi.DefaultPort;
 
         const string RunKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
         const string RunValue = "WindowsIsland";
@@ -85,6 +87,7 @@ namespace WindowsIsland
             OffsetX = Math.Clamp(OffsetX, -MaxOffsetX, MaxOffsetX);
             CollapsedScale = Math.Clamp(CollapsedScale, MinScale, MaxScale);
             ExpandedScale = Math.Clamp(ExpandedScale, MinScale, MaxScale);
+            ApiPort = Math.Clamp(ApiPort, LocalApi.MinPort, LocalApi.MaxPort);
             return this;
         }
 

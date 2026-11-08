@@ -360,6 +360,7 @@ Top = taskbarTop ? work.Top + 12 : work.Bottom - Height - 12;
             Section(Strings.SectionSystem);
             Toggle("\uE7E8", Strings.MenuStartup, null, () => settings.StartWithWindows, v => settings.StartWithWindows = v);
             Toggle("\uE895", Strings.MenuAutoUpdate, null, () => settings.AutoUpdate, v => settings.AutoUpdate = v);
+            ApiRows();
             UpdateRow();
             LanguageRow();
             ActionRow("\uE8A5", Strings.MenuOpenSettings, () =>
@@ -571,6 +572,42 @@ Top = taskbarTop ? work.Top + 12 : work.Bottom - Height - 12;
                 Apply();
             };
             Row(icon, label, null, value, slider);
+        }
+
+        // The local API for scripts and apps: a switch, and while it is on, the token to hand to them.
+        void ApiRows()
+        {
+            Toggle("\uE943", Strings.MenuApi, Strings.HintApi, () => settings.ApiEnabled, v =>
+            {
+                settings.ApiEnabled = v;
+                Dispatcher.BeginInvoke(new Action(Rebuild), DispatcherPriority.Background);
+            });
+            if (!settings.ApiEnabled) return;
+            LocalApi api = (Application.Current as App)?.Api;
+            if (api == null) return;
+
+            TextBlock note = new TextBlock { FontSize = 12, Foreground = (Brush)FindResource("Secondary"), TextWrapping = TextWrapping.Wrap, Visibility = Visibility.Collapsed, Margin = new Thickness(60, 0, 14, 10) };
+            Button copy = new Button { Content = Strings.ApiCopyToken, Style = (Style)FindResource("LinkButton"), HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Center };
+            copy.Click += (s, e) =>
+            {
+                string token = api.Token;
+                if (string.IsNullOrEmpty(token)) return;
+                try { Clipboard.SetText(token); } catch (Exception) { return; }
+                note.Text = Strings.ApiTokenCopied;
+                note.Visibility = Visibility.Visible;
+            };
+            Row("\uE8C8", null, null, null, null, copy);
+            Button renew = new Button { Content = Strings.ApiNewToken, Style = (Style)FindResource("LinkButton"), HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Center };
+            renew.Click += (s, e) =>
+            {
+                api.RegenerateToken();
+                note.Text = Strings.ApiNewTokenDone;
+                note.Visibility = Visibility.Visible;
+            };
+            Row("\uE72C", null, null, null, null, renew);
+            if (api.LastStartFailed)
+                ((StackPanel)card.Children[card.Children.Count - 1]).Children.Add(new TextBlock { Text = Strings.ApiPortBusy, FontSize = 12, Foreground = Brushes.IndianRed, Margin = new Thickness(60, 0, 14, 10) });
+            ((StackPanel)card.Children[card.Children.Count - 1]).Children.Add(note);
         }
 
         // Shows the current shortcut; a click waits for the next key combination and saves it.

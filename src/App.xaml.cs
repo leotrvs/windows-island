@@ -35,6 +35,8 @@ namespace WindowsIsland
         internal FocusService Focus { get { return focus; } }
         internal static bool HotkeyFailed; // The chosen shortcut could not be registered
         internal BatteryService Battery { get { return battery; } }
+        LocalApi api;
+        internal LocalApi Api { get { return api; } } // Activities and alerts from scripts and apps
         ScreenshotService screenshots;
         readonly List<IslandWindow> islands = new List<IslandWindow>();
         readonly DispatcherTimer followTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(300) };
@@ -53,9 +55,15 @@ namespace WindowsIsland
         //   --portable          runs without installing
         //   --uninstall         removes the app, its shortcuts and settings
         //   --after-update      started by the previous version right after it replaced itself
+        //   show, done, end, alert, token, help   the command line for the local API (see docs/API.md), then quits
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
+            if (ApiCli.IsCommand(e.Args))
+            {
+                Shutdown(ApiCli.Run(e.Args));
+                return;
+            }
             // The island is tiny, so drawing it on the CPU costs nothing and spares the ~120 MB
             // that a Direct3D device takes. Measured: 166 MB private memory with GPU, 43 MB without.
             System.Windows.Media.RenderOptions.ProcessRenderMode = System.Windows.Interop.RenderMode.SoftwareOnly;
@@ -135,6 +143,7 @@ namespace WindowsIsland
             hotkey = new HotkeyService();
             hotkey.Pressed += () => MainIsland?.ToggleOpen();
             screenshots = new ScreenshotService();
+            api = new LocalApi(Dispatcher);
             if (sample)
             {
                 media.UseSample();
@@ -203,6 +212,11 @@ namespace WindowsIsland
                 else
                     MainIsland?.ShowToast(connected ? Strings.DeviceConnected(name) : Strings.DeviceDisconnected(name), kind == DeviceService.Kind.Bluetooth ? "\uE702" : "\uE88E", 2.6);
             };
+            if (api != null)
+            {
+                api.AlertReceived += a => MainIsland?.ShowApiAlert(a);
+                api.MediaHint += h => media.ApplyHint(h);
+            }
             levels.Changed += (kind, percent, muted) => MainIsland?.ShowLevel(kind, percent, muted);
             screenshots.Taken += () => MainIsland?.ShowToast(Strings.ScreenshotTaken, "\uE722", 2.2);
             battery.Alert += (title, body, kind) => MainIsland?.ShowSystemBanner(title, body, kind);
@@ -223,6 +237,8 @@ namespace WindowsIsland
                 else levels.Stop();
                 if (settings.ShowScreenshotAlert && !sample) screenshots.Start();
                 else screenshots.Stop();
+                if (settings.ApiEnabled && !sample) api.Start(settings.ApiPort);
+                else api.Stop();
                 if (!sample) ReconcileIslands();
                 foreach (IslandWindow island in islands) island.SettingsChanged();
                 if (settings.ShowNotifications && !sample) notifications.Start();
@@ -259,6 +275,8 @@ namespace WindowsIsland
             devices.Start(settings.ShowDeviceAlerts, settings.ShowNetworkAlerts);
             if (settings.ShowLevels) levels.Start();
             if (settings.ShowScreenshotAlert) screenshots.Start();
+            if (settings.ApiEnabled) api.Start(settings.ApiPort);
+            if (Installer.IsInstalledCopy) Installer.EnsureCommandShim(); // Copies updated from before 2.0 get island.cmd too
 
             if (!dev)
             {
@@ -360,6 +378,7 @@ namespace WindowsIsland
         {
             tray?.Dispose();
             screenshots?.Dispose();
+            api?.Stop();
             if (ownsMutex)
             {
                 try { singleInstance.ReleaseMutex(); }

@@ -1,0 +1,12 @@
+{
+  "manifest_version": 3,
+  "name": "Windows Island tab icon",
+  "version": "1.0.0",
+  "description": "Tells Windows Island which browser tab is playing sound, so the island can show that site's icon.",
+  "permissions": ["tabs", "storage", "favicon"],
+  "host_permissions": ["http://127.0.0.1/*", "http://localhost/*"],
+  "background": { "service_worker": "background.js" },
+  "options_page": "options.html",
+  "action": { "default_title": "Windows Island", "default_popup": "options.html" },
+  "minimum_chrome_version": "109"
+}

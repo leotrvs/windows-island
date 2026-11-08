@@ -251,6 +251,17 @@ namespace WindowsIsland
                                             "Маленькая луна на острове, пока включён режим «Не беспокоить» или сеанс фокусировки");
         public static string FocusOn => T("Do not disturb on", "Não perturbe ligado", "No molestar activado", "«Не беспокоить» включён");
         public static string FocusOff => T("Do not disturb off", "Não perturbe desligado", "No molestar desactivado", "«Не беспокоить» выключен");
+        public static string SectionApi => T("Scripts and apps", "Scripts e apps", "Scripts y apps", "Скрипты и приложения");
+        public static string MenuApi => T("Local API", "API local", "API local", "Локальный API");
+        public static string HintApi => T("Lets scripts and apps on this PC show activities and alerts in the island. Off by default; needs the token below",
+                                          "Deixa scripts e apps deste PC mostrarem atividades e avisos na ilha. Desligada por padrão; exige o token abaixo",
+                                          "Permite que scripts y apps de este PC muestren actividades y avisos en la isla. Desactivada por defecto; requiere el token de abajo",
+                                          "Позволяет скриптам и приложениям на этом ПК показывать действия и уведомления на острове. По умолчанию выключено; нужен токен ниже");
+        public static string ApiCopyToken => T("Copy token", "Copiar token", "Copiar token", "Скопировать токен");
+        public static string ApiTokenCopied => T("Token copied", "Token copiado", "Token copiado", "Токен скопирован");
+        public static string ApiNewToken => T("Make a new token", "Gerar um novo token", "Generar un token nuevo", "Создать новый токен");
+        public static string ApiNewTokenDone => T("New token made. Apps using the old one must be updated", "Novo token gerado. Apps que usavam o antigo precisam ser atualizados", "Token nuevo generado. Las apps con el anterior deben actualizarse", "Токен создан. Приложения со старым токеном нужно обновить");
+        public static string ApiPortBusy => T("The port is in use by another program", "A porta está em uso por outro programa", "El puerto está en uso por otro programa", "Порт занят другой программой");
         public static string MenuLevels => T("Volume and brightness", "Volume e brilho", "Volumen y brillo", "Громкость и яркость");
         public static string HintLevels => T("A small bar while you change the volume or the screen brightness (laptop screens only)",
                                              "Uma barrinha enquanto você muda o volume ou o brilho da tela (só telas de notebook)",

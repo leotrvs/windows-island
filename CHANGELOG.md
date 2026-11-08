@@ -1,5 +1,19 @@
 # Changelog
 
+## 2.0.0 (unreleased)
+
+- **App names on the dots:** the app using the microphone or camera shows its name beside the dot for a few seconds, and again while the mouse is over the island
+- **Battery as an activity:** while the charger is plugged in and the battery is not full, the island shows the charge level like any other activity
+- **Choose your pages:** Settings, Behavior, lets you turn each page of the open island on or off
+- **App icons on notifications:** Windows notifications show the real icon of the app that sent them (loaded from the shell, only for plain app ids)
+- **Volume and brightness:** a small bar while you change the volume or the laptop screen brightness
+- **Devices and network:** a short note when a Bluetooth or USB device connects or disconnects, and when the internet goes away or comes back
+- **Do not disturb:** a small moon on the island while Do not disturb or a focus session is on
+- **Clock and system page:** the time and date, with processor and memory load
+- **Keyboard shortcut:** opens and closes the island from anywhere. Off by default and configurable (Ctrl+Alt+I to begin with); it uses Windows' own hotkey call, so no keyboard hook is installed
+- **Browser extension:** the `extension/` folder has a small Chrome and Edge extension that tells the island which tab is playing, so web audio shows that site's icon instead of a letter
+- **Local API:** scripts and apps can show their own live activities and alerts, and a browser extension can say which tab is playing. Off by default; it listens on 127.0.0.1 only and needs a secret token. The `island.cmd` command line beside the app does the same from a terminal. See [docs/API.md](docs/API.md)
+
 ## 1.13.0
 
 - **Sharp on every monitor:** the island now follows each monitor's own display scale (per-monitor DPI), so it is no longer stretched and blurry on a screen with a different scale than the main one

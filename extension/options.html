@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Windows Island</title>
+  <style>
+    body { font: 14px system-ui, sans-serif; margin: 16px; min-width: 300px; }
+    label { display: block; margin: 12px 0 4px; font-weight: 600; }
+    input { width: 100%; box-sizing: border-box; padding: 6px 8px; font: inherit; }
+    button { margin-top: 14px; padding: 6px 14px; font: inherit; }
+    p { color: #666; margin: 6px 0 0; }
+    #status { margin-top: 10px; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <h3>Windows Island</h3>
+  <p>Paste the island's token so it can show the playing tab's icon. In a terminal, run <code>island token</code>, and turn on the local API in the island's Settings.</p>
+  <label for="token">Token</label>
+  <input id="token" type="password" autocomplete="off" spellcheck="false">
+  <label for="port">Port</label>
+  <input id="port" type="number" min="1024" max="65535" value="47613">
+  <button id="save">Save</button>
+  <div id="status"></div>
+  <script src="options.js"></script>
+</body>
+</html>

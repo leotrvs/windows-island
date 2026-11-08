@@ -23,9 +23,14 @@ A Dynamic Island for Windows. Music, Claude Code, its usage limits and your noti
 - **Pages:** when the island is expanded, scroll over it or click the dots to switch between music, Claude and the timer, which also has its own buttons there
 - **Timer and stopwatch:** start one from the tray menu; it shows as a live activity and alerts you when the time is up
 - **Microphone and camera dots:** orange while the microphone is in use, green for the camera, like on iPhone
-- **Battery alerts** on laptops: charger connected or removed, low battery and fully charged
+- **Battery** on laptops: shown as an activity while charging, plus alerts for charger connected or removed, low battery and fully charged
+- **App names on the dots:** see which app is using the microphone or camera
+- **Volume and brightness** bar, **Bluetooth, USB and network** notes, and a moon for **Do not disturb**
+- **Clock and system page** with the time, date, processor and memory load
+- **Local API and command line** (off by default) so your scripts and apps can show their own activities and alerts, see [docs/API.md](docs/API.md), plus a small [browser extension](extension/README.md) that gives web audio the site's icon
+- **Keyboard shortcut** to open and close the island (off by default, configurable)
 - **Alerts** when Claude finishes a task or needs you
-- **Windows notifications** in the island, if you turn them on
+- **Windows notifications** in the island, with the sending app's icon, if you turn them on
 - **Two activities at once:** the second one splits off into a bubble beside the island
 - **Fluid motion:** shape and content morph with springs, never with fixed-time fades
 - **Discreet:** it never takes focus, clicks around it reach the window below, it shrinks to a thin line when a maximized window is in front and it hides in fullscreen

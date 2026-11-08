@@ -44,6 +44,28 @@ namespace WindowsIsland
             get { return typeof(Installer).Assembly.GetName().Version?.ToString(3) ?? "0.0.0"; }
         }
 
+        // "island.cmd show build --title Building": a short name for the command line, beside the installed exe.
+        // PATH is left alone; scripts call it by its full path.
+        static string CommandShim
+        {
+            get { return Path.Combine(InstallDir, "island.cmd"); }
+        }
+
+        const string CommandShimText = "@echo off\r\n\"%~dp0" + Id + ".exe\" %*\r\n";
+
+        public static void EnsureCommandShim()
+        {
+            try
+            {
+                if (File.Exists(CommandShim) && File.ReadAllText(CommandShim) == CommandShimText) return;
+                File.WriteAllText(CommandShim, CommandShimText);
+            }
+            catch (Exception)
+            {
+                // The command line is a convenience; the island works without it.
+            }
+        }
+
         static string StartMenuShortcut
         {
             get { return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Programs), Name + ".lnk"); }
@@ -79,6 +101,7 @@ namespace WindowsIsland
             Directory.CreateDirectory(InstallDir);
             File.Copy(Environment.ProcessPath, InstalledExe, true);
             DeleteFile(InstalledExe + ":Zone.Identifier"); // The user already approved the download.
+            EnsureCommandShim();
 
             CreateShortcut(StartMenuShortcut);
             CreateShortcut(DesktopShortcut);
@@ -102,6 +125,7 @@ namespace WindowsIsland
             Registry.CurrentUser.DeleteSubKeyTree(UninstallKeyPath, false);
             TryDelete(StartMenuShortcut);
             TryDelete(DesktopShortcut);
+            TryDelete(CommandShim);
             Settings.DeleteAll();
             DeleteInstallDirAfterExit();
         }
