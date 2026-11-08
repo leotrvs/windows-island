@@ -138,7 +138,7 @@ namespace WindowsIsland
             privacy = new PrivacyService(Dispatcher);
             battery = new BatteryService(Dispatcher);
             levels = new LevelService(Dispatcher);
-            osd = new WindowsOsd(Dispatcher);
+            osd = new WindowsOsd();
             devices = new DeviceService(Dispatcher);
             focus = new FocusService(Dispatcher);
             focus.Changed += () => { if (settings.ShowFocus) MainIsland?.ShowToast(focus.On ? Strings.FocusOn : Strings.FocusOff, "\uE708", 2.2); };

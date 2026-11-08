@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.0.1
+
+- **Settings window:** remembers its size and place, and no longer jumps when it opens
+- **Browser extension button:** opens the extensions page in the profile you used last (no more "who is using Chrome?" page), with short numbered steps
+- **Local API settings:** now say what the token is for (only for your own scripts; the island command and the extension need none) and link to the guide
+- **App name on the dots:** shows when you hover the dots themselves, not when you open the island
+- **Hide Windows' volume popup (experimental):** now reacts the instant the popup appears, so it no longer flashes
+
 ## 2.0.0
 
 - **App names on the dots:** hover the island to see which app uses the microphone or camera, beside the dot. Settings can also show the name by itself for 1, 2 or 3 seconds when an app starts (off by default)

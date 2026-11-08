@@ -156,6 +156,8 @@ namespace WindowsIsland
             ApplyTexts();
             ApplyBannerSize();
 
+            PrivacyDots.MouseEnter += (s, e) => { dotHover = true; UpdatePrivacy(); };
+            PrivacyDots.MouseLeave += (s, e) => { dotHover = false; UpdatePrivacy(); };
             Pill.MouseEnter += OnPillEnter;
             Pill.MouseLeave += OnPillLeave;
             Pill.MouseLeftButtonUp += OnPillClick;
@@ -314,6 +316,7 @@ namespace WindowsIsland
         bool PrivacyOn { get { return settings.ShowPrivacyDots && (privacy.Microphone || privacy.Camera); } }
 
         string privacyLabel = "";
+        bool dotHover; // The mouse is over the dots themselves: that is what shows the app name
         DateTime privacyNameUntil;
         DispatcherTimer privacyNameTimer;
 
@@ -336,7 +339,7 @@ namespace WindowsIsland
             MicDot.Visibility = mic ? Visibility.Visible : Visibility.Collapsed;
             CamDot.Visibility = cam ? Visibility.Visible : Visibility.Collapsed;
 
-            // Hovering shows the name of the app using the microphone or camera; a new app also shows it by itself if the setting asks for it.
+            // Hovering over the dots (not the island) shows the name of the app using the microphone or camera; a new app also shows it by itself if the setting asks for it.
             string label = mic || cam ? PrivacyLabel() : "";
             if (label != privacyLabel)
             {
@@ -355,7 +358,8 @@ namespace WindowsIsland
                     privacyNameTimer.Start();
                 }
             }
-            bool showName = label.Length > 0 && (hovering || DateTime.Now < privacyNameUntil);
+            bool showName = label.Length > 0 && (dotHover || DateTime.Now < privacyNameUntil);
+            PrivacyDots.IsHitTestVisible = mic || cam; // Only while a dot is there, so the spot is empty the rest of the time
             double dotsWidth = mic && cam ? 30 : 20, nameWidth = 0;
             PrivacyName.Visibility = showName ? Visibility.Visible : Visibility.Collapsed;
             if (showName)

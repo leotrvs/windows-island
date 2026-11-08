@@ -254,20 +254,26 @@ namespace WindowsIsland
         public static string FocusOff => T("Do not disturb off", "Não perturbe desligado", "No molestar desactivado", "«Не беспокоить» выключен");
         public static string SectionApi => T("Scripts and apps", "Scripts e apps", "Scripts y apps", "Скрипты и приложения");
         public static string MenuApi => T("Local API", "API local", "API local", "Локальный API");
-        public static string HintApi => T("Lets scripts and apps on this PC show activities and alerts in the island. Off by default; needs the token below",
-                                          "Deixa scripts e apps deste PC mostrarem atividades e avisos na ilha. Desligada por padrão; exige o token abaixo",
-                                          "Permite que scripts y apps de este PC muestren actividades y avisos en la isla. Desactivada por defecto; requiere el token de abajo",
-                                          "Позволяет скриптам и приложениям на этом ПК показывать действия и уведомления на острове. По умолчанию выключено; нужен токен ниже");
+        public static string HintApi => T("Lets scripts and apps on this PC show activities and alerts in the island. The island command and the browser extension already work with it, no token needed",
+                                          "Deixa scripts e apps deste PC mostrarem atividades e avisos na ilha. O comando island e a extensão do navegador já funcionam com ela, sem token",
+                                          "Permite que scripts y apps de este PC muestren actividades y avisos en la isla. El comando island y la extensión del navegador ya funcionan con ella, sin token",
+                                          "Позволяет скриптам и приложениям на этом ПК показывать действия и уведомления на острове. Команда island и расширение для браузера уже работают с ней, токен не нужен");
+        public static string ApiTokenLabel => T("Token for your own scripts", "Token para seus próprios scripts", "Token para tus propios scripts", "Токен для ваших скриптов");
+        public static string ApiTokenHint => T("Only if you write your own script or app: send it in the header Authorization: Bearer <token>",
+                                               "Só se você criar seu próprio script ou app: envie no cabeçalho Authorization: Bearer <token>",
+                                               "Solo si creas tu propio script o app: envíalo en el encabezado Authorization: Bearer <token>",
+                                               "Только если вы пишете свой скрипт или приложение: передавайте в заголовке Authorization: Bearer <token>");
+        public static string ApiGuide => T("How to use the API (examples)", "Como usar a API (exemplos)", "Cómo usar la API (ejemplos)", "Как пользоваться API (примеры)");
         public static string ApiCopyToken => T("Copy token", "Copiar token", "Copiar token", "Скопировать токен");
         public static string ApiTokenCopied => T("Token copied", "Token copiado", "Token copiado", "Токен скопирован");
         public static string ApiNewToken => T("Make a new token", "Gerar um novo token", "Generar un token nuevo", "Создать новый токен");
         public static string ApiNewTokenDone => T("New token made. Apps using the old one must be updated", "Novo token gerado. Apps que usavam o antigo precisam ser atualizados", "Token nuevo generado. Las apps con el anterior deben actualizarse", "Токен создан. Приложения со старым токеном нужно обновить");
         public static string ExtInstall => T("Install browser extension", "Instalar extensão do navegador", "Instalar extensión del navegador", "Установить расширение для браузера");
         public static string ExtHint => T("Gives web audio the site's icon. Opens the browser's extensions page", "Dá ao áudio da web o ícone do site. Abre a página de extensões do navegador", "Da al audio web el icono del sitio. Abre la página de extensiones del navegador", "Показывает значок сайта для веб-аудио. Открывает страницу расширений браузера");
-        public static string ExtSteps(string folder) => T("Folder copied. In the browser: turn on Developer mode, click Load unpacked and paste the folder (Ctrl+V). " + folder,
-                                                          "Pasta copiada. No navegador: ligue o Modo do desenvolvedor, clique em Carregar sem compactação e cole a pasta (Ctrl+V). " + folder,
-                                                          "Carpeta copiada. En el navegador: active el Modo desarrollador, pulse Cargar descomprimida y pegue la carpeta (Ctrl+V). " + folder,
-                                                          "Папка скопирована. В браузере: включите режим разработчика, нажмите «Загрузить распакованное» и вставьте папку (Ctrl+V). " + folder);
+        public static string ExtSteps(string folder) => T("The folder path is copied. In the browser: 1) turn on Developer mode, 2) click Load unpacked, 3) paste the path (Ctrl+V) and confirm.",
+                                                          "O caminho da pasta foi copiado. No navegador: 1) ligue o Modo do desenvolvedor, 2) clique em Carregar sem compactação, 3) cole o caminho (Ctrl+V) e confirme.",
+                                                          "La ruta de la carpeta está copiada. En el navegador: 1) active el Modo desarrollador, 2) pulse Cargar descomprimida, 3) pegue la ruta (Ctrl+V) y confirma.",
+                                                          "Путь к папке скопирован. В браузере: 1) включите режим разработчика, 2) нажмите «Загрузить распакованное», 3) вставьте путь (Ctrl+V) и подтвердите.");
         public static string ExtNoBrowser => T("That browser was not found. The folder is ready:", "Esse navegador não foi encontrado. A pasta está pronta:", "No se encontró ese navegador. La carpeta está lista:", "Браузер не найден. Папка готова:");
         public static string ExtFailed => T("Could not prepare the extension", "Não foi possível preparar a extensão", "No se pudo preparar la extensión", "Не удалось подготовить расширение");
         public static string ApiPortBusy => T("The port is in use by another program", "A porta está em uso por outro programa", "El puerto está en uso por otro programa", "Порт занят другой программой");

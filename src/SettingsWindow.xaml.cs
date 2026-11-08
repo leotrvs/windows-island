@@ -55,7 +55,14 @@ namespace WindowsIsland
             };
             Closed += (s, e) =>
             {
-                if (saveTimer.IsEnabled) { saveTimer.Stop(); settings.Save(); }
+                try
+                {
+                    Rect r = RestoreBounds;
+                    if (!r.IsEmpty) { settings.SettingsLeft = r.Left; settings.SettingsTop = r.Top; settings.SettingsWidth = r.Width; settings.SettingsHeight = r.Height; }
+                    saveTimer.Stop();
+                    settings.Save();
+                }
+                catch (Exception) { }
                 if (updates != null) updates.Changed -= OnUpdateChanged;
             };
             // Like a tray flyout: it takes the focus (which closes the hidden-icons panel), slides up into the
@@ -194,8 +201,25 @@ namespace WindowsIsland
             Height = Math.Min(Height, Math.Max(MinHeight, work.Height - 24));
             bool taskbarLeft = work.Left > bounds.Left + 1, taskbarTop = work.Top > bounds.Top + 1;
             Left = taskbarLeft ? work.Left + 12 : work.Right - Width - 12;
-Top = taskbarTop ? work.Top + 12 : work.Bottom - Height - 12;
+            Top = taskbarTop ? work.Top + 12 : work.Bottom - Height - 12;
+
+            // Where it was left last time, if that is still on a screen
+            if (settings.SettingsLeft.HasValue && settings.SettingsTop.HasValue && settings.SettingsWidth.HasValue && settings.SettingsHeight.HasValue)
+            {
+                Rect saved = new Rect(settings.SettingsLeft.Value, settings.SettingsTop.Value, Math.Max(MinWidth, settings.SettingsWidth.Value), Math.Max(MinHeight, settings.SettingsHeight.Value));
+                foreach (Display d in Displays.All())
+                {
+                    Rect visible = Rect.Intersect(saved, d.WorkArea);
+                    if (!visible.IsEmpty && visible.Width >= 120 && visible.Height >= 80 && saved.Top >= d.WorkArea.Top - 4)
+                    {
+                        Width = saved.Width; Height = saved.Height; Left = saved.Left; Top = saved.Top;
+                        break;
+                    }
+                }
+            }
             restingTop = Top;
+            // Start the slide-up from below before the window is first shown, so it does not appear and then jump
+            if (SystemParameters.ClientAreaAnimation) Top = restingTop + 22;
         }
 
         void BuildTabs()
@@ -600,7 +624,7 @@ Top = taskbarTop ? work.Top + 12 : work.Bottom - Height - 12;
                 note.Text = Strings.ApiTokenCopied;
                 note.Visibility = Visibility.Visible;
             };
-            Row("\uE8C8", null, null, null, null, copy);
+            Row("\uE8C8", Strings.ApiTokenLabel, Strings.ApiTokenHint, null, null, copy);
             Button renew = new Button { Content = Strings.ApiNewToken, Style = (Style)FindResource("LinkButton"), HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Center };
             renew.Click += (s, e) =>
             {
@@ -611,6 +635,9 @@ Top = taskbarTop ? work.Top + 12 : work.Bottom - Height - 12;
                 note.Visibility = Visibility.Visible;
             };
             Row("\uE72C", null, null, null, null, renew);
+            Button guide = new Button { Content = Strings.ApiGuide, Style = (Style)FindResource("LinkButton"), HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Center };
+            guide.Click += (s, e) => { try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("https://github.com/leotrvs/windows-island/blob/main/docs/API.md") { UseShellExecute = true }); } catch (Exception) { } };
+            Row("\uE897", null, null, null, null, guide);
 
             StackPanel browsers = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
             foreach (bool edge in new[] { false, true })

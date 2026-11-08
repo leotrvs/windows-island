@@ -1,52 +1,90 @@
 using System;
 using System.Runtime.InteropServices;
-using System.Windows.Threading;
+using System.Text;
 
 namespace WindowsIsland
 {
     // EXPERIMENTAL. While on, hides Windows' own volume and brightness popup so only the island's bar shows.
     // Windows has no setting for this: the popup is a small window of the Explorer shell (class
-    // XamlExplorerHostIslandWindow) that becomes visible for a moment, and this hides it each time it appears.
-    // It touches only visible windows of that class that are small (the popup is about 230x85), and the
-    // window is shown again by Windows itself the next time, so quitting the island or turning this off
+    // XamlExplorerHostIslandWindow) that becomes visible for a moment. A window-event hook (the same call
+    // screen readers use) tells this app the moment such a window is shown, and it is hidden at once, so there
+    // is no polling and no visible flash even while a key is held. Only small windows of that class are touched,
+    // and Windows shows the window again by itself the next time, so quitting the island or turning this off
     // restores the normal popup. A Windows update may change the window and stop this from working.
     sealed class WindowsOsd
     {
         const string ClassName = "XamlExplorerHostIslandWindow";
+        const uint EVENT_OBJECT_SHOW = 0x8002, EVENT_OBJECT_UNCLOAKED = 0x8018, EVENT_OBJECT_LOCATIONCHANGE = 0x800B;
+        const uint WINEVENT_OUTOFCONTEXT = 0;
+        const int OBJID_WINDOW = 0;
 
-        [DllImport("user32.dll", CharSet = CharSet.Unicode)] static extern IntPtr FindWindowEx(IntPtr parent, IntPtr after, string cls, string title);
+        delegate void WinEventProc(IntPtr hook, uint evt, IntPtr hwnd, int idObject, int idChild, uint thread, uint time);
+
+        [DllImport("user32.dll")] static extern IntPtr SetWinEventHook(uint min, uint max, IntPtr module, WinEventProc proc, uint pid, uint thread, uint flags);
+        [DllImport("user32.dll")] static extern bool UnhookWinEvent(IntPtr hook);
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)] static extern int GetClassName(IntPtr h, StringBuilder s, int max);
         [DllImport("user32.dll")] static extern bool IsWindowVisible(IntPtr h);
         [DllImport("user32.dll")] static extern bool GetWindowRect(IntPtr h, out RECT r);
         [DllImport("user32.dll")] static extern bool ShowWindow(IntPtr h, int cmd);
 
         [StructLayout(LayoutKind.Sequential)] struct RECT { public int L, T, R, B; }
 
-        readonly DispatcherTimer timer;
+        [StructLayout(LayoutKind.Sequential)] struct MSG { public IntPtr hwnd; public uint message; public IntPtr wParam, lParam; public uint time; public int x, y; }
+        [DllImport("user32.dll")] static extern int GetMessage(out MSG msg, IntPtr hwnd, uint min, uint max);
+        [DllImport("user32.dll")] static extern bool TranslateMessage(ref MSG msg);
+        [DllImport("user32.dll")] static extern IntPtr DispatchMessage(ref MSG msg);
+        [DllImport("user32.dll")] static extern bool PostThreadMessage(uint thread, uint msg, IntPtr w, IntPtr l);
+        [DllImport("kernel32.dll")] static extern uint GetCurrentThreadId();
+        const uint WM_QUIT = 0x0012;
 
-        public WindowsOsd(Dispatcher dispatcher)
+        readonly WinEventProc callback; // Kept in a field so it is not collected while hooked
+        System.Threading.Thread thread;
+        uint threadId;
+
+        public WindowsOsd()
         {
-            timer = new DispatcherTimer(DispatcherPriority.Background, dispatcher) { Interval = TimeSpan.FromMilliseconds(60) };
-            timer.Tick += (s, e) => Hide();
+            callback = OnEvent;
         }
 
+        // The hook lives on its own thread with its own message loop, so the island's animations on the
+        // main thread can never delay the moment the popup is hidden.
         public void Apply(bool on)
         {
-            if (on && !timer.IsEnabled) timer.Start();
-            else if (!on && timer.IsEnabled) timer.Stop();
+            if (on && thread == null)
+            {
+                System.Threading.ManualResetEventSlim ready = new System.Threading.ManualResetEventSlim(false);
+                thread = new System.Threading.Thread(() =>
+                {
+                    threadId = GetCurrentThreadId();
+                    IntPtr show = SetWinEventHook(EVENT_OBJECT_SHOW, EVENT_OBJECT_SHOW, IntPtr.Zero, callback, 0, 0, WINEVENT_OUTOFCONTEXT);
+                    IntPtr uncloak = SetWinEventHook(EVENT_OBJECT_UNCLOAKED, EVENT_OBJECT_UNCLOAKED, IntPtr.Zero, callback, 0, 0, WINEVENT_OUTOFCONTEXT);
+                    IntPtr move = SetWinEventHook(EVENT_OBJECT_LOCATIONCHANGE, EVENT_OBJECT_LOCATIONCHANGE, IntPtr.Zero, callback, 0, 0, WINEVENT_OUTOFCONTEXT);
+                    ready.Set();
+                    MSG msg;
+                    while (GetMessage(out msg, IntPtr.Zero, 0, 0) > 0) { TranslateMessage(ref msg); DispatchMessage(ref msg); }
+                    UnhookWinEvent(show); UnhookWinEvent(uncloak); UnhookWinEvent(move);
+                }) { IsBackground = true, Name = "WindowsOsd" };
+                thread.SetApartmentState(System.Threading.ApartmentState.STA);
+                thread.Start();
+                ready.Wait(2000);
+            }
+            else if (!on && thread != null)
+            {
+                PostThreadMessage(threadId, WM_QUIT, IntPtr.Zero, IntPtr.Zero);
+                thread = null;
+            }
         }
 
-        static void Hide()
+        void OnEvent(IntPtr hook, uint evt, IntPtr hwnd, int idObject, int idChild, uint thread, uint time)
         {
+            if (idObject != OBJID_WINDOW || hwnd == IntPtr.Zero) return;
             try
             {
-                IntPtr h = IntPtr.Zero;
-                int guard = 0;
-                while (guard++ < 16 && (h = FindWindowEx(IntPtr.Zero, h, ClassName, null)) != IntPtr.Zero)
-                {
-                    if (!IsWindowVisible(h) || !GetWindowRect(h, out RECT r)) continue;
-                    int w = r.R - r.L, ht = r.B - r.T;
-                    if (w > 0 && w < 500 && ht > 0 && ht < 200) ShowWindow(h, 0);
-                }
+                StringBuilder name = new StringBuilder(64);
+                if (GetClassName(hwnd, name, 64) == 0 || name.ToString() != ClassName) return;
+                if (!IsWindowVisible(hwnd) || !GetWindowRect(hwnd, out RECT r)) return;
+                int w = r.R - r.L, h = r.B - r.T;
+                if (w > 0 && w < 500 && h > 0 && h < 200) ShowWindow(hwnd, 0);
             }
             catch (Exception) { }
         }

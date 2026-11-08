@@ -45,12 +45,39 @@ namespace WindowsIsland
             if (exe == null) return false;
             try
             {
-                Process.Start(new ProcessStartInfo(exe, edge ? "edge://extensions" : "chrome://extensions") { UseShellExecute = false });
+                // Without a profile, a browser with several profiles opens its "who is using Chrome?" page and
+                // drops the address. The profile used last is the one the user is working in.
+                string profile = LastUsedProfile(edge);
+                string args = (profile == null ? "" : "--profile-directory=" + (char)34 + profile + (char)34 + " ") + (edge ? "edge://extensions" : "chrome://extensions");
+                Process.Start(new ProcessStartInfo(exe, args) { UseShellExecute = false });
                 return true;
             }
             catch (Exception)
             {
                 return false;
+            }
+        }
+
+        // The folder name of the profile the browser used last ("Default", "Profile 2"), from its Local State file.
+        static string LastUsedProfile(bool edge)
+        {
+            try
+            {
+                string state = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                                            edge ? "Microsoft" : "Google", edge ? "Edge" : "Chrome", "User Data", "Local State");
+                if (!File.Exists(state)) return null;
+                using (System.Text.Json.JsonDocument doc = System.Text.Json.JsonDocument.Parse(File.ReadAllText(state)))
+                {
+                    if (!doc.RootElement.TryGetProperty("profile", out System.Text.Json.JsonElement profile)) return null;
+                    if (!profile.TryGetProperty("last_used", out System.Text.Json.JsonElement last)) return null;
+                    string name = last.GetString();
+                    // Only a plain folder name: it goes on a command line
+                    return !string.IsNullOrEmpty(name) && System.Text.RegularExpressions.Regex.IsMatch(name, "^[A-Za-z0-9 ]{1,40}$") ? name : null;
+                }
+            }
+            catch (Exception)
+            {
+                return null;
             }
         }
 
