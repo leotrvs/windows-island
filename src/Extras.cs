@@ -123,6 +123,8 @@ namespace WindowsIsland
 
         public bool Microphone { get; private set; }
         public bool Camera { get; private set; }
+        public bool Screen { get; private set; } // Something is capturing or sharing the screen
+        public IReadOnlyList<string> ScreenApps { get; private set; } = new List<string>();
         public IReadOnlyList<string> MicrophoneApps { get; private set; } = new List<string>();
         public IReadOnlyList<string> CameraApps { get; private set; } = new List<string>();
         public event Action Changed;
@@ -145,10 +147,10 @@ namespace WindowsIsland
         public void Stop()
         {
             timer.Stop();
-            if (Microphone || Camera)
+            if (Microphone || Camera || Screen)
             {
-                Microphone = Camera = false;
-                MicrophoneApps = CameraApps = new List<string>();
+                Microphone = Camera = Screen = false;
+                MicrophoneApps = CameraApps = ScreenApps = new List<string>();
                 Changed?.Invoke();
             }
         }
@@ -159,16 +161,24 @@ namespace WindowsIsland
             foreach (string name in AudioCapture.Apps())
                 if (!micApps.Contains(name, StringComparer.OrdinalIgnoreCase)) micApps.Add(name);
             List<string> camApps = UsersOf("webcam");
+            // Windows records screen capture (sharing in a call, recording) like the microphone: two timestamps per app
+            List<string> screenApps = UsersOf("graphicsCaptureProgrammatic");
+            foreach (string name in UsersOf("graphicsCaptureWithoutBorder"))
+                if (!screenApps.Contains(name, StringComparer.OrdinalIgnoreCase)) screenApps.Add(name);
+            screenApps.RemoveAll(n => string.Equals(n, Installer.Name, StringComparison.OrdinalIgnoreCase));
 
-            bool mic = micApps.Count > 0, cam = camApps.Count > 0;
-            bool same = mic == Microphone && cam == Camera &&
+            bool mic = micApps.Count > 0, cam = camApps.Count > 0, screen = screenApps.Count > 0;
+            bool same = mic == Microphone && cam == Camera && screen == Screen &&
                         string.Join("|", micApps) == string.Join("|", MicrophoneApps) &&
-                        string.Join("|", camApps) == string.Join("|", CameraApps);
+                        string.Join("|", camApps) == string.Join("|", CameraApps) &&
+                        string.Join("|", screenApps) == string.Join("|", ScreenApps);
             if (same) return;
             Microphone = mic;
             Camera = cam;
+            Screen = screen;
             MicrophoneApps = micApps;
             CameraApps = camApps;
+            ScreenApps = screenApps;
             Changed?.Invoke();
         }
 

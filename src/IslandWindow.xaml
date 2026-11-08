@@ -86,6 +86,7 @@
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <Ellipse x:Name="MicDot" Width="6" Height="6" Fill="#E0922A" Margin="2.5,0"/>
                 <Ellipse x:Name="CamDot" Width="6" Height="6" Fill="#3FBF5F" Margin="2.5,0"/>
+                <Ellipse x:Name="ScreenDot" Width="6" Height="6" Fill="#3B8CFF" Margin="2.5,0"/>
                 <TextBlock x:Name="PrivacyName" FontSize="10.5" Foreground="#D9FFFFFF" Margin="3,0,6,0"
                            VerticalAlignment="Center" Visibility="Collapsed"/>
             </StackPanel>
@@ -514,6 +515,9 @@
                                     <TextBlock Text="&#xE711;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="12" Foreground="White" VerticalAlignment="Center" Margin="0,0,6,0"/>
                                     <TextBlock x:Name="PermDenyText" FontSize="13" FontWeight="SemiBold" Foreground="White"/>
                                 </StackPanel>
+                            </Border>
+                            <Border x:Name="PermOpen" Grid.Column="2" CornerRadius="13" Padding="14,5" Background="#FF0A84FF" Cursor="Hand" Visibility="Collapsed">
+                                <TextBlock x:Name="PermOpenText" FontSize="13" FontWeight="SemiBold" Foreground="White"/>
                             </Border>
                             <Border x:Name="PermAllow" Grid.Column="2" CornerRadius="13" Padding="13,5,15,5" Background="#FF30D158" Cursor="Hand">
                                 <StackPanel Orientation="Horizontal">

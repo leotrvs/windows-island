@@ -160,6 +160,7 @@ namespace WindowsIsland
                 islands.Add(window);
                 if (string.Equals(preview, "Settings", StringComparison.OrdinalIgnoreCase))
                 {
+                    settings.Theme = Environment.GetEnvironmentVariable("ISLAND_PREVIEW_THEME") ?? "Dark";
                     new SettingsWindow(settings, () => { }, null, () => { }).Show(); // A look at the Settings window with sample data
                     window.Show();
                     return;
@@ -185,7 +186,7 @@ namespace WindowsIsland
                     {
                         string suffix = "-" + CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
                         window.RenderStates(render, suffix);
-                        SettingsWindow page = new SettingsWindow(new Settings(), () => { }, null, () => { });
+                        SettingsWindow page = new SettingsWindow(new Settings { Theme = Environment.GetEnvironmentVariable("ISLAND_PREVIEW_THEME") ?? "Dark" }, () => { }, null, () => { });
                         page.SaveSnapshot(System.IO.Path.Combine(render, "settings" + suffix + ".png"));
                         Shutdown();
                     }));

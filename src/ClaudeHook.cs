@@ -29,7 +29,8 @@ namespace WindowsIsland
         // Claude Code runs hook commands through a shell, so the path has forward slashes and quotes.
         public static string Command
         {
-            get { return "\"" + Installer.StartupTarget.Replace('\\', '/') + "\" " + Marker; }
+            // Inside double quotes a shell still expands $ and the backtick, so those are escaped
+            get { return "\"" + Installer.StartupTarget.Replace('\\', '/').Replace("$", "\\$").Replace("`", "\\`") + "\" " + Marker; }
         }
 
         static bool IsOurs(JsonNode entry)
@@ -42,6 +43,22 @@ namespace WindowsIsland
                 if (command != null && command.Contains(Marker, StringComparison.Ordinal) && command.Contains("WindowsIsland", StringComparison.OrdinalIgnoreCase)) return true;
             }
             return false;
+        }
+
+        // One entry of ours, with the command and timeout this version would write.
+        static bool IsCurrent(JsonArray list)
+        {
+            int ours = 0;
+            foreach (JsonNode entry in list)
+            {
+                if (!IsOurs(entry)) continue;
+                ours++;
+                JsonObject hook = ((entry as JsonObject)?["hooks"] as JsonArray)?[0] as JsonObject;
+                if (hook == null) return false;
+                if (hook["command"]?.GetValue<string>() != Command) return false;
+                try { if (hook["timeout"]?.GetValue<int>() != TimeoutSeconds) return false; } catch (Exception) { return false; }
+            }
+            return ours == 1;
         }
 
         public static bool IsInstalled
@@ -107,6 +124,8 @@ namespace WindowsIsland
                 }
 
                 bool changed = false;
+                // Already exactly as it should be: the file is not touched (and not reformatted) on every start
+                if (install && IsCurrent(list)) return true;
                 for (int i = list.Count - 1; i >= 0; i--)
                     if (IsOurs(list[i])) { list.RemoveAt(i); changed = true; }
                 if (install)
@@ -127,8 +146,9 @@ namespace WindowsIsland
 
                 if (File.Exists(path))
                 {
-                    string backup = path + ".island-backup";
+                    string backup = path + ".island-backup"; // The original, kept the first time
                     if (!File.Exists(backup)) File.Copy(path, backup);
+                    File.Copy(path, path + ".island-backup-last", true); // And the file as it was before this change
                 }
                 string temp = path + ".island-tmp";
                 File.WriteAllText(temp, root.ToJsonString(new JsonSerializerOptions { WriteIndented = true, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping }), new UTF8Encoding(false));

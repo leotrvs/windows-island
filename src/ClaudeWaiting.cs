@@ -26,7 +26,7 @@ namespace WindowsIsland
         static readonly HashSet<string> Slow = new HashSet<string>(StringComparer.Ordinal)
             { "Task", "Agent", "WebFetch", "WebSearch", "Workflow", "Monitor", "ScheduleWakeup", "Skill", "TaskOutput", "ToolSearch" };
 
-        sealed class Pending
+        internal sealed class Pending
         {
             public string Name;
             public DateTime Since; // UTC
@@ -157,8 +157,18 @@ namespace WindowsIsland
                 }
             }
 
+            return Analyze(Encoding.UTF8.GetString(bytes), out asking, out askText, out askButtons);
+        }
+
+        // The oldest tool call that has no result yet, and the question the chat ended with (if nobody answered it),
+        // from the lines of a transcript.
+        internal static Pending Analyze(string text, out bool asking, out string askText, out List<string> askButtons)
+        {
+            asking = false;
+            askText = null;
+            askButtons = null;
             Dictionary<string, Pending> open = new Dictionary<string, Pending>();
-            foreach (string line in Encoding.UTF8.GetString(bytes).Split('\n'))
+            foreach (string line in text.Split('\n'))
             {
                 if (line.Length < 20) continue;
                 bool assistant = line.Contains("\"type\":\"assistant\"", StringComparison.Ordinal);
@@ -194,13 +204,13 @@ namespace WindowsIsland
                                 if (block.TryGetProperty("name", out name) && name.GetString() == "mcp__ccd_turn__wrap_up" &&
                                     block.TryGetProperty("input", out input) && input.ValueKind == JsonValueKind.Object)
                                 {
-                                    string text = input.TryGetProperty("ask", out ask) && ask.ValueKind == JsonValueKind.String ? ask.GetString() : null;
+                                    string question = input.TryGetProperty("ask", out ask) && ask.ValueKind == JsonValueKind.String ? ask.GetString() : null;
                                     bool hard = input.TryGetProperty("blocked", out ask) && ask.ValueKind == JsonValueKind.True;
-                                    if (!string.IsNullOrWhiteSpace(text) || hard)
+                                    if (!string.IsNullOrWhiteSpace(question) || hard)
                                     {
                                         asking = true;
-                                        text = (text ?? "").Trim();
-                                        askText = text.Length > 140 ? text.Substring(0, 139) + "\u2026" : text;
+                                        question = (question ?? "").Trim();
+                                        askText = question.Length > 140 ? question.Substring(0, 139) + "\u2026" : question;
                                         askButtons = new List<string>();
                                         if (input.TryGetProperty("actions", out actions) && actions.ValueKind == JsonValueKind.Array)
                                             foreach (JsonElement action in actions.EnumerateArray())

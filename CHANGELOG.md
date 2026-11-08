@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.6.0
+
+- **Screen sharing dot:** a blue dot beside the island while an app shares or records the screen (read from the same Windows record as the microphone and camera dots). Settings, Activities, Privacy, "Screen sharing"
+- **Permission prompt, after a security review:** the buttons wake up after about half a second and a click must be pressed and released on the same button; the summary is the technical text only (command, file, address, query) with line breaks shown as ⏎ and the project folder; when it is cut or has no such field, Allow is replaced by "Open Claude"; a prompt that cannot be shown (full-screen window, island closing) gets no answer instead of holding Claude for a minute; the Claude settings file is not rewritten when the hook is already right, and every change keeps a copy of the file before it
+- **Settings:** a light theme (Auto follows Windows, or choose Light or Dark; the island stays black), the order of the pages, which limit alerts to show (75, 90, 100 %, renewed) and separate durations for Windows notifications and limit alerts
+- **Tests:** `dotnet test tests` runs unit tests for the chat transcript reader, the limit alert rules and the Claude settings editor
+- Smaller: site icons are smoothed once instead of on every title change, and copying the extension folder no longer freezes Settings
+
 ## 2.5.1
 
 - Permission prompt: Deny is red with a cross and Allow is green with a check mark, and tools from the Supabase connector show the Supabase mark

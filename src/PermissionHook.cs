@@ -15,7 +15,9 @@ namespace WindowsIsland
     {
         const int MaxInput = 256 * 1024;
         const int ConnectTimeoutMs = 1500;
-        static readonly string[] SummaryKeys = { "command", "file_path", "path", "url", "query", "sql", "notebook_path", "pattern", "prompt", "description", "name" };
+        // Only the technical fields are shown as the summary: a description is text the model wrote for itself
+        static readonly string[] SummaryKeys = { "command", "file_path", "path", "url", "query", "sql", "notebook_path", "pattern" };
+        const int ShownLength = 280;
 
         public static int Run()
         {
@@ -23,10 +25,11 @@ namespace WindowsIsland
             {
                 byte[] input = ReadInput();
                 if (input == null) return 0;
-                string tool, session, summary;
-                if (!Parse(input, out tool, out session, out summary)) return 0;
+                string tool, session, summary, project;
+                bool partial;
+                if (!Parse(input, out tool, out session, out summary, out project, out partial)) return 0;
 
-                string decision = Ask(tool, session, summary);
+                string decision = Ask(tool, session, summary, project, partial);
                 if (decision == "allow")
                     Console.Out.Write("{\"hookSpecificOutput\":{\"hookEventName\":\"PermissionRequest\",\"decision\":{\"behavior\":\"allow\"}}}");
                 else if (decision == "deny")
@@ -55,9 +58,10 @@ namespace WindowsIsland
             }
         }
 
-        static bool Parse(byte[] input, out string tool, out string session, out string summary)
+        static bool Parse(byte[] input, out string tool, out string session, out string summary, out string project, out bool partial)
         {
-            tool = session = summary = null;
+            tool = session = summary = project = null;
+            partial = false;
             using (JsonDocument document = JsonDocument.Parse(input))
             {
                 JsonElement root = document.RootElement, value;
@@ -65,15 +69,25 @@ namespace WindowsIsland
                 if (root.TryGetProperty("tool_name", out value) && value.ValueKind == JsonValueKind.String) tool = value.GetString();
                 if (root.TryGetProperty("session_id", out value) && value.ValueKind == JsonValueKind.String) session = value.GetString();
                 if (string.IsNullOrEmpty(tool)) return false;
+                if (root.TryGetProperty("cwd", out value) && value.ValueKind == JsonValueKind.String)
+                {
+                    try { project = Path.GetFileName(value.GetString().TrimEnd('\\', '/')); } catch (Exception) { }
+                }
                 JsonElement args;
-                summary = root.TryGetProperty("tool_input", out args) ? Summarize(args) : "";
+                bool technical = true;
+                string text = root.TryGetProperty("tool_input", out args) ? Summarize(args, out technical) : "";
+                // One line and short enough to read whole: line breaks are shown, runs of spaces are folded before anything is cut
+                text = System.Text.RegularExpressions.Regex.Replace(text.Replace("\r\n", "\n").Replace('\r', '\n').Replace("\n", " \u23CE "), @"[ \t]{2,}", " ").Trim();
+                partial = !technical || text.Length > ShownLength;
+                summary = text.Length > ShownLength ? text.Substring(0, ShownLength - 1) + "\u2026" : text;
                 return true;
             }
         }
 
         // What the user needs to see to decide: the command, the file, the address or the query.
-        static string Summarize(JsonElement args)
+        static string Summarize(JsonElement args, out bool technical)
         {
+            technical = true;
             if (args.ValueKind != JsonValueKind.Object) return args.ValueKind == JsonValueKind.String ? args.GetString() : args.GetRawText();
             foreach (string key in SummaryKeys)
             {
@@ -81,11 +95,13 @@ namespace WindowsIsland
                 if (args.TryGetProperty(key, out value) && value.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(value.GetString()))
                     return value.GetString();
             }
+            technical = false; // The arguments as they are, which may not be the whole story: look in Claude
             return args.GetRawText();
         }
 
-        static string Ask(string tool, string session, string summary)
+        static string Ask(string tool, string session, string summary, string project, bool partial)
         {
+            System.Diagnostics.Stopwatch total = System.Diagnostics.Stopwatch.StartNew();
             string token = LocalApi.ReadToken();
             if (token == null) return "none";
             int port = Settings.Load().ApiPort;
@@ -110,7 +126,9 @@ namespace WindowsIsland
                         json.WriteStartObject();
                         json.WriteString("tool", tool.Length > 100 ? tool.Substring(0, 100) : tool);
                         if (!string.IsNullOrEmpty(session) && session.Length <= 64) json.WriteString("session", session);
-                        json.WriteString("summary", summary != null && summary.Length > 280 ? summary.Substring(0, 279) + "\u2026" : summary ?? "");
+                        json.WriteString("summary", summary ?? "");
+                        if (!string.IsNullOrEmpty(project) && project.Length <= 60) json.WriteString("project", project);
+                        json.WriteBoolean("partial", partial);
                         json.WriteNumber("wait", ClaudeHook.WaitSeconds);
                         json.WriteEndObject();
                     }
@@ -134,7 +152,16 @@ namespace WindowsIsland
                 int filled = 0, n;
                 try
                 {
-                    while (filled < reply.Length && (n = stream.Read(reply, filled, reply.Length - filled)) > 0) filled += n;
+                    while (filled < reply.Length)
+                    {
+                        // The whole wait is capped, not each read, so the hook always ends before Claude Code gives up on it
+                        int left = (ClaudeHook.WaitSeconds + 8) * 1000 - (int)total.ElapsedMilliseconds;
+                        if (left <= 0) return "none";
+                        stream.ReadTimeout = left;
+                        n = stream.Read(reply, filled, reply.Length - filled);
+                        if (n <= 0) break;
+                        filled += n;
+                    }
                 }
                 catch (IOException)
                 {

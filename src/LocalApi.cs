@@ -498,36 +498,51 @@ namespace WindowsIsland
             string session = Text(fields, "session", 64, ref bad);
             string tool = Text(fields, "tool", 100, ref bad);
             string summary = Text(fields, "summary", 300, ref bad);
+            string project = Text(fields, "project", 60, ref bad);
+            bool partial = false;
+            JsonElement partialValue;
+            if (fields.TryGetValue("partial", out partialValue)) partial = partialValue.ValueKind == JsonValueKind.True;
             double? wait = Number(fields, "wait", ref bad);
             if (bad || string.IsNullOrEmpty(tool)) return Reply.Error(400, "invalid_field");
             int seconds = (int)Math.Clamp(wait ?? 60, 5, 110);
 
-            ApiPermission permission = new ApiPermission { Session = session, Tool = tool, Summary = summary ?? "" };
+            ApiPermission permission = new ApiPermission { Session = session, Tool = tool, Summary = summary ?? "", Project = project, Partial = partial };
             bool shown = await dispatcher.InvokeAsync(() =>
             {
                 if (ticket != generation || !Running || PermissionAsked == null || pendingPermissions >= MaxPendingPermissions) return false;
                 pendingPermissions++;
-                PermissionAsked(permission);
+                try { PermissionAsked(permission); }
+                catch (Exception) { pendingPermissions--; return false; } // A failing handler must not leave the count up
                 return true;
             }, DispatcherPriority.Normal, token).Task;
             if (!shown) return new Reply(200, "{\"decision\":\"none\"}");
 
             string decision = "none";
-            try
+            using (CancellationTokenSource waiting = CancellationTokenSource.CreateLinkedTokenSource(token))
             {
-                deadlineSource.CancelAfter(TimeSpan.FromSeconds(seconds + 5)); // This route is the one that waits
-                Task<int> hangup = stream.ReadAsync(new byte[1], 0, 1, token);
-                Task finished = await Task.WhenAny(permission.Answer, Task.Delay(TimeSpan.FromSeconds(seconds), token), hangup);
-                if (finished == permission.Answer) decision = permission.Answer.Result;
-            }
-            catch (Exception)
-            {
-                // Cancelled or the connection broke: no decision
-            }
-            finally
-            {
-                try { await dispatcher.InvokeAsync(() => { pendingPermissions--; permission.Cancel(); }); }
-                catch (Exception) { }
+                try
+                {
+                    deadlineSource.CancelAfter(TimeSpan.FromSeconds(seconds + 5)); // This route is the one that waits
+                    Task<int> hangup = stream.ReadAsync(new byte[1], 0, 1, waiting.Token);
+                    Task timeout = Task.Delay(TimeSpan.FromSeconds(seconds), waiting.Token);
+                    Task finished = await Task.WhenAny(permission.Answer, timeout, hangup);
+                    if (finished == permission.Answer) decision = permission.Answer.Result;
+                }
+                catch (Exception)
+                {
+                    // Cancelled or the connection broke: no decision
+                }
+                finally
+                {
+                    waiting.Cancel(); // Ends the pending read and the timer
+                    try
+                    {
+                        // The island's window thread gets a few seconds; the answer does not depend on it
+                        System.Windows.Threading.DispatcherOperation done = dispatcher.InvokeAsync(() => { pendingPermissions--; permission.Cancel(); });
+                        await Task.WhenAny(done.Task, Task.Delay(3000));
+                    }
+                    catch (Exception) { }
+                }
             }
             return new Reply(200, "{\"decision\":\"" + decision + "\"}");
         }

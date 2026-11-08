@@ -23,6 +23,14 @@ namespace WindowsIsland
         public bool ShowClaude { get; set; } = true;
         public bool ClaudeBanners { get; set; } = true;
         public bool PermissionPrompts { get; set; } = false; // Allow or deny Claude's permission requests on the island (installs a hook)
+        public string Theme { get; set; } = "Auto"; // Colors of the Settings window: Auto (follows Windows), Dark or Light
+        public bool ShowScreenShare { get; set; } = true; // A blue dot while the screen is shared or recorded (needs the privacy dots)
+        public bool LimitAt75 { get; set; } = true;     // Which limit alerts to show
+        public bool LimitAt90 { get; set; } = true;
+        public bool LimitAt100 { get; set; } = true;
+        public bool LimitRenewed { get; set; } = true;
+        public int LimitAlertSeconds { get; set; } = 4;     // How long a limit alert stays
+        public int NotificationSeconds { get; set; } = 3;   // How long a Windows notification stays
         public bool ShowLimitAlerts { get; set; } = true; // Claude 5-hour and weekly limits at 75, 90 and 100% and when they renew
         public bool ShowCodex { get; set; } = true;     // Only shows anything once Codex is installed
         public bool CodexBanners { get; set; } = true;
@@ -34,6 +42,22 @@ namespace WindowsIsland
         public bool PageClaude { get; set; } = true;
         public bool PageTimer { get; set; } = true;
         public bool PageSystem { get; set; } = true;
+        public string PageOrder { get; set; } = "Music,Claude,System,Timer"; // The order of the pages when the island is open
+
+        public static readonly string[] PageNames = { "Music", "Claude", "System", "Timer" };
+
+        // The saved order, with anything missing or unknown fixed: every page exactly once.
+        public System.Collections.Generic.List<string> PageOrderList()
+        {
+            System.Collections.Generic.List<string> order = new System.Collections.Generic.List<string>();
+            foreach (string name in (PageOrder ?? "").Split(','))
+            {
+                string known = Array.Find(PageNames, n => string.Equals(n, name.Trim(), StringComparison.OrdinalIgnoreCase));
+                if (known != null && !order.Contains(known)) order.Add(known);
+            }
+            foreach (string name in PageNames) if (!order.Contains(name)) order.Add(name);
+            return order;
+        }
         public bool ShowDeviceAlerts { get; set; } = true;  // Bluetooth and USB devices connecting
         public bool ShowNetworkAlerts { get; set; } = true; // Going offline and coming back
         public bool HotkeyEnabled { get; set; } = false;   // A global shortcut that opens and closes the island: off by default
@@ -91,6 +115,8 @@ namespace WindowsIsland
         Settings Sanitized()
         {
             AlertSeconds = Math.Clamp(AlertSeconds, 1, 60);
+            LimitAlertSeconds = Math.Clamp(LimitAlertSeconds, 1, 60);
+            NotificationSeconds = Math.Clamp(NotificationSeconds, 1, 60);
             PausedMusicSeconds = Math.Clamp(PausedMusicSeconds, 0, 600);
             AutoHideSeconds = Math.Clamp(AutoHideSeconds, 0, 3600);
             OffsetY = Math.Clamp(OffsetY, MinOffsetY, MaxOffsetY);

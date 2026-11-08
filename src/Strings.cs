@@ -191,6 +191,7 @@ namespace WindowsIsland
         public static string PermissionAsks => T("Claude asks for permission", "Claude pede permissão", "Claude pide permiso", "Claude просит разрешение");
         public static string Allow => T("Allow", "Permitir", "Permitir", "Разрешить");
         public static string Deny => T("Deny", "Negar", "Denegar", "Отклонить");
+        public static string PermissionPartial => T("Too long to approve here. Look at it in Claude.", "Longo demais para aprovar aqui. Veja no Claude.", "Demasiado largo para aprobar aquí. Míralo en Claude.", "Слишком длинно, чтобы разрешать здесь. Посмотрите в Claude.");
         public static string PermissionCheck => T("Not sure? Check it in Claude.", "Em dúvida? Confira no Claude.", "¿Dudas? Compruébalo en Claude.", "Не уверены? Проверьте в Claude.");
         public static string MenuPermissionPrompts => T("Answer permissions on the island", "Responder permissões pela ilha", "Responder permisos en la isla", "Отвечать на разрешения на острове");
         public static string HintPermissionPrompts => T("Experimental. Adds a hook to Claude Code's settings so its permission requests show Allow and Deny here. Turns on the local API. If you do not click in time, Claude asks as usual",
@@ -198,6 +199,20 @@ namespace WindowsIsland
                                                         "Experimental. Añade un gancho a la configuración de Claude Code para que sus peticiones de permiso muestren Permitir y Denegar aquí. Activa la API local. Si no haces clic a tiempo, Claude pregunta como siempre",
                                                         "Экспериментально. Добавляет хук в настройки Claude Code, чтобы запросы разрешений показывали здесь «Разрешить» и «Отклонить». Включает локальный API. Если не нажать вовремя, Claude спросит как обычно");
         public static string PermissionHookFailed => T("Could not change Claude's settings file; nothing was changed.", "Não consegui alterar o arquivo de configurações do Claude; nada foi alterado.", "No pude cambiar el archivo de configuración de Claude; no se cambió nada.", "Не удалось изменить файл настроек Claude; ничего не изменено.");
+        public static string GroupLimits => T("Claude limit alerts", "Avisos de limite do Claude", "Avisos de límite de Claude", "Оповещения о лимитах Claude");
+        public static string MenuLimitAt(int percent) => T("Alert at " + percent + "%", "Avisar em " + percent + "%", "Avisar al " + percent + "%", "Оповещать на " + percent + "%");
+        public static string MenuLimitRenewed => T("Alert when it renews", "Avisar quando renova", "Avisar cuando se renueva", "Оповещать при обновлении");
+        public static string MenuLimitDuration => T("Limit alert duration", "Duração dos avisos de limite", "Duración de los avisos de límite", "Длительность оповещений о лимитах");
+        public static string MenuNotificationDuration => T("Windows notification duration", "Duração das notificações do Windows", "Duración de las notificaciones de Windows", "Длительность уведомлений Windows");
+        public static string MenuTheme => T("Settings theme", "Tema dos Ajustes", "Tema de los Ajustes", "Тема настроек");
+        public static string ThemeAuto => T("Auto", "Auto", "Auto", "Авто");
+        public static string ThemeDark => T("Dark", "Escuro", "Oscuro", "Тёмная");
+        public static string ThemeLight => T("Light", "Claro", "Claro", "Светлая");
+        public static string MenuScreenShare => T("Screen sharing (blue dot)", "Compartilhamento de tela (ponto azul)", "Compartir pantalla (punto azul)", "Показ экрана (синяя точка)");
+        public static string HintScreenShare => T("A blue dot while an app shares or records the screen, such as a call or a recording. Needs the dots above",
+                                                   "Um ponto azul enquanto um app compartilha ou grava a tela, como numa chamada ou numa gravação. Precisa dos pontos acima",
+                                                   "Un punto azul mientras una app comparte o graba la pantalla, como en una llamada o una grabación. Necesita los puntos de arriba",
+                                                   "Синяя точка, пока приложение показывает или записывает экран, например при звонке или записи. Нужны точки выше");
         public static string OpenClaude => T("Open Claude", "Abrir o Claude", "Abrir Claude", "Открыть Claude");
         public static string MenuUninstall => T("Uninstall Windows Island", "Desinstalar o Windows Island", "Desinstalar Windows Island", "Удалить Windows Island");
         public static string MenuOpenSettings => T("Open settings file", "Abrir arquivo de configurações", "Abrir archivo de configuración", "Открыть файл настроек");

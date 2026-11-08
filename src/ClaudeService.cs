@@ -249,12 +249,11 @@ namespace WindowsIsland
         {
             if (window == null || !window.Percent.HasValue) return;
             int percent = window.EffectivePercent;
-            int level = percent >= 100 ? 100 : percent >= 90 ? 90 : percent >= 75 ? 75 : 0;
+            int level = LimitMath.Level(percent);
             int before = limitLevel[index];
             limitLevel[index] = level;
-            if (before < 0 || level == before) return;
-            if (level > before) LimitAlert?.Invoke(index == 1, level, percent, window.EffectiveReset);
-            else if (level == 0 && before >= 75) LimitAlert?.Invoke(index == 1, 0, percent, window.EffectiveReset); // Renewed
+            int announce = LimitMath.Announce(before, level);
+            if (announce >= 0) LimitAlert?.Invoke(index == 1, announce, percent, window.EffectiveReset);
         }
 
         // Called when the user opens the Claude panel, so the limits are fresh when someone looks.

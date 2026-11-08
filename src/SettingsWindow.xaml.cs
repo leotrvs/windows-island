@@ -33,6 +33,8 @@ namespace WindowsIsland
             this.updates = updates;
             this.peekExpanded = peekExpanded;
             InitializeComponent();
+            SettingsTheme.Choose(settings.Theme);
+            ApplyTheme();
 
             // The scroll bar inside the ScrollViewer ignores implicit styles, so it gets its thin one by hand.
             Scroller.ApplyTemplate();
@@ -46,12 +48,9 @@ namespace WindowsIsland
             SourceInitialized += (s, e) =>
             {
                 IntPtr handle = new WindowInteropHelper(this).Handle;
-                int on = 1;
-                DwmSetWindowAttribute(handle, DWMWA_USE_IMMERSIVE_DARK_MODE, ref on, sizeof(int));
                 int round = 2; // DWMWCP_ROUND
                 DwmSetWindowAttribute(handle, 33, ref round, sizeof(int));
-                int border = 0x00382E2E; // A faint outline, since there is no title bar to frame the window
-                DwmSetWindowAttribute(handle, 34, ref border, sizeof(int));
+                ApplyFrameTheme();
             };
             Closed += (s, e) =>
             {
@@ -86,7 +85,7 @@ namespace WindowsIsland
             Deactivated += (s, e) => Topmost = false;
             Activated += (s, e) => Topmost = true;
             KeyDown += (s, e) => { if (e.Key == System.Windows.Input.Key.Escape) Close(); };
-            CloseButton.MouseEnter += (s, e) => CloseButton.Background = new SolidColorBrush(Color.FromRgb(0x2C, 0x2C, 0x2E));
+            CloseButton.MouseEnter += (s, e) => CloseButton.Background = new SolidColorBrush(SettingsTheme.Hover);
             CloseButton.MouseLeave += (s, e) => CloseButton.Background = Brushes.Transparent;
             CloseButton.MouseLeftButtonUp += (s, e) => Close();
             PlaceNearTray();
@@ -96,7 +95,52 @@ namespace WindowsIsland
         }
 
         static readonly FontFamily IconFont = new FontFamily("Segoe Fluent Icons, Segoe MDL2 Assets");
-        static readonly Brush IconBrush = new SolidColorBrush(Color.FromRgb(0xB4, 0xB4, 0xBC));
+        static Brush IconBrush = new SolidColorBrush(Color.FromRgb(0xB4, 0xB4, 0xBC));
+
+        // Paints the window and its shared brushes with the chosen colors (they are shared, so every user of one follows).
+        void ApplyTheme()
+        {
+            Background = new SolidColorBrush(SettingsTheme.WindowBack);
+            Foreground = new SolidColorBrush(SettingsTheme.Text);
+            SetBrush("Card", SettingsTheme.Card);
+            SetBrush("Separator", SettingsTheme.Separator);
+            SetBrush("Secondary", SettingsTheme.Secondary);
+            SetBrush("Accent", SettingsTheme.Accent);
+            SetBrush("On", SettingsTheme.On);
+            SetBrush("Off", SettingsTheme.SwitchOff);
+            SetBrush("ChipHover", SettingsTheme.ChipHover);
+            SetBrush("SliderTrack", SettingsTheme.SliderTrack);
+            SetBrush("Thumb", SettingsTheme.Thumb);
+            IconBrush = new SolidColorBrush(SettingsTheme.Icon);
+        }
+
+        void SetBrush(string key, Color color)
+        {
+            SolidColorBrush brush = FindResource(key) as SolidColorBrush;
+            if (brush != null && !brush.IsFrozen) brush.Color = color;
+            else Resources[key] = new SolidColorBrush(color);
+        }
+
+        // The title bar is drawn by Windows, so its dark mode and outline follow the theme too.
+        void ApplyFrameTheme()
+        {
+            IntPtr handle = new WindowInteropHelper(this).Handle;
+            if (handle == IntPtr.Zero) return;
+            int dark = SettingsTheme.Light ? 0 : 1;
+            DwmSetWindowAttribute(handle, DWMWA_USE_IMMERSIVE_DARK_MODE, ref dark, sizeof(int));
+            int border = SettingsTheme.BorderColorRef; // A faint outline, since there is no title bar to frame the window
+            DwmSetWindowAttribute(handle, 34, ref border, sizeof(int));
+        }
+
+        // A new theme choice: everything that was built with the old colors is built again.
+        void ChangeTheme()
+        {
+            SettingsTheme.Choose(settings.Theme);
+            ApplyTheme();
+            ApplyFrameTheme();
+            BuildTabs();
+            Rebuild();
+        }
 
         // ---------- Language ----------
 
@@ -226,7 +270,7 @@ namespace WindowsIsland
         void BuildTabs()
         {
             string[] names = { Strings.SectionActivities, Strings.SectionBehavior, Strings.SectionAppearance, Strings.SectionSystem };
-            TabBar.Content = SlidingBar(names, tab, index => { tab = index; Rebuild(); }, Color.FromRgb(0x1C, 0x1C, 0x1E), HorizontalAlignment.Left, new Thickness(0));
+            TabBar.Content = SlidingBar(names, tab, index => { tab = index; Rebuild(); }, SettingsTheme.TabTrack, HorizontalAlignment.Left, new Thickness(0));
         }
 
         // Choices in a rounded track, with a pill that slides to the one picked.
@@ -235,7 +279,7 @@ namespace WindowsIsland
             Grid host = new Grid();
             Border pill = new Border
             {
-                Background = new SolidColorBrush(Color.FromRgb(0x63, 0x63, 0x66)),
+                Background = new SolidColorBrush(SettingsTheme.Pill),
                 CornerRadius = new CornerRadius(7),
                 HorizontalAlignment = HorizontalAlignment.Left,
                 Margin = new Thickness(0, 1.5, 0, 1.5),
@@ -273,7 +317,7 @@ namespace WindowsIsland
                     Margin = new Thickness(1.5),
                     Background = Brushes.Transparent,
                     Cursor = System.Windows.Input.Cursors.Hand,
-                    Child = new TextBlock { Text = names[i], FontSize = 12, Foreground = Brushes.White },
+                    Child = new TextBlock { Text = names[i], FontSize = 12, Foreground = new SolidColorBrush(SettingsTheme.Text) },
                 };
                 chip.MouseLeftButtonUp += (s, e) =>
                 {
@@ -319,13 +363,21 @@ namespace WindowsIsland
             Toggle("\uE8D6", Strings.MenuMusic, null, () => settings.ShowMusic, v => settings.ShowMusic = v);
             Toggle("img:claude", Strings.MenuClaude, null, () => settings.ShowClaude, v => settings.ShowClaude = v);
             Toggle("\uEA8F", Strings.MenuBanners, null, () => settings.ClaudeBanners, v => settings.ClaudeBanners = v);
-            Toggle("\uE9D9", Strings.MenuLimitAlerts, Strings.HintLimitAlerts, () => settings.ShowLimitAlerts, v => settings.ShowLimitAlerts = v);
+            Group("\uE9D9", Strings.GroupLimits, () =>
+            {
+                Toggle("\uE9D9", Strings.MenuLimitAlerts, Strings.HintLimitAlerts, () => settings.ShowLimitAlerts, v => settings.ShowLimitAlerts = v);
+                Toggle("\uE7BA", Strings.MenuLimitAt(75), null, () => settings.LimitAt75, v => settings.LimitAt75 = v);
+                Toggle("\uE7BA", Strings.MenuLimitAt(90), null, () => settings.LimitAt90, v => settings.LimitAt90 = v);
+                Toggle("\uE7BA", Strings.MenuLimitAt(100), null, () => settings.LimitAt100, v => settings.LimitAt100 = v);
+                Toggle("\uE777", Strings.MenuLimitRenewed, null, () => settings.LimitRenewed, v => settings.LimitRenewed = v);
+            });
             Toggle("\uE72E", Strings.MenuPermissionPrompts, Strings.HintPermissionPrompts, () => settings.PermissionPrompts, SetPermissionPrompts);
             Toggle("img:codex", Strings.MenuCodex, null, () => settings.ShowCodex, v => settings.ShowCodex = v);
             Toggle("\uEA8F", Strings.MenuCodexBanners, null, () => settings.CodexBanners, v => settings.CodexBanners = v);
             Group("\uE720", Strings.GroupPrivacy, () =>
             {
                 Toggle("\uE720", Strings.MenuPrivacyDots, Strings.HintPrivacyDots, () => settings.ShowPrivacyDots, v => settings.ShowPrivacyDots = v);
+                Toggle("\uE7F4", Strings.MenuScreenShare, Strings.HintScreenShare, () => settings.ShowScreenShare, v => settings.ShowScreenShare = v);
                 int[] nameSeconds = { 0, 1, 2, 3 };
                 string[] nameLabels = { Strings.Off, Strings.Duration(1, false), Strings.Duration(2, false), Strings.Duration(3, false) };
                 Row("\uE77B", Strings.MenuPrivacyNames, Strings.HintPrivacyNames, null,
@@ -380,14 +432,23 @@ namespace WindowsIsland
             {
                 Choice("\uE916", Strings.MenuAutoHide, Strings.HintAutoHide, new[] { 0, 5, 10, 30, 60, 300 }, true, () => settings.AutoHideSeconds, v => settings.AutoHideSeconds = v);
                 Choice("\uE81C", Strings.MenuAlertDuration, null, new[] { 3, 5, 8, 12, 20 }, false, () => settings.AlertSeconds, v => settings.AlertSeconds = v);
+                Choice("\uE81C", Strings.MenuNotificationDuration, null, new[] { 2, 3, 5, 8, 12 }, false, () => settings.NotificationSeconds, v => settings.NotificationSeconds = v);
+                Choice("\uE81C", Strings.MenuLimitDuration, null, new[] { 3, 4, 6, 8, 12 }, false, () => settings.LimitAlertSeconds, v => settings.LimitAlertSeconds = v);
                 Choice("\uE769", Strings.MenuPausedMusic, null, new[] { 0, 2, 5, 15, 30, 60 }, false, () => settings.PausedMusicSeconds, v => settings.PausedMusicSeconds = v);
             });
 
             Section(Strings.SectionPages);
-            Toggle("\uE8D6", Strings.PageMusicLabel, Strings.HintPages, () => settings.PageMusic, v => settings.PageMusic = v);
-            Toggle("img:claude", Strings.PageClaudeLabel, null, () => settings.PageClaude, v => settings.PageClaude = v);
-            Toggle("\uE9D9", Strings.PageSystemLabel, null, () => settings.PageSystem, v => settings.PageSystem = v);
-            Toggle("\uE916", Strings.PageTimerLabel, null, () => settings.PageTimer, v => settings.PageTimer = v);
+            System.Collections.Generic.List<string> pageOrder = settings.PageOrderList();
+            for (int i = 0; i < pageOrder.Count; i++)
+            {
+                string name = pageOrder[i];
+                string hint = i == 0 ? Strings.HintPages : null; // The arrows change the order the pages are shown in
+                UIElement arrows = PageArrows(name, i, pageOrder.Count);
+                if (name == "Music") Toggle("\uE8D6", Strings.PageMusicLabel, hint, () => settings.PageMusic, v => settings.PageMusic = v, arrows);
+                else if (name == "Claude") Toggle("img:claude", Strings.PageClaudeLabel, hint, () => settings.PageClaude, v => settings.PageClaude = v, arrows);
+                else if (name == "System") Toggle("\uE9D9", Strings.PageSystemLabel, hint, () => settings.PageSystem, v => settings.PageSystem = v, arrows);
+                else Toggle("\uE916", Strings.PageTimerLabel, hint, () => settings.PageTimer, v => settings.PageTimer = v, arrows);
+            }
         }
 
         void BuildAppearance()
@@ -397,6 +458,10 @@ namespace WindowsIsland
                 () => string.Equals(settings.Position, "Bottom", StringComparison.OrdinalIgnoreCase) ? 1 : 0,
                 i => settings.Position = i == 1 ? "Bottom" : "Top");
             MonitorRow();
+            string[] themeValues = { "Auto", "Dark", "Light" };
+            Segmented("\uE790", Strings.MenuTheme, new[] { Strings.ThemeAuto, Strings.ThemeDark, Strings.ThemeLight },
+                () => Math.Max(0, Array.FindIndex(themeValues, v => string.Equals(v, settings.Theme, StringComparison.OrdinalIgnoreCase))),
+                i => { settings.Theme = themeValues[i]; Dispatcher.BeginInvoke(new Action(ChangeTheme), DispatcherPriority.Background); });
             string[] ringValues = { "Blue", "Green", "Purple" };
             Segmented("\uE790", Strings.RingColorLabel, new[] { Strings.ColorBlue, Strings.ColorGreen, Strings.ColorPurple },
                 () => Math.Max(0, Array.FindIndex(ringValues, v => string.Equals(v, settings.RingColor, StringComparison.OrdinalIgnoreCase))),
@@ -614,17 +679,19 @@ namespace WindowsIsland
 
             if (icon != null && icon.StartsWith("img:"))
             {
-                Image mark = new Image
+                // The mark is a white shape: its outline cuts a rectangle of the icon color, so it fits a light window too
+                ImageBrush shape = new ImageBrush(new System.Windows.Media.Imaging.BitmapImage(new Uri("pack://application:,,,/Assets/" + icon.Substring(4) + "-mark.png")));
+                RenderOptions.SetBitmapScalingMode(shape, BitmapScalingMode.HighQuality);
+                System.Windows.Shapes.Rectangle mark = new System.Windows.Shapes.Rectangle
                 {
-                    Source = new System.Windows.Media.Imaging.BitmapImage(new Uri("pack://application:,,,/Assets/" + icon.Substring(4) + "-mark.png")),
                     Width = 16,
                     Height = 16,
-                    Opacity = 0.72,
+                    Fill = IconBrush,
+                    OpacityMask = shape,
                     HorizontalAlignment = HorizontalAlignment.Left,
                     Margin = new Thickness(0, 0, 14, 0),
                     VerticalAlignment = VerticalAlignment.Center,
                 };
-                RenderOptions.SetBitmapScalingMode(mark, BitmapScalingMode.HighQuality);
                 grid.Children.Add(mark);
             }
             else if (icon != null)
@@ -670,7 +737,7 @@ namespace WindowsIsland
             card.Children.Add(row);
         }
 
-        void Toggle(string icon, string label, string hint, Func<bool> get, Action<bool> set)
+        void Toggle(string icon, string label, string hint, Func<bool> get, Action<bool> set, UIElement before = null)
         {
             CheckBox toggle = new CheckBox { Style = (Style)FindResource("Switch"), IsChecked = get(), VerticalAlignment = VerticalAlignment.Center };
             toggle.ApplyTemplate();
@@ -684,11 +751,50 @@ namespace WindowsIsland
 
             toggle.Checked += (s, e) => { AnimateSwitch(color, knob, true); set(true); Apply(); };
             toggle.Unchecked += (s, e) => { AnimateSwitch(color, knob, false); set(false); Apply(); };
-            Row(icon, label, hint, toggle);
+            if (before == null) { Row(icon, label, hint, toggle); return; }
+            StackPanel both = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
+            both.Children.Add(before);
+            both.Children.Add(toggle);
+            Row(icon, label, hint, both);
         }
 
-        static readonly Color SwitchOn = Color.FromRgb(0x30, 0xD1, 0x58);
-        static readonly Color SwitchOff = Color.FromRgb(0x39, 0x39, 0x3D);
+        // Up and down arrows that move a page one place in the order the pages are shown.
+        UIElement PageArrows(string name, int index, int count)
+        {
+            StackPanel arrows = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 8, 0), VerticalAlignment = VerticalAlignment.Center };
+            foreach (int step in new[] { -1, 1 })
+            {
+                int target = index + step;
+                bool possible = target >= 0 && target < count;
+                TextBlock arrow = new TextBlock
+                {
+                    Text = step < 0 ? "\uE70E" : "\uE70D",
+                    FontFamily = IconFont,
+                    FontSize = 12,
+                    Foreground = (Brush)FindResource("Secondary"),
+                    Padding = new Thickness(5, 6, 5, 6),
+                    Opacity = possible ? 1 : 0.25,
+                    Cursor = possible ? System.Windows.Input.Cursors.Hand : System.Windows.Input.Cursors.Arrow,
+                    Background = Brushes.Transparent,
+                };
+                if (possible)
+                    arrow.MouseLeftButtonUp += (s, e) =>
+                    {
+                        System.Collections.Generic.List<string> order = settings.PageOrderList();
+                        string other = order[target];
+                        order[target] = name;
+                        order[index] = other;
+                        settings.PageOrder = string.Join(",", order);
+                        Apply();
+                        Dispatcher.BeginInvoke(new Action(Rebuild), DispatcherPriority.Background);
+                    };
+                arrows.Children.Add(arrow);
+            }
+            return arrows;
+        }
+
+        static Color SwitchOn { get { return SettingsTheme.On; } }
+        static Color SwitchOff { get { return SettingsTheme.SwitchOff; } }
         const double KnobTravel = 15;
 
         static void AnimateSwitch(SolidColorBrush color, TranslateTransform knob, bool on)
@@ -733,7 +839,7 @@ namespace WindowsIsland
 
         FrameworkElement SegmentBar(string[] names, int current, Action<int> set, bool inline = false)
         {
-            return SlidingBar(names, current, i => { set(i); Apply(); }, Color.FromRgb(0x2C, 0x2C, 0x2E),
+            return SlidingBar(names, current, i => { set(i); Apply(); }, SettingsTheme.SegTrack,
                 inline ? HorizontalAlignment.Right : HorizontalAlignment.Left,
                 inline ? new Thickness(0) : new Thickness(14, 0, 14, 12));
         }
@@ -763,7 +869,8 @@ namespace WindowsIsland
             Row(icon, label, null, value, slider);
         }
 
-        static bool CopyText(string text)
+        // Another program can hold the clipboard for a moment, so it is retried (waiting without freezing the window).
+        static async System.Threading.Tasks.Task<bool> CopyText(string text)
         {
             for (int attempt = 0; attempt < 10; attempt++)
             {
@@ -772,8 +879,8 @@ namespace WindowsIsland
                     Clipboard.SetDataObject(text, true);
                     if (Clipboard.ContainsText() && Clipboard.GetText() == text) return true;
                 }
-                catch (Exception) { } // The clipboard is held by another program for a moment
-                System.Threading.Thread.Sleep(80);
+                catch (Exception) { }
+                await System.Threading.Tasks.Task.Delay(80);
             }
             return false;
         }
@@ -835,15 +942,15 @@ namespace WindowsIsland
             {
                 bool isEdge = edge;
                 Button install = new Button { Content = isEdge ? "Edge" : "Chrome", Style = (Style)FindResource("LinkButton"), Margin = new Thickness(0, 0, 14, 0) };
-                install.Click += (s, e) =>
+                install.Click += async (s, e) =>
                 {
                     try
                     {
                         string token = api.Token ?? api.RegenerateToken();
                         string folder = ExtensionInstaller.Extract(token, api.Port > 0 ? api.Port : settings.ApiPort);
-                        // Another program can hold the clipboard for a moment, so it is retried and checked; when it
-                        // still fails, the folder opens in Explorer so its address can be copied from there.
-                        bool copied = CopyText(folder);
+                        // When the copy still fails after the retries, the folder opens in Explorer so its address
+                        // can be copied from there.
+                        bool copied = await CopyText(folder);
                         if (!copied)
                         {
                             try { System.Diagnostics.Process.Start("explorer.exe", (char)34 + folder + (char)34); } catch (Exception) { }
@@ -944,7 +1051,7 @@ namespace WindowsIsland
             DrawingVisual page = new DrawingVisual();
             using (DrawingContext context = page.RenderOpen())
             {
-                context.DrawRoundedRectangle(Brushes.Black, null, new Rect(size), 16, 16);
+                context.DrawRoundedRectangle(new SolidColorBrush(SettingsTheme.WindowBack), null, new Rect(size), 16, 16);
                 context.DrawRectangle(new VisualBrush(Content) { Stretch = Stretch.Fill }, null, inner);
             }
             System.Windows.Media.Imaging.RenderTargetBitmap bitmap = new System.Windows.Media.Imaging.RenderTargetBitmap(

@@ -25,6 +25,9 @@ A Dynamic Island for Windows. Music, Claude Code, its usage limits and your noti
 - **Microphone and camera dots:** orange while the microphone is in use, green for the camera, like on iPhone
 - **Battery** on laptops: shown as an activity while charging, plus alerts for charger connected or removed, low battery and fully charged
 - **App names on the dots:** see which app is using the microphone or camera
+- **Screen sharing dot:** a blue dot while an app shares or records the screen, such as a call or a recording
+- **Light or dark Settings:** the Settings window can follow the Windows theme or be set to light or dark; the island itself is always black
+- **Your order and your times:** choose the order of the pages, which limit alerts to show (75%, 90%, 100%, renewed) and how long alerts, notifications and limit alerts stay
 - **Volume and brightness** bar, **Bluetooth, USB and network** notes, and a moon for **Do not disturb**
 - **Clock and system page** with the time, date, processor and memory load
 - **System monitor** (off by default): keeps the processor and memory load on the island when nothing else is happening, as rings, bars or numbers

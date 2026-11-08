@@ -12,6 +12,8 @@ pwsh -File scripts/build.ps1
 .\bin\WindowsIsland.exe --portable
 ```
 
+Run the tests with `dotnet test tests`. They cover the logic that has no window (the chat transcript reader, the limit alert rules and the Claude settings editor), so a change there should come with a test.
+
 `--portable` runs it without the install prompt. The hooks stop commits and pushes that contain secrets or personal data. To add your own terms, such as your name, list them one per line in `.git\info\leak-patterns.txt`. That file is never committed.
 
 ## Rules
@@ -54,6 +56,7 @@ pwsh -File scripts/build.ps1
 | `src\Tray.cs` | The tray icon and its menu |
 | `src\Settings.cs` | Preferences, saved as JSON |
 | `src\Strings.cs` | English and Portuguese texts |
+| `tests\` | Unit tests (xUnit) for the pure logic, compiled from `src` |
 | `scripts\` | Build, README images and leak checks |
 
 Planned work is in [docs/ROADMAP.md](docs/ROADMAP.md). Maintainers should see [docs/RELEASING.md](docs/RELEASING.md).

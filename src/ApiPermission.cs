@@ -10,6 +10,8 @@ namespace WindowsIsland
         public string Session;
         public string Tool;
         public string Summary;
+        public string Project;  // The folder the session works in
+        public bool Partial;    // The summary is cut, or is not the technical text: Allow is not offered
 
         readonly TaskCompletionSource<string> source = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
 

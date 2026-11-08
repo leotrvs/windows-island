@@ -25,6 +25,9 @@ Uma Dynamic Island para o Windows. Música, Claude Code, os limites de uso e sua
 - **Pontos de microfone e câmera:** laranja com o microfone em uso, verde com a câmera, como no iPhone
 - **Bateria** em notebooks: aparece como atividade ao carregar, mais avisos de carregador conectado ou removido, bateria baixa e carregada
 - **Nomes dos apps nos pontos:** veja qual app usa o microfone ou a câmera ao passar o mouse sobre a ilha
+- **Ponto de compartilhamento de tela:** um ponto azul enquanto um app compartilha ou grava a tela, como numa chamada ou numa gravação
+- **Ajustes claro ou escuro:** a janela de Ajustes pode seguir o tema do Windows ou ficar no claro ou no escuro; a ilha em si é sempre preta
+- **Sua ordem e seus tempos:** escolha a ordem das páginas, quais avisos de limite mostrar (75%, 90%, 100%, renovado) e quanto tempo ficam os avisos, as notificações e os avisos de limite
 - **Barra de volume e brilho**, avisos de **Bluetooth, USB e rede** e uma lua para **Não perturbe**
 - **Página de relógio e sistema** com hora, data, carga do processador e da memória
 - **Monitor do sistema** (desligado por padrão): mantém a carga do processador e da memória na ilha quando nada mais está acontecendo, em anéis, barras ou números

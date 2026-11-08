@@ -171,10 +171,14 @@ namespace WindowsIsland
             Pill.MouseLeave += OnPillLeave;
             Pill.MouseLeftButtonUp += OnPillClick;
             enterTimer.Tick += (s, e) => { enterTimer.Stop(); SetHovering(true); };
-            PermAllow.MouseLeftButtonUp += (s, e) => { e.Handled = true; permission?.Resolve("allow"); };
-            PermDeny.MouseLeftButtonUp += (s, e) => { e.Handled = true; permission?.Resolve("deny"); };
-            PermAllow.MouseLeftButtonDown += (s, e) => e.Handled = true;
-            PermDeny.MouseLeftButtonDown += (s, e) => e.Handled = true;
+            // A click counts only when it is pressed and released on the same button, and only a moment after the
+            // prompt appeared, so a click meant for the window underneath (or a double click) cannot answer it
+            PermAllow.MouseLeftButtonDown += (s, e) => { e.Handled = true; permissionPressed = PermAllow; PermAllow.CaptureMouse(); };
+            PermDeny.MouseLeftButtonDown += (s, e) => { e.Handled = true; permissionPressed = PermDeny; PermDeny.CaptureMouse(); };
+            PermAllow.MouseLeftButtonUp += (s, e) => AnswerPermission(PermAllow, "allow", e);
+            PermDeny.MouseLeftButtonUp += (s, e) => AnswerPermission(PermDeny, "deny", e);
+            PermOpen.MouseLeftButtonUp += (s, e) => { e.Handled = true; ClaudeWindow.Focus(); };
+            PermOpen.MouseLeftButtonDown += (s, e) => e.Handled = true;
             OpenClaudeLink.MouseLeftButtonUp += (s, e) => { e.Handled = true; ClaudeWindow.Focus(); };
             OpenClaudeLink.MouseLeftButtonDown += (s, e) => e.Handled = true;
             // Resting the mouse on the small second activity opens the island straight on that activity's page
@@ -397,7 +401,8 @@ namespace WindowsIsland
             if (battery != null && battery.HasBattery) BatteryCompactText.Text = battery.Percent + "%";
         }
 
-        bool PrivacyOn { get { return settings.ShowPrivacyDots && (privacy.Microphone || privacy.Camera); } }
+        bool ScreenOn { get { return settings.ShowPrivacyDots && settings.ShowScreenShare && privacy.Screen; } }
+        bool PrivacyOn { get { return settings.ShowPrivacyDots && (privacy.Microphone || privacy.Camera || ScreenOn); } }
 
         string privacyLabel = "";
         bool dotHover; // The mouse is over the dots themselves: that is what shows the app name
@@ -410,6 +415,7 @@ namespace WindowsIsland
             List<string> names = new List<string>();
             if (privacy.Microphone) names.AddRange(privacy.MicrophoneApps);
             if (privacy.Camera) names.AddRange(privacy.CameraApps);
+            if (ScreenOn) names.AddRange(privacy.ScreenApps);
             names = names.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
             if (names.Count == 0) return "";
             string first = names[0].Length > 20 ? names[0].Substring(0, 19) + "…" : names[0];
@@ -419,12 +425,13 @@ namespace WindowsIsland
         void UpdatePrivacy()
         {
             UpdateFocusMoon();
-            bool mic = privacy.Microphone && settings.ShowPrivacyDots, cam = privacy.Camera && settings.ShowPrivacyDots;
+            bool mic = privacy.Microphone && settings.ShowPrivacyDots, cam = privacy.Camera && settings.ShowPrivacyDots, screen = ScreenOn;
             MicDot.Visibility = mic ? Visibility.Visible : Visibility.Collapsed;
             CamDot.Visibility = cam ? Visibility.Visible : Visibility.Collapsed;
+            ScreenDot.Visibility = screen ? Visibility.Visible : Visibility.Collapsed;
 
             // Hovering over the dots (not the island) shows the name of the app using the microphone or camera; a new app also shows it by itself if the setting asks for it.
-            string label = mic || cam ? PrivacyLabel() : "";
+            string label = mic || cam || screen ? PrivacyLabel() : "";
             if (label != privacyLabel)
             {
                 bool added = label.Length > 0;
@@ -443,8 +450,8 @@ namespace WindowsIsland
                 }
             }
             bool showName = label.Length > 0 && (dotHover || DateTime.Now < privacyNameUntil);
-            PrivacyDots.IsHitTestVisible = mic || cam; // Only while a dot is there, so the spot is empty the rest of the time
-            double dotsWidth = mic && cam ? 30 : 20, nameWidth = 0;
+            PrivacyDots.IsHitTestVisible = mic || cam || screen; // Only while a dot is there, so the spot is empty the rest of the time
+            double dotsWidth = 10 + 10 * ((mic ? 1 : 0) + (cam ? 1 : 0) + (screen ? 1 : 0)), nameWidth = 0;
             PrivacyName.Visibility = showName ? Visibility.Visible : Visibility.Collapsed;
             if (showName)
             {
@@ -453,7 +460,7 @@ namespace WindowsIsland
                 nameWidth = PrivacyName.DesiredSize.Width + PrivacyName.Margin.Left + PrivacyName.Margin.Right;
             }
             PrivacyDots.Width = dotsWidth + nameWidth;
-            privacyOpacity.Target = mic || cam ? 1 : 0;
+            privacyOpacity.Target = mic || cam || screen ? 1 : 0;
         }
 
         string lastTimerText;
@@ -513,6 +520,7 @@ namespace WindowsIsland
         {
             if (value == View.ClaudeExpanded) return new Size(372, ClaudePanelHeight);
             if (value == View.Banner) return new Size(Banner.Width, Banner.Height);
+            if (value == View.Permission) return new Size(372, permissionHeight);
             if (value == View.SystemCompact) return new Size(monitorWidth, 34);
             return Sizes[value];
         }
@@ -576,6 +584,7 @@ namespace WindowsIsland
         // Called before the island is closed for good, so the shared services no longer reach it.
         internal void Detach()
         {
+            CancelPermissions();
             media.Changed -= OnMediaChanged;
             claude.Changed -= OnClaudeChanged;
             claude.Alert -= ShowBanner;
@@ -1063,11 +1072,17 @@ namespace WindowsIsland
         List<Activity> Pages()
         {
             List<Activity> pages = new List<Activity>();
-            if (settings.PageMusic && settings.ShowMusic && media.HasSession) pages.Add(Activity.Music);
-            if (settings.PageClaude && (settings.ShowClaude || CodexSectionVisible)) pages.Add(Activity.Claude);
-            if (ApiActive) pages.Add(Activity.External);
-            if (settings.PageSystem) pages.Add(Activity.System);
-            if (settings.PageTimer) pages.Add(Activity.Timer);
+            foreach (string name in settings.PageOrderList())
+            {
+                if (name == "Music" && settings.PageMusic && settings.ShowMusic && media.HasSession) pages.Add(Activity.Music);
+                else if (name == "Claude")
+                {
+                    if (settings.PageClaude && (settings.ShowClaude || CodexSectionVisible)) pages.Add(Activity.Claude);
+                    if (ApiActive) pages.Add(Activity.External); // Apps' own activities sit right after Claude
+                }
+                else if (name == "System" && settings.PageSystem) pages.Add(Activity.System);
+                else if (name == "Timer" && settings.PageTimer) pages.Add(Activity.Timer);
+            }
             return pages;
         }
 
@@ -1224,7 +1239,7 @@ namespace WindowsIsland
                 Icon = notification.Icon,
                 Title = notification.Title,
                 Subtitle = notification.Body,
-                Seconds = settings.AlertSeconds,
+                Seconds = settings.NotificationSeconds,
             });
         }
 
@@ -1266,16 +1281,49 @@ namespace WindowsIsland
 
         static readonly Brush SupabaseTint = Freeze(new SolidColorBrush(Color.FromArgb(0x33, 0x3E, 0xCF, 0x8E)));
         static readonly Brush AmberTint = Freeze(new SolidColorBrush(Color.FromArgb(0x33, 0xFF, 0x9F, 0x0A)));
+        Border permissionPressed;
+        DateTime permissionArmedAt;
+        DispatcherTimer permissionArmTimer;
+        double permissionHeight = 138;
+
+        void AnswerPermission(Border button, string decision, MouseButtonEventArgs e)
+        {
+            e.Handled = true;
+            bool pressedHere = permissionPressed == button;
+            permissionPressed = null;
+            button.ReleaseMouseCapture();
+            if (!pressedHere || permission == null || DateTime.Now < permissionArmedAt) return;
+            Point at = e.GetPosition(button);
+            if (at.X < 0 || at.Y < 0 || at.X > button.ActualWidth || at.Y > button.ActualHeight) return; // Released somewhere else
+            permission.Resolve(decision);
+        }
+
         ApiPermission permission;
         readonly Queue<ApiPermission> permissionQueue = new Queue<ApiPermission>();
 
         internal void ShowPermission(ApiPermission request)
         {
-            if (!settings.PermissionPrompts) { request.Resolve("none"); return; }
+            // Not shown at all (off, or hidden for a full-screen window): no decision, so Claude asks as usual
+            if (!settings.PermissionPrompts || (fullscreen && settings.HideInFullscreen)) { request.Resolve("none"); return; }
             request.Closed += () => OnPermissionClosed(request);
             permissionQueue.Enqueue(request);
             if (permission == null) NextPermission();
-            else PermQueue.Text = permissionQueue.Count > 0 ? "+" + permissionQueue.Count : "";
+            else PermQueue.Text = PendingCount() > 0 ? "+" + PendingCount() : "";
+        }
+
+        int PendingCount()
+        {
+            int count = 0;
+            foreach (ApiPermission p in permissionQueue) if (!p.IsClosed) count++;
+            return count;
+        }
+
+        // The island is going away: whatever waits for an answer gets none.
+        void CancelPermissions()
+        {
+            foreach (ApiPermission p in permissionQueue.ToArray()) p.Cancel();
+            permissionQueue.Clear();
+            if (permission != null) permission.Cancel();
         }
 
         void NextPermission()
@@ -1289,15 +1337,33 @@ namespace WindowsIsland
             if (permission != null)
             {
                 PermTitle.Text = Strings.PermissionAsks;
-                PermTool.Text = ToolName(permission.Tool);
+                PermTool.Text = ToolName(permission.Tool) + (string.IsNullOrEmpty(permission.Project) ? "" : " \u00B7 " + permission.Project);
                 bool supabase = permission.Tool != null && permission.Tool.StartsWith("mcp__", StringComparison.Ordinal) &&
                                 permission.Tool.IndexOf("supabase", StringComparison.OrdinalIgnoreCase) >= 0;
                 PermSupabase.Visibility = supabase ? Visibility.Visible : Visibility.Collapsed;
                 PermLock.Visibility = supabase ? Visibility.Collapsed : Visibility.Visible;
                 PermIconBack.Background = supabase ? SupabaseTint : AmberTint;
                 PermSummary.Text = permission.Summary;
-                PermQueue.Text = permissionQueue.Count > 0 ? "+" + permissionQueue.Count : "";
-                PermCheck.Text = Strings.PermissionCheck;
+                PermQueue.Text = PendingCount() > 0 ? "+" + PendingCount() : "";
+                // A summary that is cut, or is only the raw arguments, is not enough to approve on: Deny stays, Allow is replaced by a link to Claude
+                PermAllow.Visibility = permission.Partial ? Visibility.Collapsed : Visibility.Visible;
+                PermOpen.Visibility = permission.Partial ? Visibility.Visible : Visibility.Collapsed;
+                PermOpenText.Text = Strings.OpenClaude;
+                PermCheck.Text = permission.Partial ? Strings.PermissionPartial : Strings.PermissionCheck;
+                int lines = Math.Clamp((permission.Summary.Length + 51) / 52, 2, 6);
+                permissionHeight = 138 + (lines - 2) * 15;
+                PermissionPanel.Height = permissionHeight;
+                PermSummary.MaxHeight = lines * 15 + 4;
+                // The buttons wake up a moment after the prompt shows
+                permissionArmedAt = DateTime.Now.AddMilliseconds(650);
+                PermAllow.Opacity = PermDeny.Opacity = 0.45;
+                if (permissionArmTimer == null)
+                {
+                    permissionArmTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(660) };
+                    permissionArmTimer.Tick += (s, e) => { permissionArmTimer.Stop(); PermAllow.Opacity = PermDeny.Opacity = 1; };
+                }
+                permissionArmTimer.Stop();
+                permissionArmTimer.Start();
                 PermAllowText.Text = Strings.Allow;
                 PermDenyText.Text = Strings.Deny;
                 tucked = false;
@@ -1326,8 +1392,9 @@ namespace WindowsIsland
         internal void ShowLimitAlert(bool weekly, int level, int percent, DateTime? resets)
         {
             if (!settings.ShowClaude || !settings.ShowLimitAlerts) return;
+            if (level == 0 ? !settings.LimitRenewed : level >= 100 ? !settings.LimitAt100 : level >= 90 ? !settings.LimitAt90 : !settings.LimitAt75) return;
             string window = weekly ? Strings.LimitWeekly : Strings.LimitFiveHour;
-            BannerItem item = new BannerItem { FromClaude = true, Seconds = settings.AlertSeconds + 1, Side = percent + "%" };
+            BannerItem item = new BannerItem { FromClaude = true, Seconds = settings.LimitAlertSeconds, Side = percent + "%" };
             if (level == 0)
             {
                 item.Title = Strings.LimitRenewed(window);

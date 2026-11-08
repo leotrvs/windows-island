@@ -396,7 +396,20 @@ namespace WindowsIsland
         }
 
         // A small site icon (16 or 32 px) is enlarged once with smooth interpolation, so it shows soft instead of blocky.
+        // Each icon is smoothed and its color worked out once (the same icon comes in again with every title change).
+        static readonly System.Runtime.CompilerServices.ConditionalWeakTable<BitmapSource, BitmapSource> smoothed = new System.Runtime.CompilerServices.ConditionalWeakTable<BitmapSource, BitmapSource>();
+        static readonly System.Runtime.CompilerServices.ConditionalWeakTable<BitmapSource, object> accents = new System.Runtime.CompilerServices.ConditionalWeakTable<BitmapSource, object>();
+
         static BitmapSource Smooth(BitmapSource icon)
+        {
+            BitmapSource done;
+            if (smoothed.TryGetValue(icon, out done)) return done;
+            done = SmoothNow(icon);
+            try { smoothed.Add(icon, done); } catch (Exception) { }
+            return done;
+        }
+
+        static BitmapSource SmoothNow(BitmapSource icon)
         {
             try
             {
@@ -416,7 +429,15 @@ namespace WindowsIsland
 
         static Color SafeAccent(BitmapSource icon, Color fallback)
         {
-            try { return AccentOf(icon); } catch (Exception) { return fallback; }
+            try
+            {
+                object known;
+                if (accents.TryGetValue(icon, out known)) return (Color)known;
+                Color color = AccentOf(icon);
+                try { accents.Add(icon, color); } catch (Exception) { }
+                return color;
+            }
+            catch (Exception) { return fallback; }
         }
 
         static bool HintMatches(string title, ApiMediaHint value)
