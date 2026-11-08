@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.9.0
+
+- **Steam downloads, fixed:** a paused or queued download is no longer shown as running (Steam's own log says what runs and what is paused), a second game being downloaded now takes its place, and the percent keeps moving between the moments Steam writes its files instead of waiting for the next 5%
+- **Progress bar:** the main activity shows a thin progress bar under its name
+- **Second activity:** a small icon inside a ring that fills with the progress; when it is done, a green disc with a check pops in and then goes away
+
 ## 2.8.2
 
 - **Steam downloads** is now on by default (it only reads Steam's local manifest files; turn it off in Settings, Activities)

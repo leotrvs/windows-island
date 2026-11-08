@@ -87,5 +87,30 @@ namespace WindowsIsland.Tests
             List<string> libraries = SteamManifest.Libraries(vdf);
             Assert.Equal(new List<string> { "C:\\Program Files (x86)\\Steam", "D:\\SteamLibrary" }, libraries);
         }
+
+        [Fact]
+        public void TheLogSaysWhatRunsAndWhatIsPaused()
+        {
+            string log = "[t] AppID 252950 state changed : Update Required,Fully Installed,Update Queued,Update Running,Update Started,\n" +
+                         "[t] AppID 252950 state changed : Update Required,Fully Installed,Update Queued,Update Started, (Suspended)\n" +
+                         "[t] AppID 526870 state changed : Update Required,Fully Installed,Update Queued,Update Running,Update Started,\n" +
+                         "[t] AppID 447040 state changed : Fully Installed,\n";
+            Dictionary<string, string> states = SteamManifest.States(log);
+            Assert.False(SteamManifest.StateIsRunning(states["252950"]));
+            Assert.True(SteamManifest.StateIsRunning(states["526870"]));
+            Assert.False(SteamManifest.StateIsRunning(states["447040"]));
+            Assert.True(SteamManifest.StateIsDone(states["447040"]));
+            Assert.False(SteamManifest.StateIsDone(states["252950"]));
+        }
+
+        [Fact]
+        public void BetweenManifestWritesTheProgressCarriesOnButNotFar()
+        {
+            Assert.Equal(10, SteamManifest.Estimate(1000, 10000, 100, 0));
+            Assert.Equal(15, SteamManifest.Estimate(1000, 10000, 100, 5));
+            Assert.Equal(15, SteamManifest.Estimate(1000, 10000, 100, 500)); // never more than a twentieth ahead
+            Assert.Equal(10, SteamManifest.Estimate(1000, 10000, -5, 10));
+            Assert.Equal(-1, SteamManifest.Estimate(0, 0, 1, 1));
+        }
     }
 }

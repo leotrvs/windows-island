@@ -22,17 +22,56 @@ namespace WindowsIsland
         public bool IsWorking { get { return (StateFlags & Working) != 0 && (StateFlags & UpdatePaused) == 0; } }
         public bool IsPaused { get { return (StateFlags & Working) != 0 && (StateFlags & UpdatePaused) != 0; } }
 
+        // The manifest itself says it runs (an old copy of the truth: Steam writes the file now and then, the log is faster)
+        public bool IsRunning { get { return (StateFlags & UpdateRunning) != 0; } }
+
+        // Downloading the data, or (after that) putting the files in place
+        public bool IsDownloading { get { return BytesToDownload > 0 && BytesDownloaded < BytesToDownload; } }
+        public long Total { get { return IsDownloading ? BytesToDownload : BytesToStage; } }
+        public long Current { get { return IsDownloading ? BytesDownloaded : BytesStaged; } }
+
         // 0-100 while downloading, then while the downloaded files are put in place; -1 when it cannot tell.
         public int Progress
         {
-            get
-            {
-                if (BytesToDownload > 0 && BytesDownloaded < BytesToDownload)
-                    return (int)Math.Clamp(BytesDownloaded * 100 / BytesToDownload, 0, 99);
-                if (BytesToStage > 0)
-                    return (int)Math.Clamp(BytesStaged * 100 / BytesToStage, 0, 99);
-                return -1;
-            }
+            get { return Percent(Current, Total); }
+        }
+
+        public static int Percent(long current, long total)
+        {
+            return total > 0 ? (int)Math.Clamp(current * 100 / total, 0, 99) : -1;
+        }
+
+        // Steam writes the manifest only now and then, so between two writes the progress is carried on at the pace seen
+        // between the last two, but never more than a twentieth of the whole ahead (a pause or a stall cannot run away).
+        public static int Estimate(long current, long total, double bytesPerSecond, double secondsSinceWrite)
+        {
+            if (total <= 0) return -1;
+            double ahead = Math.Max(0, bytesPerSecond) * Math.Max(0, secondsSinceWrite);
+            ahead = Math.Min(ahead, total / 20.0);
+            return Percent((long)Math.Min(current + ahead, total), total);
+        }
+
+        // The last state Steam logged for each game in content_log.txt ("AppID 252950 state changed : Update Required,...,").
+        static readonly Regex StateLine = new Regex("AppID (?<id>\\d+) state changed : (?<state>[^\\r\\n]*)", RegexOptions.CultureInvariant);
+
+        public static Dictionary<string, string> States(string log)
+        {
+            Dictionary<string, string> states = new Dictionary<string, string>();
+            if (string.IsNullOrEmpty(log)) return states;
+            foreach (Match match in StateLine.Matches(log)) states[match.Groups["id"].Value] = match.Groups["state"].Value;
+            return states;
+        }
+
+        public static bool StateIsRunning(string state)
+        {
+            return state != null && state.Contains("Update Running") && !state.Contains("Suspended");
+        }
+
+        // Installed with nothing left to do
+        public static bool StateIsDone(string state)
+        {
+            return state != null && state.Contains("Fully Installed") && !state.Contains("Update Required") && !state.Contains("Update Queued") &&
+                   !state.Contains("Update Running") && !state.Contains("Update Started");
         }
 
         // True after the download itself is done and the files are being put in place.

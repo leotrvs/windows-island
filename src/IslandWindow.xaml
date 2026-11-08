@@ -72,8 +72,19 @@
                 <Ellipse x:Name="BubbleArt" Width="22" Height="22" Visibility="Collapsed"/>
                 <Image x:Name="BubbleCodex" Source="Assets/codex.png" Width="20" Height="20" Visibility="Collapsed"/>
                 <Path x:Name="BubbleTimer" Style="{StaticResource ClockMark}" Width="16" Height="16" Visibility="Collapsed"/>
-                <TextBlock x:Name="BubbleExternal" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="16" Foreground="#0A84FF"
-                           HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"/>
+                <Grid x:Name="BubbleExternalGroup" Visibility="Collapsed">
+                    <Ellipse x:Name="BubbleRingTrack" Width="28" Height="28" Stroke="#33FFFFFF" StrokeThickness="2.5" Visibility="Collapsed"/>
+                    <Path x:Name="BubbleRing" Stroke="#0A84FF" StrokeThickness="2.5" StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                          Width="28" Height="28" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"/>
+                    <TextBlock x:Name="BubbleExternal" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="16" Foreground="#0A84FF"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <Grid x:Name="BubbleDone" Width="26" Height="26" Visibility="Collapsed" RenderTransformOrigin="0.5,0.5">
+                        <Grid.RenderTransform><ScaleTransform x:Name="BubbleDoneScale"/></Grid.RenderTransform>
+                        <Ellipse Fill="#30D158"/>
+                        <TextBlock Text="&#xE73E;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="13" FontWeight="Bold" Foreground="White"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Grid>
+                </Grid>
                 <TextBlock x:Name="BubbleBattery" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Text="&#xE83E;" FontSize="16" Foreground="#30D158"
                            HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"/>
             </Grid>
@@ -184,6 +195,10 @@
                                TextTrimming="CharacterEllipsis" Margin="38,0,52,0"/>
                     <TextBlock x:Name="ExternalSide" FontSize="12.5" FontWeight="SemiBold" HorizontalAlignment="Right" VerticalAlignment="Center"
                                Margin="0,0,13,0" Typography.NumeralAlignment="Tabular"/>
+                    <Border x:Name="ExternalBarTrack" Height="2.5" CornerRadius="1.25" VerticalAlignment="Bottom" Margin="16,0,16,2.5"
+                            Background="#33FFFFFF" Visibility="Collapsed">
+                        <Border x:Name="ExternalBar" HorizontalAlignment="Left" CornerRadius="1.25" Background="#0A84FF" Width="0"/>
+                    </Border>
                 </Grid>
 
                 <!-- Timer, compact -->

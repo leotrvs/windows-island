@@ -369,6 +369,27 @@ namespace WindowsIsland
             BubbleExternal.Text = first.IconGlyph;
             BubbleExternal.Foreground = StateBrush(first.State);
 
+            // The progress bar under the main activity
+            bool running = first.State == "running" && first.Progress >= 0;
+            ExternalBarTrack.Visibility = running ? Visibility.Visible : Visibility.Collapsed;
+            ExternalBar.Width = 158.0 * Math.Clamp(first.Progress, 0, 100) / 100;
+            ExternalBar.Background = StateBrush(first.State);
+
+            // As the second activity: a small icon inside a ring that fills; when it is done, a green disc with a check that pops in
+            bool done = first.State == "done";
+            BubbleRingTrack.Visibility = BubbleRing.Visibility = running ? Visibility.Visible : Visibility.Collapsed;
+            BubbleRing.Data = Arc(first.Progress, 28, 2.5);
+            BubbleExternal.FontSize = running ? 11 : 16;
+            BubbleExternal.Visibility = done ? Visibility.Collapsed : Visibility.Visible;
+            if (done && BubbleDone.Visibility != Visibility.Visible)
+            {
+                BubbleDone.Visibility = Visibility.Visible;
+                DoubleAnimation pop = new DoubleAnimation(0.4, 1, TimeSpan.FromMilliseconds(380)) { EasingFunction = new BackEase { EasingMode = EasingMode.EaseOut, Amplitude = 0.7 } };
+                BubbleDoneScale.BeginAnimation(ScaleTransform.ScaleXProperty, pop);
+                BubbleDoneScale.BeginAnimation(ScaleTransform.ScaleYProperty, pop);
+            }
+            else if (!done) BubbleDone.Visibility = Visibility.Collapsed;
+
             // The page: up to three rows, each with who sent it
             ExternalList.Children.Clear();
             foreach (ApiActivity a in list.Take(3))
@@ -1099,7 +1120,7 @@ namespace WindowsIsland
                 BubbleCodex.Visibility = bubble == Activity.Codex ? Visibility.Visible : Visibility.Collapsed;
                 BubbleTimer.Visibility = bubble == Activity.Timer ? Visibility.Visible : Visibility.Collapsed;
                 BubbleBattery.Visibility = bubble == Activity.Battery ? Visibility.Visible : Visibility.Collapsed;
-                BubbleExternal.Visibility = bubble == Activity.External ? Visibility.Visible : Visibility.Collapsed;
+                BubbleExternalGroup.Visibility = bubble == Activity.External ? Visibility.Visible : Visibility.Collapsed;
             }
             bubbleOpacity.Target = hasBubble ? 1 : 0;
             bubbleScale.Target = hasBubble ? 1 : 0.4;
