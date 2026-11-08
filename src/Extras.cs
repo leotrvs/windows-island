@@ -4,6 +4,9 @@ using System.Windows.Threading;
 using System.Diagnostics;
 using System.Windows.Interop;
 using Microsoft.Win32;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace WindowsIsland
 {
@@ -120,6 +123,8 @@ namespace WindowsIsland
 
         public bool Microphone { get; private set; }
         public bool Camera { get; private set; }
+        public IReadOnlyList<string> MicrophoneApps { get; private set; } = new List<string>();
+        public IReadOnlyList<string> CameraApps { get; private set; } = new List<string>();
         public event Action Changed;
 
         readonly DispatcherTimer timer;
@@ -143,39 +148,52 @@ namespace WindowsIsland
             if (Microphone || Camera)
             {
                 Microphone = Camera = false;
+                MicrophoneApps = CameraApps = new List<string>();
                 Changed?.Invoke();
             }
         }
 
         void Poll()
         {
-            bool mic = InUse("microphone") || AudioCapture.Active(), cam = InUse("webcam");
-            if (mic == Microphone && cam == Camera) return;
+            List<string> micApps = UsersOf("microphone");
+            foreach (string name in AudioCapture.Apps())
+                if (!micApps.Contains(name, StringComparer.OrdinalIgnoreCase)) micApps.Add(name);
+            List<string> camApps = UsersOf("webcam");
+
+            bool mic = micApps.Count > 0, cam = camApps.Count > 0;
+            bool same = mic == Microphone && cam == Camera &&
+                        string.Join("|", micApps) == string.Join("|", MicrophoneApps) &&
+                        string.Join("|", camApps) == string.Join("|", CameraApps);
+            if (same) return;
             Microphone = mic;
             Camera = cam;
+            MicrophoneApps = micApps;
+            CameraApps = camApps;
             Changed?.Invoke();
         }
 
-        static bool InUse(string capability)
+        // The apps using a capability right now, by friendly name. Empty when nothing is using it.
+        static List<string> UsersOf(string capability)
         {
+            List<string> names = new List<string>();
             try
             {
                 using (RegistryKey key = Registry.CurrentUser.OpenSubKey(Root + capability))
                 {
-                    if (key == null) return false;
-                    if (AnyInUse(key)) return true;
+                    if (key == null) return names;
+                    CollectInUse(key, false, names);
                     using (RegistryKey desktop = key.OpenSubKey("NonPackaged"))
-                        return desktop != null && AnyInUse(desktop);
+                        if (desktop != null) CollectInUse(desktop, true, names);
                 }
             }
             catch (Exception)
             {
-                return false;
             }
+            return names;
         }
 
         // In use: the last start is recorded and no stop has been recorded since.
-        static bool AnyInUse(RegistryKey parent)
+        static void CollectInUse(RegistryKey parent, bool desktopApps, List<string> names)
         {
             foreach (string name in parent.GetSubKeyNames())
             {
@@ -184,10 +202,65 @@ namespace WindowsIsland
                 {
                     if (app == null) continue;
                     object start = app.GetValue("LastUsedTimeStart"), stop = app.GetValue("LastUsedTimeStop");
-                    if (start is long s && stop is long e && s > 0 && e == 0) return true;
+                    if (!(start is long s && stop is long e && s > 0 && e == 0)) continue;
+                    string friendly = desktopApps ? AppNames.FromPath(name.Replace('#', System.IO.Path.DirectorySeparatorChar)) : AppNames.FromPackage(name);
+                    if (!names.Contains(friendly, StringComparer.OrdinalIgnoreCase)) names.Add(friendly);
                 }
             }
-            return false;
+        }
+    }
+
+    // Turns what Windows records about an app (a program path, a store package name, a process id) into the
+    // name people know it by, such as "Google Chrome" for chrome.exe.
+    static class AppNames
+    {
+        static readonly Dictionary<string, string> cache = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+        public static string FromPath(string path)
+        {
+            if (string.IsNullOrEmpty(path)) return "?";
+            string cached;
+            if (cache.TryGetValue(path, out cached)) return cached;
+            string name = System.IO.Path.GetFileNameWithoutExtension(path);
+            try
+            {
+                FileVersionInfo info = FileVersionInfo.GetVersionInfo(path);
+                if (!string.IsNullOrWhiteSpace(info.FileDescription)) name = info.FileDescription.Trim();
+                else if (!string.IsNullOrWhiteSpace(info.ProductName)) name = info.ProductName.Trim();
+            }
+            catch (Exception)
+            {
+            }
+            cache[path] = name;
+            return name;
+        }
+
+        public static string FromPid(uint pid)
+        {
+            try
+            {
+                using (Process process = Process.GetProcessById((int)pid))
+                {
+                    try { return FromPath(process.MainModule.FileName); }
+                    catch (Exception) { return process.ProcessName; }
+                }
+            }
+            catch (Exception)
+            {
+                return "?";
+            }
+        }
+
+        // "Microsoft.WindowsCamera_8wekyb3d8bbwe" becomes "Windows Camera".
+        public static string FromPackage(string package)
+        {
+            string name = package ?? "";
+            int underscore = name.IndexOf('_');
+            if (underscore > 0) name = name.Substring(0, underscore);
+            int dot = name.LastIndexOf('.');
+            if (dot >= 0 && dot < name.Length - 1) name = name.Substring(dot + 1);
+            name = Regex.Replace(name, "(?<=[a-z])(?=[A-Z])", " ");
+            return string.IsNullOrWhiteSpace(name) ? package : name;
         }
     }
 
@@ -204,6 +277,14 @@ namespace WindowsIsland
         [DllImport("kernel32.dll")] static extern bool GetSystemPowerStatus(out SYSTEM_POWER_STATUS status);
 
         public event Action<string, string, string> Alert; // title, body, kind
+        public event Action Changed;
+
+        public bool AlertsOn { get; set; } = true;  // Alerts can be off while the island still shows the charging state
+        public bool HasBattery { get; private set; }
+        public bool OnAc { get; private set; }
+        public int Percent { get; private set; }
+        // Plugged in and not yet full: what the island shows as an activity.
+        public bool Charging { get { return HasBattery && OnAc && Percent < 100; } }
 
         readonly DispatcherTimer timer;
         bool known, wasOnAc, wasFull;
@@ -233,7 +314,13 @@ namespace WindowsIsland
             int percent = status.BatteryLifePercent;
             bool full = onAc && percent >= 100;
 
-            if (known)
+            bool changed = !HasBattery || onAc != OnAc || percent != Percent;
+            HasBattery = true;
+            OnAc = onAc;
+            Percent = percent;
+            if (changed) Changed?.Invoke();
+
+            if (known && AlertsOn)
             {
                 if (onAc && !wasOnAc) Alert?.Invoke(Strings.BatteryCharging, percent + "%", "charging");
                 else if (!onAc && wasOnAc) Alert?.Invoke(Strings.BatteryUnplugged, percent + "%", "unplugged");
@@ -313,8 +400,9 @@ namespace WindowsIsland
             void GetProcessId(out uint processId);
         }
 
-        public static bool Active()
+        public static List<string> Apps()
         {
+            List<string> apps = new List<string>();
             try
             {
                 IMMDeviceEnumerator enumerator = (IMMDeviceEnumerator)new MMDeviceEnumerator();
@@ -342,7 +430,11 @@ namespace WindowsIsland
                         uint pid;
                         session.GetProcessId(out pid);
                         Marshal.ReleaseComObject(session);
-                        if (state == AudioSessionStateActive && pid != 0) return true;
+                        if (state == AudioSessionStateActive && pid != 0)
+                        {
+                            string app = AppNames.FromPid(pid);
+                            if (!apps.Contains(app, StringComparer.OrdinalIgnoreCase)) apps.Add(app);
+                        }
                     }
                     Marshal.ReleaseComObject(sessions);
                     Marshal.ReleaseComObject(manager);
@@ -354,7 +446,7 @@ namespace WindowsIsland
             catch (Exception)
             {
             }
-            return false;
+            return apps;
         }
     }
 

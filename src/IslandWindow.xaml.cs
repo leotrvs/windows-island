@@ -18,8 +18,8 @@ namespace WindowsIsland
 {
     public partial class IslandWindow : Window
     {
-        enum View { Hidden, Minimal, Idle, MusicCompact, ClaudeCompact, CodexCompact, TimerCompact, MusicExpanded, ClaudeExpanded, TimerExpanded, Banner, Toast }
-        enum Activity { None, Music, Claude, Codex, Timer }
+        enum View { Hidden, Minimal, Idle, MusicCompact, ClaudeCompact, CodexCompact, TimerCompact, BatteryCompact, MusicExpanded, ClaudeExpanded, TimerExpanded, Banner, Toast }
+        enum Activity { None, Music, Claude, Codex, Timer, Battery }
 
         static readonly Dictionary<View, Size> Sizes = new Dictionary<View, Size>
         {
@@ -30,6 +30,7 @@ namespace WindowsIsland
             [View.ClaudeCompact] = new Size(176, 34),
             [View.CodexCompact] = new Size(176, 34),
             [View.TimerCompact] = new Size(150, 34),
+            [View.BatteryCompact] = new Size(150, 34),
             [View.MusicExpanded] = new Size(372, 152),
             [View.TimerExpanded] = new Size(372, 150),
             [View.ClaudeExpanded] = new Size(372, 156),
@@ -113,6 +114,7 @@ namespace WindowsIsland
             panels[View.ClaudeCompact] = ClaudeCompact;
             panels[View.CodexCompact] = CodexCompact;
             panels[View.TimerCompact] = TimerCompact;
+            panels[View.BatteryCompact] = BatteryCompact;
             panels[View.TimerExpanded] = TimerExpanded;
             panels[View.MusicExpanded] = MusicExpanded;
             panels[View.ClaudeExpanded] = ClaudeExpanded;
@@ -161,6 +163,8 @@ namespace WindowsIsland
             codex.Finished += OnCodexFinished;
             timer.Changed += OnTimerChanged;
             privacy.Changed += OnPrivacyChanged;
+            battery = (Application.Current as App)?.Battery;
+            if (battery != null) battery.Changed += OnBatteryChanged;
 
             SourceInitialized += (s, e) =>
             {
@@ -187,15 +191,69 @@ namespace WindowsIsland
 
         void OnTimerChanged() { UpdateTimerPage(); Recompute(); }
         void OnPrivacyChanged() { UpdatePrivacy(); Recompute(); }
+        void OnBatteryChanged() { UpdateBattery(); Recompute(); }
+
+        BatteryService battery;
+        bool BatteryActive { get { return settings.BatteryActivity && battery != null && battery.Charging; } }
+
+        void UpdateBattery()
+        {
+            if (battery != null && battery.HasBattery) BatteryCompactText.Text = battery.Percent + "%";
+        }
 
         bool PrivacyOn { get { return settings.ShowPrivacyDots && (privacy.Microphone || privacy.Camera); } }
+
+        string privacyLabel = "";
+        DateTime privacyNameUntil;
+        DispatcherTimer privacyNameTimer;
+
+        // "Zoom", or "Zoom +1" when several apps are recording.
+        string PrivacyLabel()
+        {
+            List<string> names = new List<string>();
+            if (privacy.Microphone) names.AddRange(privacy.MicrophoneApps);
+            if (privacy.Camera) names.AddRange(privacy.CameraApps);
+            names = names.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+            if (names.Count == 0) return "";
+            string first = names[0].Length > 20 ? names[0].Substring(0, 19) + "…" : names[0];
+            return names.Count > 1 ? first + " +" + (names.Count - 1) : first;
+        }
 
         void UpdatePrivacy()
         {
             bool mic = privacy.Microphone && settings.ShowPrivacyDots, cam = privacy.Camera && settings.ShowPrivacyDots;
             MicDot.Visibility = mic ? Visibility.Visible : Visibility.Collapsed;
             CamDot.Visibility = cam ? Visibility.Visible : Visibility.Collapsed;
-            PrivacyDots.Width = mic && cam ? 30 : 20;
+
+            // A new app using the microphone or camera shows its name for a few seconds; hovering shows it again.
+            string label = mic || cam ? PrivacyLabel() : "";
+            if (label != privacyLabel)
+            {
+                bool added = label.Length > 0;
+                privacyLabel = label;
+                if (added)
+                {
+                    privacyNameUntil = DateTime.Now.AddSeconds(5);
+                    if (privacyNameTimer == null)
+                    {
+                        privacyNameTimer = new DispatcherTimer();
+                        privacyNameTimer.Tick += (s, e) => { privacyNameTimer.Stop(); UpdatePrivacy(); };
+                    }
+                    privacyNameTimer.Interval = TimeSpan.FromSeconds(5.1);
+                    privacyNameTimer.Stop();
+                    privacyNameTimer.Start();
+                }
+            }
+            bool showName = settings.ShowPrivacyNames && label.Length > 0 && (hovering || DateTime.Now < privacyNameUntil);
+            double dotsWidth = mic && cam ? 30 : 20, nameWidth = 0;
+            PrivacyName.Visibility = showName ? Visibility.Visible : Visibility.Collapsed;
+            if (showName)
+            {
+                if (PrivacyName.Text != label) PrivacyName.Text = label;
+                PrivacyName.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+                nameWidth = PrivacyName.DesiredSize.Width + PrivacyName.Margin.Left + PrivacyName.Margin.Right;
+            }
+            PrivacyDots.Width = dotsWidth + nameWidth;
             privacyOpacity.Target = mic || cam ? 1 : 0;
         }
 
@@ -325,6 +383,7 @@ namespace WindowsIsland
             codex.Finished -= OnCodexFinished;
             timer.Changed -= OnTimerChanged;
             privacy.Changed -= OnPrivacyChanged;
+            if (battery != null) battery.Changed -= OnBatteryChanged;
             enterTimer.Stop();
             leaveTimer.Stop();
             pollTimer.Stop();
@@ -357,6 +416,7 @@ namespace WindowsIsland
             View value;
             if (!Enum.TryParse(name, true, out value)) return;
             forced = value;
+            BatteryCompactText.Text = "54%";
             BannerTitle.Text = Strings.ClaudeDone;
             BannerSubtitle.Text = Strings.SampleSession;
         }
@@ -365,9 +425,10 @@ namespace WindowsIsland
         public void RenderStates(string folder, string suffix)
         {
             Directory.CreateDirectory(folder);
-            View[] states = { View.Idle, View.MusicCompact, View.ClaudeCompact, View.CodexCompact, View.MusicExpanded, View.ClaudeExpanded, View.TimerExpanded, View.Banner };
+            View[] states = { View.Idle, View.MusicCompact, View.ClaudeCompact, View.CodexCompact, View.BatteryCompact, View.MusicExpanded, View.ClaudeExpanded, View.TimerExpanded, View.Banner };
             double[] levels = { 0.55, 0.95, 0.4, 0.75 };
             Array.Copy(levels, eqLevel, levels.Length);
+            BatteryCompactText.Text = "54%";
             BannerTitle.Text = Strings.ClaudeDone;
             BannerSubtitle.Text = Strings.SampleSession;
 
@@ -564,6 +625,7 @@ namespace WindowsIsland
             if (music) active.Add(Activity.Music);
             if (working && claude.Waiting == 0) active.Add(Activity.Claude);
             if (CodexActive) active.Add(Activity.Codex);
+            if (BatteryActive) active.Add(Activity.Battery);
             if (timer.Running) active.Insert(working && claude.Waiting > 0 ? 1 : 0, Activity.Timer);
             Activity primary = active.Count > 0 ? active[0] : Activity.None;
             Activity second = active.Count > 1 ? active[1] : Activity.None;
@@ -572,17 +634,14 @@ namespace WindowsIsland
             if (forced.HasValue) next = forced.Value;
             else if (fullscreen && settings.HideInFullscreen) next = View.Hidden;
             else if (hovering || DateTime.Now < peekUntil)
-                next = PickedPage() ?? (primary == Activity.Music ? View.MusicExpanded
-                     : primary == Activity.Timer ? View.TimerExpanded
-                     : settings.ShowClaude || CodexSectionVisible ? View.ClaudeExpanded
-                     : settings.ShowMusic && media.HasSession ? View.MusicExpanded
-                     : View.Idle);
+                next = PickedPage() ?? DefaultPage(primary);
             else if (DateTime.Now < bannerUntil) next = View.Banner;
             else if (DateTime.Now < toastUntil) next = View.Toast;
             // Empty island: the collapsed island stays a plain pill. Activities only show when it expands.
             else if (primary == Activity.Music && !settings.EmptyIsland) next = View.MusicCompact;
             else if (primary == Activity.Claude && !settings.EmptyIsland) next = View.ClaudeCompact;
             else if (primary == Activity.Codex && !settings.EmptyIsland) next = View.CodexCompact;
+            else if (primary == Activity.Battery && !settings.EmptyIsland) next = View.BatteryCompact;
             else if (primary == Activity.Timer) next = View.TimerCompact;
             else if (!settings.ShowIdlePill && !PrivacyOn) next = View.Hidden;
             else if (maximized && !IsBottom) next = View.Minimal; // Stay out of the way of tab strips
@@ -601,6 +660,7 @@ namespace WindowsIsland
                                    : next == View.ClaudeCompact ? Activity.Claude
                                    : next == View.CodexCompact ? Activity.Codex
                                    : next == View.TimerCompact ? Activity.Timer
+                                   : next == View.BatteryCompact ? Activity.Battery
                                    : Activity.None;
             Activity other = primary == shownActivity ? second : primary;
             Activity nextBubble = shownActivity != Activity.None && other != shownActivity ? other : Activity.None;
@@ -641,6 +701,7 @@ namespace WindowsIsland
                 BubbleArt.Visibility = bubble == Activity.Music ? Visibility.Visible : Visibility.Collapsed;
                 BubbleCodex.Visibility = bubble == Activity.Codex ? Visibility.Visible : Visibility.Collapsed;
                 BubbleTimer.Visibility = bubble == Activity.Timer ? Visibility.Visible : Visibility.Collapsed;
+                BubbleBattery.Visibility = bubble == Activity.Battery ? Visibility.Visible : Visibility.Collapsed;
             }
             bubbleOpacity.Target = hasBubble ? 1 : 0;
             bubbleScale.Target = hasBubble ? 1 : 0.4;
@@ -653,10 +714,23 @@ namespace WindowsIsland
         List<Activity> Pages()
         {
             List<Activity> pages = new List<Activity>();
-            if (settings.ShowMusic && media.HasSession) pages.Add(Activity.Music);
-            if (settings.ShowClaude || CodexSectionVisible) pages.Add(Activity.Claude);
-            pages.Add(Activity.Timer);
+            if (settings.PageMusic && settings.ShowMusic && media.HasSession) pages.Add(Activity.Music);
+            if (settings.PageClaude && (settings.ShowClaude || CodexSectionVisible)) pages.Add(Activity.Claude);
+            if (settings.PageTimer) pages.Add(Activity.Timer);
             return pages;
+        }
+
+        // The page the island opens on: the one for what is happening, if it is on, else the first page that is.
+        View DefaultPage(Activity primary)
+        {
+            Activity wanted = primary == Activity.Music ? Activity.Music
+                            : primary == Activity.Timer ? Activity.Timer
+                            : settings.ShowClaude || CodexSectionVisible ? Activity.Claude
+                            : settings.ShowMusic && media.HasSession ? Activity.Music
+                            : Activity.None;
+            List<Activity> pages = Pages();
+            if (wanted != Activity.None && pages.Contains(wanted)) return ExpandedFor(wanted);
+            return pages.Count > 0 ? ExpandedFor(pages[0]) : View.Idle;
         }
 
         static View ExpandedFor(Activity activity)
@@ -683,6 +757,7 @@ namespace WindowsIsland
             if (DateTime.Now - lastWheel < TimeSpan.FromMilliseconds(280)) return; // A touchpad sends a burst
             lastWheel = DateTime.Now;
             List<Activity> pages = Pages();
+            if (pages.Count == 0) return;
             int index = pages.IndexOf(ActivityOf(view));
             page = pages[((index < 0 ? 0 : index) + (e.Delta < 0 ? 1 : -1) + pages.Count) % pages.Count];
             Recompute();
@@ -721,6 +796,7 @@ namespace WindowsIsland
         {
             if (hovering == value) return;
             hovering = value;
+            UpdatePrivacy();
             if (!value) page = null; // The next visit starts on the default page again
             Recompute();
         }

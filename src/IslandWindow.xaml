@@ -72,6 +72,8 @@
                 <Ellipse x:Name="BubbleArt" Width="22" Height="22" Visibility="Collapsed"/>
                 <Image x:Name="BubbleCodex" Source="Assets/codex.png" Width="20" Height="20" Visibility="Collapsed"/>
                 <Path x:Name="BubbleTimer" Style="{StaticResource ClockMark}" Width="16" Height="16" Visibility="Collapsed"/>
+                <TextBlock x:Name="BubbleBattery" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Text="&#xE83E;" FontSize="16" Foreground="#30D158"
+                           HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"/>
             </Grid>
         </Border>
 
@@ -82,6 +84,8 @@
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <Ellipse x:Name="MicDot" Width="6" Height="6" Fill="#E0922A" Margin="2.5,0"/>
                 <Ellipse x:Name="CamDot" Width="6" Height="6" Fill="#3FBF5F" Margin="2.5,0"/>
+                <TextBlock x:Name="PrivacyName" FontSize="10.5" Foreground="#D9FFFFFF" Margin="3,0,6,0"
+                           VerticalAlignment="Center" Visibility="Collapsed"/>
             </StackPanel>
         </Border>
 
@@ -112,6 +116,15 @@
                            HorizontalAlignment="Left" VerticalAlignment="Center" Margin="8,0,0,0"/>
                     <TextBlock x:Name="CodexCompactText" HorizontalAlignment="Right" VerticalAlignment="Center"
                                Margin="0,0,13,0" FontSize="13" FontWeight="SemiBold" Typography.NumeralAlignment="Tabular"/>
+                </Grid>
+
+                <!-- Battery charging, compact -->
+                <Grid x:Name="BatteryCompact" Width="150" Height="34">
+                    <TextBlock FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Text="&#xE83E;" FontSize="16" Foreground="#30D158"
+                               HorizontalAlignment="Left" VerticalAlignment="Center" Margin="13,0,0,0"/>
+                    <TextBlock x:Name="BatteryCompactText" HorizontalAlignment="Right" VerticalAlignment="Center"
+                               Margin="0,0,13,0" FontSize="13" FontWeight="SemiBold" Foreground="#30D158"
+                               Typography.NumeralAlignment="Tabular"/>
                 </Grid>
 
                 <!-- Timer, compact -->

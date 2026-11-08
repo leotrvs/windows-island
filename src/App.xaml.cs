@@ -28,6 +28,7 @@ namespace WindowsIsland
         TimerService timer;
         PrivacyService privacy;
         BatteryService battery;
+        internal BatteryService Battery { get { return battery; } }
         ScreenshotService screenshots;
         readonly List<IslandWindow> islands = new List<IslandWindow>();
         readonly DispatcherTimer followTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(300) };
@@ -190,7 +191,8 @@ namespace WindowsIsland
                 if (!sample) Strings.Use(settings.Language);
                 if (settings.ShowPrivacyDots && !sample) privacy.Start();
                 else privacy.Stop();
-                if (settings.BatteryAlerts && !sample) battery.Start();
+                battery.AlertsOn = settings.BatteryAlerts;
+                if ((settings.BatteryAlerts || settings.BatteryActivity) && !sample) battery.Start();
                 else battery.Stop();
                 if (settings.ShowScreenshotAlert && !sample) screenshots.Start();
                 else screenshots.Stop();
@@ -223,7 +225,8 @@ namespace WindowsIsland
             }, () => Shutdown(), timer);
             if (sample) return;
             if (settings.ShowPrivacyDots) privacy.Start();
-            if (settings.BatteryAlerts) battery.Start();
+            battery.AlertsOn = settings.BatteryAlerts;
+            if (settings.BatteryAlerts || settings.BatteryActivity) battery.Start();
             if (settings.ShowScreenshotAlert) screenshots.Start();
 
             if (!dev)

@@ -27,8 +27,14 @@ namespace WindowsIsland
         public string Language { get; set; } = "Auto";   // Auto follows Windows; or en, pt, es, ru
         public string BannerSize { get; set; } = "Small"; // Small or Normal
         public string RingColor { get; set; } = "Blue";  // Usage rings: Blue, Green or Purple
+        // Which pages the expanded island offers (scroll or click the dots to switch between them)
+        public bool PageMusic { get; set; } = true;
+        public bool PageClaude { get; set; } = true;
+        public bool PageTimer { get; set; } = true;
         public bool ShowPrivacyDots { get; set; } = true;
+        public bool ShowPrivacyNames { get; set; } = true; // The app's name beside the dots, for a few seconds
         public bool BatteryAlerts { get; set; } = true;
+        public bool BatteryActivity { get; set; } = true; // Charging shows in the island like any other activity
         public bool ShowScreenshotAlert { get; set; } = true;
         public bool ShowNotifications { get; set; } = false; // Reads notification content, so it is opt-in
         public bool HideInFullscreen { get; set; } = true;

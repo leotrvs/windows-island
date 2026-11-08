@@ -209,6 +209,24 @@ namespace WindowsIsland
                                                   "Laranja com o microfone em uso, verde com a câmera",
                                                   "Naranja con el micrófono en uso, verde con la cámara",
                                                   "Оранжевая, пока используется микрофон, зелёная для камеры");
+        public static string MenuPrivacyNames => T("App name on the dots", "Nome do app nos pontos", "Nombre de la app en los puntos", "Название приложения у точек");
+        public static string HintPrivacyNames => T("Shows which app is using the microphone or camera, for a few seconds and while the mouse is over the island",
+                                                   "Mostra qual app usa o microfone ou a câmera, por alguns segundos e enquanto o mouse está na ilha",
+                                                   "Muestra qué app usa el micrófono o la cámara, unos segundos y mientras el ratón está sobre la isla",
+                                                   "Показывает, какое приложение использует микрофон или камеру, несколько секунд и пока мышь над островом");
+        public static string SectionPages => T("Pages", "Páginas", "Páginas", "Страницы");
+        public static string HintPages => T("The pages you can switch between when the island is open",
+                                            "As páginas entre as quais você alterna com a ilha aberta",
+                                            "Las páginas entre las que cambias con la isla abierta",
+                                            "Страницы, между которыми можно переключаться, когда остров открыт");
+        public static string PageMusicLabel => T("Music page", "Página de música", "Página de música", "Страница музыки");
+        public static string PageClaudeLabel => T("Claude and Codex page", "Página do Claude e Codex", "Página de Claude y Codex", "Страница Claude и Codex");
+        public static string PageTimerLabel => T("Timer page", "Página do timer", "Página del temporizador", "Страница таймера");
+        public static string MenuBatteryActivity => T("Battery while charging", "Bateria ao carregar", "Batería al cargar", "Батарея при зарядке");
+        public static string HintBatteryActivity => T("Shows the charge level in the island while the charger is plugged in",
+                                                      "Mostra o nível de carga na ilha enquanto o carregador está ligado",
+                                                      "Muestra el nivel de carga en la isla mientras el cargador está conectado",
+                                                      "Показывает уровень заряда на острове, пока подключена зарядка");
         public static string MenuBatteryAlerts => T("Battery alerts", "Avisos de bateria", "Avisos de batería", "Оповещения о батарее");
         public static string HintBatteryAlerts => T("Charger and low battery, on laptops",
                                                     "Carregador e bateria baixa, em notebooks",

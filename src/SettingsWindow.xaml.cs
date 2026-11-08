@@ -296,6 +296,8 @@ Top = taskbarTop ? work.Top + 12 : work.Bottom - Height - 12;
             Toggle("img:codex", Strings.MenuCodex, null, () => settings.ShowCodex, v => settings.ShowCodex = v);
             Toggle("\uEA8F", Strings.MenuCodexBanners, null, () => settings.CodexBanners, v => settings.CodexBanners = v);
             Toggle("\uE720", Strings.MenuPrivacyDots, Strings.HintPrivacyDots, () => settings.ShowPrivacyDots, v => settings.ShowPrivacyDots = v);
+            Toggle("\uE77B", Strings.MenuPrivacyNames, Strings.HintPrivacyNames, () => settings.ShowPrivacyNames, v => settings.ShowPrivacyNames = v);
+            Toggle("\uE83E", Strings.MenuBatteryActivity, Strings.HintBatteryActivity, () => settings.BatteryActivity, v => settings.BatteryActivity = v);
             Toggle("\uE83F", Strings.MenuBatteryAlerts, Strings.HintBatteryAlerts, () => settings.BatteryAlerts, v => settings.BatteryAlerts = v);
             Toggle("\uE722", Strings.MenuScreenshot, Strings.HintScreenshot, () => settings.ShowScreenshotAlert, v => settings.ShowScreenshotAlert = v);
             Toggle("\uE7E7", Strings.MenuNotifications, Strings.HintNotifications, () => settings.ShowNotifications, v => settings.ShowNotifications = v);
@@ -311,6 +313,11 @@ Top = taskbarTop ? work.Top + 12 : work.Bottom - Height - 12;
             Choice("\uE916", Strings.MenuAutoHide, Strings.HintAutoHide, new[] { 0, 5, 10, 30, 60, 300 }, true, () => settings.AutoHideSeconds, v => settings.AutoHideSeconds = v);
             Choice("\uE81C", Strings.MenuAlertDuration, null, new[] { 3, 5, 8, 12, 20 }, false, () => settings.AlertSeconds, v => settings.AlertSeconds = v);
             Choice("\uE769", Strings.MenuPausedMusic, null, new[] { 0, 2, 5, 15, 30, 60 }, false, () => settings.PausedMusicSeconds, v => settings.PausedMusicSeconds = v);
+
+            Section(Strings.SectionPages);
+            Toggle("\uE8D6", Strings.PageMusicLabel, Strings.HintPages, () => settings.PageMusic, v => settings.PageMusic = v);
+            Toggle("img:claude", Strings.PageClaudeLabel, null, () => settings.PageClaude, v => settings.PageClaude = v);
+            Toggle("\uE916", Strings.PageTimerLabel, null, () => settings.PageTimer, v => settings.PageTimer = v);
         }
 
         void BuildAppearance()
