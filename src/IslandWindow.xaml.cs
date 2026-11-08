@@ -1264,6 +1264,8 @@ namespace WindowsIsland
 
         // ---------- Permissions asked by Claude Code (through its hook) ----------
 
+        static readonly Brush SupabaseTint = Freeze(new SolidColorBrush(Color.FromArgb(0x33, 0x3E, 0xCF, 0x8E)));
+        static readonly Brush AmberTint = Freeze(new SolidColorBrush(Color.FromArgb(0x33, 0xFF, 0x9F, 0x0A)));
         ApiPermission permission;
         readonly Queue<ApiPermission> permissionQueue = new Queue<ApiPermission>();
 
@@ -1288,6 +1290,11 @@ namespace WindowsIsland
             {
                 PermTitle.Text = Strings.PermissionAsks;
                 PermTool.Text = ToolName(permission.Tool);
+                bool supabase = permission.Tool != null && permission.Tool.StartsWith("mcp__", StringComparison.Ordinal) &&
+                                permission.Tool.IndexOf("supabase", StringComparison.OrdinalIgnoreCase) >= 0;
+                PermSupabase.Visibility = supabase ? Visibility.Visible : Visibility.Collapsed;
+                PermLock.Visibility = supabase ? Visibility.Collapsed : Visibility.Visible;
+                PermIconBack.Background = supabase ? SupabaseTint : AmberTint;
                 PermSummary.Text = permission.Summary;
                 PermQueue.Text = permissionQueue.Count > 0 ? "+" + permissionQueue.Count : "";
                 PermCheck.Text = Strings.PermissionCheck;

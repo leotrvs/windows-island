@@ -484,9 +484,14 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <Border Width="30" Height="30" CornerRadius="15" Background="#33FF9F0A">
-                                <TextBlock Text="&#xE72E;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="15" Foreground="#FF9F0A"
-                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <Border x:Name="PermIconBack" Width="30" Height="30" CornerRadius="15" Background="#33FF9F0A">
+                                <Grid>
+                                    <TextBlock x:Name="PermLock" Text="&#xE72E;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="15" Foreground="#FF9F0A"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    <!-- The Supabase mark, for tools of the Supabase connector -->
+                                    <Path x:Name="PermSupabase" Width="15" Height="15" Stretch="Uniform" Fill="#FF3ECF8E" Visibility="Collapsed"
+                                          Data="M11.9 1.036c-.015-.986-1.26-1.41-1.874-.637L.764 12.05C-.33 13.427.65 15.455 2.409 15.455h9.579l.113 7.51c.014.985 1.259 1.408 1.873.636l9.262-11.653c1.093-1.375.113-3.403-1.645-3.403h-9.642z"/>
+                                </Grid>
                             </Border>
                             <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
                                 <TextBlock x:Name="PermTitle" FontSize="14" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
@@ -504,11 +509,17 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock x:Name="PermCheck" Style="{StaticResource Caption}" FontSize="11" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
-                            <Border x:Name="PermDeny" Grid.Column="1" CornerRadius="13" Padding="16,5" Background="#FF3A3A3C" Cursor="Hand" Margin="0,0,8,0">
-                                <TextBlock x:Name="PermDenyText" FontSize="13" FontWeight="SemiBold" Foreground="White"/>
+                            <Border x:Name="PermDeny" Grid.Column="1" CornerRadius="13" Padding="13,5,15,5" Background="#FFFF453A" Cursor="Hand" Margin="0,0,8,0">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="&#xE711;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="12" Foreground="White" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                    <TextBlock x:Name="PermDenyText" FontSize="13" FontWeight="SemiBold" Foreground="White"/>
+                                </StackPanel>
                             </Border>
-                            <Border x:Name="PermAllow" Grid.Column="2" CornerRadius="13" Padding="16,5" Background="#FF30D158" Cursor="Hand">
-                                <TextBlock x:Name="PermAllowText" FontSize="13" FontWeight="SemiBold" Foreground="Black"/>
+                            <Border x:Name="PermAllow" Grid.Column="2" CornerRadius="13" Padding="13,5,15,5" Background="#FF30D158" Cursor="Hand">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="&#xE73E;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="13" Foreground="Black" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                    <TextBlock x:Name="PermAllowText" FontSize="13" FontWeight="SemiBold" Foreground="Black"/>
+                                </StackPanel>
                             </Border>
                         </Grid>
                     </Grid>
