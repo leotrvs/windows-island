@@ -204,7 +204,7 @@ namespace WindowsIsland
             timer.Changed += OnTimerChanged;
             privacy.Changed += OnPrivacyChanged;
             discord = (Application.Current as App)?.Discord;
-            if (discord != null) discord.Changed += OnPrivacyChanged;
+            if (discord != null) discord.Changed += OnDiscordChanged;
             battery = (Application.Current as App)?.Battery;
             if (battery != null) battery.Changed += OnBatteryChanged;
             api = (Application.Current as App)?.Api;
@@ -237,6 +237,24 @@ namespace WindowsIsland
 
         void OnTimerChanged() { UpdateTimerPage(); Recompute(); }
         void OnPrivacyChanged() { UpdatePrivacy(); Recompute(); }
+
+        // Muting or unmuting in Discord brings the island back for a moment, even if it was put away or auto-hidden,
+        // so the change is noticed; the crossed icon stays beside it while you are muted.
+        bool discordWasMuted, discordWasDeaf;
+        DateTime discordChangedAt = DateTime.MinValue;
+        void OnDiscordChanged()
+        {
+            bool changed = discord != null && (discord.Muted != discordWasMuted || discord.Deafened != discordWasDeaf);
+            if (discord != null) { discordWasMuted = discord.Muted; discordWasDeaf = discord.Deafened; }
+            if (changed && settings.DiscordEnabled)
+            {
+                tucked = false;
+                lastActive = DateTime.Now; // The auto-hide time starts again
+                discordChangedAt = DateTime.Now;
+            }
+            UpdatePrivacy();
+            Recompute();
+        }
         void OnBatteryChanged() { UpdateBattery(); Recompute(); }
 
         // The clock and system page: the time, and the processor and memory load, refreshed once a second.
@@ -602,7 +620,7 @@ namespace WindowsIsland
             codex.Finished -= OnCodexFinished;
             timer.Changed -= OnTimerChanged;
             privacy.Changed -= OnPrivacyChanged;
-            if (discord != null) discord.Changed -= OnPrivacyChanged;
+            if (discord != null) discord.Changed -= OnDiscordChanged;
             if (battery != null) battery.Changed -= OnBatteryChanged;
             if (focusState != null) focusState.Changed -= OnFocusChanged;
             if (api != null) { api.ActivityUpdated -= OnApiActivity; api.ActivityEnded -= OnApiEnded; }
@@ -1005,7 +1023,7 @@ namespace WindowsIsland
             else if (maximized && settings.MaximizedMode == "Hidden") next = View.Hidden; // A game or a video that fills the screen
             else if (settings.SystemMonitor && maximized && !IsBottom && settings.MaximizedMode == "Thin") next = View.Minimal;
             else if (settings.SystemMonitor) next = View.SystemCompact;
-            else if (!settings.ShowIdlePill && !PrivacyOn) next = View.Hidden;
+            else if (!settings.ShowIdlePill && !PrivacyOn && DateTime.Now - discordChangedAt > TimeSpan.FromSeconds(4)) next = View.Hidden;
             else if (maximized && !IsBottom && settings.MaximizedMode == "Thin") next = View.Minimal; // Stay out of the way of tab strips
             else if (settings.IdleStyle == "Line") next = View.Minimal; // The thin line as the idle look
             else next = View.Idle;

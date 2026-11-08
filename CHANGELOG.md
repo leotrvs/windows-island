@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.7.1
+
+- Muting or unmuting in Discord brings the island back for a moment, even when it was put away or auto-hidden, so the change is seen; the crossed icon stays while you are muted
+
+
 ## 2.7.0
 
 - **Discord muted or deafened (experimental, off by default):** a crossed microphone or crossed headphones beside the island while you are muted or deafened in Discord, however you did it. It uses Discord's local RPC, which needs a Discord application of your own and a one-time approval inside Discord; the step-by-step guide is in docs/DISCORD.md and a link is in Settings, Activities, Discord. The client secret and the tokens are kept encrypted for your Windows user, and the island only talks to the pipe if Discord itself serves it. Tested against the real Discord for the connection and the refusal of a wrong application id; the approval and the muted state could not be tried without a Discord application, so please report what you see
