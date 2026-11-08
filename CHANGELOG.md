@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.3.2
+
+- Resting the mouse on the small second activity beside the island (for example the Claude spark while music plays) opens the island directly on that activity's page
+
+
 ## 2.3.1
 
 - Compact island with several chats: when some are waiting it shows how many of them (1/2 · Waiting) instead of the total, which looked like all were waiting

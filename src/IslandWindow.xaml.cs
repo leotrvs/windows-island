@@ -86,6 +86,7 @@ namespace WindowsIsland
         readonly Random random = new Random();
         readonly RectangleGeometry stageClip = new RectangleGeometry();
         readonly DropShadowEffect shadow = new DropShadowEffect { BlurRadius = 28, ShadowDepth = 6, Direction = 270, Opacity = 0, Color = Colors.Black };
+        readonly DispatcherTimer bubbleTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
         readonly DispatcherTimer enterTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(200) };
         readonly DispatcherTimer leaveTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(380) };
         readonly DispatcherTimer pollTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
@@ -168,6 +169,17 @@ namespace WindowsIsland
             Pill.MouseLeave += OnPillLeave;
             Pill.MouseLeftButtonUp += OnPillClick;
             enterTimer.Tick += (s, e) => { enterTimer.Stop(); SetHovering(true); };
+            // Resting the mouse on the small second activity opens the island straight on that activity's page
+            bubbleTimer.Tick += (s, e) =>
+            {
+                bubbleTimer.Stop();
+                if (bubble == Activity.None || hovering) return;
+                Activity target = bubble == Activity.Codex ? Activity.Claude : bubble;
+                if (Pages().Contains(target)) page = target;
+                SetHovering(true);
+            };
+            Bubble.MouseEnter += (s, e) => { if (settings.ExpandOnHover && bubble != Activity.None && !hovering) bubbleTimer.Start(); };
+            Bubble.MouseLeave += (s, e) => bubbleTimer.Stop();
             leaveTimer.Tick += (s, e) => { leaveTimer.Stop(); SetHovering(false); };
             pollTimer.Tick += (s, e) => Poll();
             revealTimer.Tick += (s, e) => CheckReveal();
@@ -925,6 +937,7 @@ namespace WindowsIsland
         void ApplyTargets()
         {
             UpdateDots();
+            Bubble.IsHitTestVisible = bubble != Activity.None && view != View.Hidden; // The small second activity can be pointed at
             Size size = SizeOf(view);
             width.Target = size.Width;
             height.Target = size.Height;
