@@ -14,7 +14,7 @@ Discord has a local RPC that other programs on the same computer can use to read
    - Copy the **Client ID** (also shown as Application ID on the first page).
    - Click **Reset Secret** and copy the **Client Secret**. It is shown once.
    - Under **Redirects**, add `http://127.0.0.1` and save.
-4. Make yourself a tester of the application. Discord only lets approved applications use RPC, but an application's owner and its testers may use it while it is in development. In the application's settings look for **App Testers** (the name may change), add your own Discord user, and accept the invitation Discord sends you.
+4. You do **not** need to add yourself as a tester: the owner of the application can use it while it is in development (Discord even refuses the invitation, "you cannot invite yourself"). Testers are for **other people** who want to use your application (up to 50, under the application's settings, **App Testers**).
 5. In Windows Island open **Settings, Activities, Discord (muted and deafened)**.
    - Paste the **Client ID** and the **Client Secret** and turn on **Show when I am muted in Discord**.
    - With Discord open, a window asks you to approve the application. Approve it.
@@ -30,7 +30,7 @@ From then on a crossed microphone (muted) or crossed headphones (deafened) appea
 - The permission you approve (`rpc` and `rpc.voice.read`) lets whoever holds the token read your voice settings and control the local Discord client, which is more than the island uses. That is why the token stays in the encrypted file and nowhere else, and **Forget the Discord data** in Settings deletes it.
 - The only internet connection is to `https://discord.com/api/oauth2/token`, once to trade Discord's approval for a token and again when the token needs renewing.
 - Turn the option off and nothing runs; the saved secret and tokens stay until you use **Forget the Discord data**.
-- If Discord refuses (a wrong ID, or no tester role), the island stops trying until you change the ID or the secret, so it does not make Discord show its approval window again and again.
+- If Discord refuses (a wrong ID or secret), the island stops trying until you change the ID or the secret, so it does not make Discord show its approval window again and again.
 
 ## If it does not connect
 
@@ -40,7 +40,7 @@ From then on a crossed microphone (muted) or crossed headphones (deafened) appea
 | Waiting for Discord to open | Open the Discord desktop app |
 | Approve the request in the Discord window | A window is waiting inside Discord |
 | Discord did not accept it: Invalid Client ID | The Client ID is wrong |
-| Discord did not accept it (other) | Check the secret, the redirect `http://127.0.0.1`, and that you are a tester of the application. Discord says the RPC permissions are only for approved applications, so if the testers step is missing it can refuse |
+| Discord did not accept it (other) | Check the secret and the redirect `http://127.0.0.1`. Discord says the RPC permissions are only for approved applications; it worked for the owner of an application in development |
 
 ## For everyone
 
@@ -62,7 +62,7 @@ O Discord tem uma API local (RPC) que outros programas do mesmo computador podem
    - Copie o **Client ID** (também aparece como Application ID na primeira página).
    - Clique em **Reset Secret** e copie o **Client Secret**. Ele aparece uma vez só.
    - Em **Redirects**, adicione `http://127.0.0.1` e salve.
-4. Torne-se tester do aplicativo. O Discord só deixa aplicativos aprovados usarem o RPC, mas o dono do aplicativo e os testers dele podem usar enquanto ele está em desenvolvimento. Nas configurações do aplicativo procure **App Testers** (o nome pode mudar), adicione a sua própria conta do Discord e aceite o convite que o Discord enviar.
+4. Você **não** precisa se adicionar como tester: o dono do aplicativo pode usá-lo enquanto ele está em desenvolvimento (o Discord até recusa o convite, "você não pode se convidar"). Testers são para **outras pessoas** que queiram usar o seu aplicativo (até 50, nas configurações do aplicativo, **App Testers**).
 5. Na Windows Island abra **Ajustes, Atividades, Discord (mudo e ensurdecido)**.
    - Cole o **Client ID** e o **Client Secret** e ligue **Mostrar quando eu estou mudo no Discord**.
    - Com o Discord aberto, uma janela pede para você aprovar o aplicativo. Aprove.
@@ -78,7 +78,7 @@ Daí em diante, um microfone cortado (mudo) ou um fone cortado (ensurdecido) apa
 - A permissão que você aprova (`rpc` e `rpc.voice.read`) deixa quem tem o token ler suas configurações de voz e controlar o cliente local do Discord, mais do que a ilha usa. Por isso o token fica só no arquivo criptografado, e **Esquecer os dados do Discord** nos Ajustes o apaga.
 - A única conexão com a internet é com `https://discord.com/api/oauth2/token`, uma vez para trocar a aprovação do Discord por um token e de novo quando o token precisa ser renovado.
 - Desligue a opção e nada roda; o secret e os tokens guardados ficam até você usar **Esquecer os dados do Discord**.
-- Se o Discord recusar (ID errado, ou sem o papel de tester), a ilha para de tentar até você mudar o ID ou o secret, para não fazer o Discord mostrar a janela de aprovação várias vezes.
+- Se o Discord recusar (ID ou secret errado), a ilha para de tentar até você mudar o ID ou o secret, para não fazer o Discord mostrar a janela de aprovação várias vezes.
 
 ### Se não conectar
 
@@ -88,7 +88,7 @@ Daí em diante, um microfone cortado (mudo) ou um fone cortado (ensurdecido) apa
 | Esperando o Discord abrir | Abra o aplicativo do Discord |
 | Aprove o pedido na janela do Discord | Há uma janela esperando dentro do Discord |
 | O Discord não aceitou: Invalid Client ID | O Client ID está errado |
-| O Discord não aceitou (outro) | Confira o secret, o redirect `http://127.0.0.1` e se você é tester do aplicativo. O Discord diz que as permissões do RPC são só para aplicativos aprovados, então sem o passo de tester ele pode recusar |
+| O Discord não aceitou (outro) | Confira o secret e o redirect `http://127.0.0.1`. O Discord diz que as permissões do RPC são só para aplicativos aprovados; funcionou para o dono de um aplicativo em desenvolvimento |
 
 ### Para todo mundo
 
