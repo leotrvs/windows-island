@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.1.4
+
+- Small website icons in the music view are enlarged with smooth interpolation, so they look soft instead of blocky
+
+
 ## 2.1.3
 
 - **Website audio:** the equalizer takes the color of the site icon (WhatsApp is green, not purple); icons are drawn smoother and the extension sends a larger one (reload the extension to get it)

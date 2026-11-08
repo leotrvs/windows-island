@@ -291,9 +291,28 @@ namespace WindowsIsland
             hint = value;
             if (session == null || !IsBrowser(sourceApp) || !string.IsNullOrWhiteSpace(Artist)) return;
             if (!HintMatches(Title, value) || !(value.Favicon is BitmapSource icon)) return;
-            Art = icon;
+            Art = Smooth(icon);
             Accent = SafeAccent(icon, Accent); // The equalizer takes the site icon's color (WhatsApp green)
             Changed?.Invoke();
+        }
+
+        // A small site icon (16 or 32 px) is enlarged once with smooth interpolation, so it shows soft instead of blocky.
+        static BitmapSource Smooth(BitmapSource icon)
+        {
+            try
+            {
+                if (icon.PixelWidth >= 160) return icon;
+                const double size = 160;
+                DrawingVisual visual = new DrawingVisual();
+                RenderOptions.SetBitmapScalingMode(visual, BitmapScalingMode.Fant);
+                using (DrawingContext context = visual.RenderOpen())
+                    context.DrawImage(icon, new System.Windows.Rect(0, 0, size, size));
+                RenderTargetBitmap bitmap = new RenderTargetBitmap((int)size, (int)size, 96, 96, PixelFormats.Pbgra32);
+                bitmap.Render(visual);
+                bitmap.Freeze();
+                return bitmap;
+            }
+            catch (Exception) { return icon; }
         }
 
         static Color SafeAccent(BitmapSource icon, Color fallback)
@@ -335,7 +354,7 @@ namespace WindowsIsland
             {
                 Color tile = TileColor(title);
                 bool hasIcon = hint != null && HintMatches(title, hint) && hint.Favicon is BitmapSource;
-                Art = hasIcon ? (BitmapSource)hint.Favicon : LetterTile(title, tile);
+                Art = hasIcon ? Smooth((BitmapSource)hint.Favicon) : LetterTile(title, tile);
                 Accent = hasIcon ? SafeAccent((BitmapSource)hint.Favicon, tile) : tile;
                 Changed?.Invoke();
                 return;
