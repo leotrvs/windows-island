@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.8.1
+
+- **Limit alerts:** "renewed" is now announced also when the limit had not reached 75% (any drop of 10 points or more back to below 75%)
+
 ## 2.8.0
 
 - **Steam downloads (off by default):** the progress of a game being downloaded or updated in Steam shows on the island as an activity with a progress bar, and "Done" when it finishes. It is read from the small manifest files Steam keeps beside the games (`appmanifest_*.acf`), in every Steam library folder; nothing is sent anywhere. Settings, Activities, "Steam downloads". Not yet tried with a download in progress: please report how it behaves

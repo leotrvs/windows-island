@@ -46,6 +46,14 @@ namespace WindowsIsland.Tests
         }
 
         [Fact]
+        public void RenewingFromBelowTheFirstLevelIsAnnouncedToo()
+        {
+            Assert.Equal(0, LimitMath.Announce(0, 0, 73, 0));
+            Assert.Equal(-1, LimitMath.Announce(0, 0, 5, 0));
+            Assert.Equal(-1, LimitMath.Announce(-1, 0, -1, 0));
+        }
+
+        [Fact]
         public void FallingButNotToZeroAnnouncesNothing()
         {
             Assert.Equal(-1, LimitMath.Announce(100, 75));

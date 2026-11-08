@@ -9,6 +9,14 @@ namespace WindowsIsland
             return percent >= 100 ? 100 : percent >= 90 ? 90 : percent >= 75 ? 75 : 0;
         }
 
+        // A limit that fell by 10 points or more to below 75% was renewed, whatever it had reached before.
+        public static int Announce(int before, int level, int beforePercent, int percent)
+        {
+            int result = Announce(before, level);
+            if (result < 0 && before >= 0 && level == 0 && beforePercent >= 0 && beforePercent - percent >= 10) return 0;
+            return result;
+        }
+
         // What to announce when a limit goes from the level it had (-1 = not read yet) to the one it has now:
         // the new level when it went up, 0 when it renewed after reaching 75% or more, -1 for nothing.
         public static int Announce(int before, int level)

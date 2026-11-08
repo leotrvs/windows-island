@@ -244,6 +244,7 @@ namespace WindowsIsland
         // The level each limit has reached (0, 75, 90 or 100) as last seen; -1 before the first reading, which is
         // only a starting point, so opening the island at 92% does not announce it.
         readonly int[] limitLevel = { -1, -1 };
+        readonly int[] limitPercent = { -1, -1 };
 
         void CheckLimit(int index, UsageWindow window)
         {
@@ -252,7 +253,9 @@ namespace WindowsIsland
             int level = LimitMath.Level(percent);
             int before = limitLevel[index];
             limitLevel[index] = level;
-            int announce = LimitMath.Announce(before, level);
+            int beforePercent = limitPercent[index];
+            limitPercent[index] = percent;
+            int announce = LimitMath.Announce(before, level, beforePercent, percent);
             if (announce >= 0) LimitAlert?.Invoke(index == 1, announce, percent, window.EffectiveReset);
         }
 
