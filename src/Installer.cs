@@ -130,6 +130,13 @@ namespace WindowsIsland
             DeleteInstallDirAfterExit();
         }
 
+        // Keeps the Windows apps list entry current (the version was only ever written at install time).
+        public static void RefreshAppsEntry()
+        {
+            try { RegisterInAppsList(); }
+            catch (Exception) { }
+        }
+
         static void RegisterInAppsList()
         {
             using (RegistryKey key = Registry.CurrentUser.CreateSubKey(UninstallKeyPath))
@@ -142,6 +149,9 @@ namespace WindowsIsland
                 key.SetValue("UninstallString", "\"" + InstalledExe + "\" --uninstall");
                 key.SetValue("NoModify", 1, RegistryValueKind.DWord);
                 key.SetValue("NoRepair", 1, RegistryValueKind.DWord);
+                key.SetValue("URLInfoAbout", "https://github.com/leotrvs/windows-island");
+                if (key.GetValue("InstallDate") == null) key.SetValue("InstallDate", DateTime.Now.ToString("yyyyMMdd"));
+                try { key.SetValue("EstimatedSize", (int)(new FileInfo(InstalledExe).Length / 1024), RegistryValueKind.DWord); } catch (Exception) { }
             }
         }
 

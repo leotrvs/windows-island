@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.4.1
+
+- **Uninstall:** a new "Uninstall Windows Island" button at the end of Settings, System (installed copy only), because the entry in Windows' apps list is not always shown. The entry is now refreshed at every start (its version was never updated after the first install) and carries a size, date and link; the exe's product version no longer has a build hash
+
+
 ## 2.4.0
 
 - **Limit alerts:** a note when the Claude 5-hour or weekly limit reaches 75%, 90% and 100% and when it renews (after it had reached 75% or more). The 100% note says "Limit reached" with the window below. On by default; turn it off in Settings, Activities, Limit alerts. The first reading when the island starts is never announced

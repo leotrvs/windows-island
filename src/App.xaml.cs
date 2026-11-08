@@ -288,7 +288,7 @@ namespace WindowsIsland
             osd.Apply(settings.HideWindowsOsd && settings.ShowLevels);
             if (settings.ShowScreenshotAlert) screenshots.Start();
             if (settings.ApiEnabled) api.Start(settings.ApiPort);
-            if (Installer.IsInstalledCopy) Installer.EnsureCommandShim(); // Copies updated from before 2.0 get island.cmd too
+            if (Installer.IsInstalledCopy) { Installer.EnsureCommandShim(); Installer.RefreshAppsEntry(); } // Copies updated from before 2.0 get island.cmd too
 
             if (!dev)
             {

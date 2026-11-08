@@ -187,6 +187,7 @@ namespace WindowsIsland
         public static string UpdateFailed => T("Could not check for updates", "Não foi possível procurar atualizações", "No se pudo buscar actualizaciones", "Не удалось проверить обновления");
         public static string UpdatesNeedInstall => T("Updates work in the installed copy", "As atualizações funcionam na cópia instalada", "Las actualizaciones funcionan en la copia instalada", "Обновления работают в установленной копии");
         public static string UpdatedTo(string version) => T("Updated to version ", "Atualizado para a versão ", "Actualizado a la versión ", "Обновлено до версии ") + version;
+        public static string MenuUninstall => T("Uninstall Windows Island", "Desinstalar o Windows Island", "Desinstalar Windows Island", "Удалить Windows Island");
         public static string MenuOpenSettings => T("Open settings file", "Abrir arquivo de configurações", "Abrir archivo de configuración", "Открыть файл настроек");
         public static string MenuQuit => T("Quit", "Sair", "Salir", "Выход");
         public static string MenuTimer => T("Timer", "Timer", "Temporizador", "Таймер");

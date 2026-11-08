@@ -423,6 +423,13 @@ namespace WindowsIsland
             ApiRows();
             UpdateRow();
             LanguageRow();
+            if (Installer.IsInstalledCopy)
+                ActionRow("\uE74D", Strings.MenuUninstall, () =>
+                {
+                    // The same uninstaller Windows' apps list runs; it asks first and removes the app and its settings
+                    try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(Installer.InstalledExe, "--uninstall") { UseShellExecute = true })?.Dispose(); }
+                    catch (Exception) { }
+                });
             ActionRow("\uE8A5", Strings.MenuOpenSettings, () =>
             {
                 settings.Save();
