@@ -658,6 +658,88 @@ namespace WindowsIsland
                 SaveSnapshot(System.IO.Path.Combine(folder, state.ToString().ToLowerInvariant() + suffix + ".png"));
             }
 
+
+            // Several chats at once, and a chat that waits for you
+            string[] chatNames = { "chats-working", "chats-waiting" };
+            for (int i = 0; i < chatNames.Length; i++)
+            {
+                claude.UseSampleChats(i);
+                lastCompactText = null; lastStatus = null;
+                foreach (View chatView in new[] { View.ClaudeCompact, View.ClaudeExpanded })
+                {
+                    forced = chatView;
+                    UpdateClaude();
+                    UpdateClaudeLive();
+                    Recompute();
+                    SnapAll();
+                    ApplyFrame();
+                    CompactSpark.Thinking = ExpandedSpark.Thinking = BubbleSpark.Thinking = false;
+                    Root.UpdateLayout();
+                    ApplyFrame();
+                    Root.UpdateLayout();
+                    SaveSnapshot(System.IO.Path.Combine(folder, chatNames[i] + (chatView == View.ClaudeCompact ? "-compact" : "-expanded") + suffix + ".png"));
+                }
+            }
+            // A made-up Windows notification on the same banner
+            forced = View.Banner; // The view is the banner before its text changes (after the monitor looks above), as it is in use
+            Recompute();
+            SnapAll();
+            banners.Enqueue(new BannerItem { App = "Mail", Title = Strings.SampleNotificationTitle, Subtitle = Strings.SampleNotificationBody, Seconds = 5 });
+            NextBanner();
+            Root.UpdateLayout();
+            ApplyFrame();
+            SaveSnapshot(System.IO.Path.Combine(folder, "notification" + suffix + ".png"));
+
+            // Claude asking for you (a permission or a question), on the same banner
+            banners.Enqueue(new BannerItem { FromClaude = true, Title = Strings.ClaudeNeedsYou, Subtitle = Strings.SampleSessionTwo, Seconds = 5 });
+            NextBanner();
+            Root.UpdateLayout();
+            ApplyFrame();
+            SaveSnapshot(System.IO.Path.Combine(folder, "banner-waiting" + suffix + ".png"));
+
+            // What the battery alerts look like on a laptop
+            foreach (string kind in new[] { "charging", "low" })
+            {
+                BannerItem alert = new BannerItem
+                {
+                    App = Installer.Name,
+                    Title = kind == "low" ? Strings.BatteryLow : Strings.BatteryCharging,
+                    Side = kind == "low" ? "18%" : "54%",
+                    Seconds = 5,
+                };
+                ApplyKind(alert, kind);
+                banners.Enqueue(alert);
+                NextBanner();
+                SnapAll();
+                Root.UpdateLayout();
+                ApplyFrame();
+                SaveSnapshot(System.IO.Path.Combine(folder, "battery-" + kind + suffix + ".png"));
+            }
+
+            // How limit alerts could look (a preview only, not part of the README images)
+            if (Environment.GetEnvironmentVariable("WI_USAGE_PREVIEW") == "1")
+            {
+                DateTime fiveReset = DateTime.Now.AddHours(2.5), weekReset = DateTime.Now.Date.AddDays(3).AddHours(9);
+                (string key, string title, string sub, string side, Brush color)[] specs =
+                {
+                    ("75", Strings.LimitFiveHour, Strings.Resets(fiveReset), "75%", RingBrush(75)),
+                    ("90", Strings.LimitFiveHour, Strings.Resets(fiveReset), "90%", RingBrush(90)),
+                    ("100", Strings.LimitReached(Strings.LimitFiveHour), Strings.Resets(fiveReset), "100%", RingBrush(100)),
+                    ("week90", Strings.LimitWeekly, Strings.Resets(weekReset), "90%", RingBrush(90)),
+                    ("reset5", Strings.LimitRenewed(Strings.LimitFiveHour), Strings.LimitFull, "0%", Green),
+                    ("resetweek", Strings.LimitRenewed(Strings.LimitWeekly), Strings.LimitFull, "0%", Green),
+                };
+                foreach (var spec in specs)
+                {
+                    banners.Enqueue(new BannerItem { FromClaude = true, Title = spec.title, Subtitle = spec.sub, Side = spec.side, GlyphBrush = spec.color, Seconds = 5 });
+                    NextBanner();
+                    SnapAll();
+                    Root.UpdateLayout();
+                    ApplyFrame();
+                    SaveSnapshot(System.IO.Path.Combine(folder, "usage-" + spec.key + suffix + ".png"));
+                }
+            }
+
             // The other two looks of the system monitor
             foreach (string style in new[] { "Bars", "Numbers" })
             {
@@ -674,32 +756,6 @@ namespace WindowsIsland
             }
             settings.MonitorStyle = "Rings";
             UpdateSystemMonitor();
-
-            // A made-up Windows notification on the same banner
-            banners.Enqueue(new BannerItem { App = "Mail", Title = Strings.SampleNotificationTitle, Subtitle = Strings.SampleNotificationBody, Seconds = 5 });
-            NextBanner();
-            forced = View.Banner;
-            Root.UpdateLayout();
-            ApplyFrame();
-            SaveSnapshot(System.IO.Path.Combine(folder, "notification" + suffix + ".png"));
-
-            // What the battery alerts look like on a laptop
-            foreach (string kind in new[] { "charging", "low" })
-            {
-                BannerItem alert = new BannerItem
-                {
-                    App = Installer.Name,
-                    Title = kind == "low" ? Strings.BatteryLow : Strings.BatteryCharging,
-                    Side = kind == "low" ? "18%" : "54%",
-                    Seconds = 5,
-                };
-                ApplyKind(alert, kind);
-                banners.Enqueue(alert);
-                NextBanner();
-                Root.UpdateLayout();
-                ApplyFrame();
-                SaveSnapshot(System.IO.Path.Combine(folder, "battery-" + kind + suffix + ".png"));
-            }
         }
 
         void SnapAll()

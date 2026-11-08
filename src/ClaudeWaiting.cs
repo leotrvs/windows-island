@@ -38,10 +38,27 @@ namespace WindowsIsland
             public long Length;
             public DateTime Write;
             public Pending Oldest;
+            public bool Asking; // The last thing Claude did was ask a blocking question that has no answer yet
             public DateTime SearchedAt; // When the transcript was last looked for in vain
         }
 
         static readonly Dictionary<string, Cached> cache = new Dictionary<string, Cached>();
+
+        // True when the chat's last turn ended with a question that needs an answer (Claude Desktop's wrap-up
+        // with a blocking question, which is what turns the chat's dot yellow) and nothing was said after it.
+        public static bool IsAsking(string sessionId)
+        {
+            try
+            {
+                OldestPending(sessionId);
+                Cached entry;
+                return cache.TryGetValue(sessionId, out entry) && entry.Asking;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
 
         // True when the session is waiting for the user, by the rules above.
         public static bool IsWaiting(string sessionId, int processId)
@@ -101,12 +118,15 @@ namespace WindowsIsland
             if (info.Length == entry.Length && info.LastWriteTimeUtc == entry.Write) return entry.Oldest;
             entry.Length = info.Length;
             entry.Write = info.LastWriteTimeUtc;
-            entry.Oldest = Scan(entry.Path, info.Length);
+            bool asking;
+            entry.Oldest = Scan(entry.Path, info.Length, out asking);
+            entry.Asking = asking;
             return entry.Oldest;
         }
 
-        static Pending Scan(string path, long length)
+        static Pending Scan(string path, long length, out bool asking)
         {
+            asking = false;
             byte[] bytes;
             using (FileStream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete))
             {
@@ -130,6 +150,8 @@ namespace WindowsIsland
                 if (line.Length < 20) continue;
                 bool assistant = line.Contains("\"type\":\"assistant\"", StringComparison.Ordinal);
                 bool result = line.Contains("\"tool_result\"", StringComparison.Ordinal);
+                // Something the user said (not a tool's result) answers any question asked before it
+                if (!assistant && !result && line.Contains("\"type\":\"user\"", StringComparison.Ordinal) && !line.Contains("\"isSidechain\":true", StringComparison.Ordinal)) asking = false;
                 if (!assistant && !result) continue;
                 try
                 {
@@ -154,6 +176,10 @@ namespace WindowsIsland
                                 JsonElement id, name;
                                 if (block.TryGetProperty("id", out id) && block.TryGetProperty("name", out name) && id.ValueKind == JsonValueKind.String)
                                     open[id.GetString()] = new Pending { Name = name.GetString() ?? "", Since = when };
+                                JsonElement input, blocked;
+                                if (block.TryGetProperty("name", out name) && name.GetString() == "mcp__ccd_turn__wrap_up" &&
+                                    block.TryGetProperty("input", out input) && input.ValueKind == JsonValueKind.Object &&
+                                    input.TryGetProperty("blocked", out blocked) && blocked.ValueKind == JsonValueKind.True) asking = true;
                             }
                             else if (kind == "tool_result")
                             {

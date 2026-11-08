@@ -58,6 +58,10 @@ Dynamic Island для Windows. Музыка, Claude Code, его лимиты и
 | Зарядка батареи | <img src="docs/images/battery-charging-en.png" alt="Оповещение о зарядке" width="420"> |
 | Низкий заряд | <img src="docs/images/battery-low-en.png" alt="Оповещение о низком заряде" width="420"> |
 | Claude развёрнут, с лимитами | <img src="docs/images/claudeexpanded-en.png" alt="Развёрнутый Claude с кольцами использования" width="460"> |
+| Claude ждёт вас (разрешение или вопрос) | <img src="docs/images/banner-waiting-en.png" alt="Claude ждёт вас (разрешение или вопрос)" width="420"> |
+| Несколько чатов работают одновременно | <img src="docs/images/chats-working-compact-en.png" alt="Несколько чатов работают одновременно" width="320"> |
+| Один из двух чатов ждёт вас | <img src="docs/images/chats-waiting-compact-en.png" alt="Один из двух чатов ждёт вас" width="320"> |
+| Страница Claude показывает каждый чат | <img src="docs/images/chats-waiting-expanded-en.png" alt="Страница Claude показывает каждый чат" width="460"> |
 | Системный монитор: кольца, полосы или цифры | <img src="docs/images/systemcompact-en.png" alt="Системный монитор: кольца, полосы или цифры" width="260"> |
 |  | <img src="docs/images/systemcompact-bars-en.png" alt="Системный монитор: кольца, полосы или цифры" width="260"> |
 |  | <img src="docs/images/systemcompact-numbers-en.png" alt="Системный монитор: кольца, полосы или цифры" width="260"> |

@@ -127,6 +127,23 @@ namespace WindowsIsland
             Weekly = new UsageWindow { Percent = 18, ResetsAt = DateTime.Now.Date.AddDays(3).AddHours(9) };
         }
 
+        // Several made-up chats, for the README images: how many are working and how many wait for you.
+        public void UseSampleChats(int waiting)
+        {
+            DateTime now = DateTime.Now;
+            Active = new List<ActiveSession>();
+            if (waiting > 0) Active.Add(new ActiveSession { Name = Strings.SampleSessionTwo, Waiting = true, Since = now.AddSeconds(-20) });
+            Active.Add(new ActiveSession { Name = Strings.SampleSession, Since = now.AddSeconds(-84) });
+            Running = 2;
+            Busy = waiting > 0 ? 1 : 2;
+            Waiting = waiting;
+            BusySince = now.AddSeconds(-84);
+            BusyName = Strings.SampleSession;
+            WaitingName = waiting > 0 ? Strings.SampleSessionTwo : null;
+            if (waiting == 0) Active.Add(new ActiveSession { Name = Strings.SampleSessionTwo, Since = now.AddSeconds(-31) });
+            Active.Sort((a, b) => a.Waiting != b.Waiting ? (a.Waiting ? -1 : 1) : a.Since.CompareTo(b.Since));
+        }
+
         public void Start()
         {
             timer = new Timer(_ => Poll(), null, 300, 1000);
@@ -309,6 +326,8 @@ namespace WindowsIsland
                             : DateTime.Now;
                         // Claude Desktop keeps a session "busy" while it asks for a permission, so look at the transcript too
                         if (session.Status == "busy" && ClaudeWaiting.IsWaiting(session.Id, processId)) session.Status = "waiting";
+                        // A chat that ended its turn with a question for you (the yellow dot in Claude Desktop) also waits
+                        else if ((session.Status == "idle" || session.Status == "busy") && ClaudeWaiting.IsAsking(session.Id)) session.Status = "waiting";
                         sessions.Add(session);
                     }
                 }

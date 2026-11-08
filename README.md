@@ -58,6 +58,10 @@ A Dynamic Island for Windows. Music, Claude Code, its usage limits and your noti
 | Battery charging | <img src="docs/images/battery-charging-en.png" alt="Charging alert" width="420"> |
 | Battery low | <img src="docs/images/battery-low-en.png" alt="Low battery alert" width="420"> |
 | Claude expanded, with the limits | <img src="docs/images/claudeexpanded-en.png" alt="Claude expanded with usage rings" width="460"> |
+| Claude needs you (a permission or a question) | <img src="docs/images/banner-waiting-en.png" alt="Claude needs you (a permission or a question)" width="420"> |
+| Several chats working at once | <img src="docs/images/chats-working-compact-en.png" alt="Several chats working at once" width="320"> |
+| One of two chats waiting for you | <img src="docs/images/chats-waiting-compact-en.png" alt="One of two chats waiting for you" width="320"> |
+| The Claude page lists each chat | <img src="docs/images/chats-waiting-expanded-en.png" alt="The Claude page lists each chat" width="460"> |
 | System monitor: rings, bars or numbers | <img src="docs/images/systemcompact-en.png" alt="System monitor: rings, bars or numbers" width="260"> |
 |  | <img src="docs/images/systemcompact-bars-en.png" alt="System monitor: rings, bars or numbers" width="260"> |
 |  | <img src="docs/images/systemcompact-numbers-en.png" alt="System monitor: rings, bars or numbers" width="260"> |

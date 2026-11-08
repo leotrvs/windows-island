@@ -58,6 +58,10 @@ Uma Dynamic Island para o Windows. Música, Claude Code, os limites de uso e sua
 | Bateria carregando | <img src="docs/images/battery-charging-pt.png" alt="Aviso de carregamento" width="420"> |
 | Bateria baixa | <img src="docs/images/battery-low-pt.png" alt="Aviso de bateria baixa" width="420"> |
 | Claude expandido, com os limites | <img src="docs/images/claudeexpanded-pt.png" alt="Claude expandido com os anéis de uso" width="460"> |
+| Claude precisa de você (uma permissão ou uma pergunta) | <img src="docs/images/banner-waiting-pt.png" alt="Claude precisa de você (uma permissão ou uma pergunta)" width="420"> |
+| Vários chats trabalhando ao mesmo tempo | <img src="docs/images/chats-working-compact-pt.png" alt="Vários chats trabalhando ao mesmo tempo" width="320"> |
+| Um de dois chats esperando você | <img src="docs/images/chats-waiting-compact-pt.png" alt="Um de dois chats esperando você" width="320"> |
+| A página do Claude lista cada chat | <img src="docs/images/chats-waiting-expanded-pt.png" alt="A página do Claude lista cada chat" width="460"> |
 | Monitor do sistema: anéis, barras ou números | <img src="docs/images/systemcompact-pt.png" alt="Monitor do sistema: anéis, barras ou números" width="260"> |
 |  | <img src="docs/images/systemcompact-bars-pt.png" alt="Monitor do sistema: anéis, barras ou números" width="260"> |
 |  | <img src="docs/images/systemcompact-numbers-pt.png" alt="Monitor do sistema: anéis, barras ou números" width="260"> |

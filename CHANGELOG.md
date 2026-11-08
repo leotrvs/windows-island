@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.3.5
+
+- **Claude Desktop questions:** a chat that ends its turn with a question for you (the yellow dot in Claude Desktop, such as "Publish?") now shows as waiting for you in the island, and the alert says Claude needs you instead of only "finished"
+- README images: the notification and battery images are correct again, and new ones show Claude asking for you, several chats working and one of two waiting
+
+
 ## 2.3.4
 
 - Settings footer shows the GitHub mark and `@leotrvs/windows-island` (a link to the project)

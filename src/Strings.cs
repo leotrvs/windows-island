@@ -75,6 +75,7 @@ namespace WindowsIsland
                                                          "Você está livre ao meio-dia? Abriu um lugar novo aqui perto.",
                                                          "¿Estás libre al mediodía? Abrieron un sitio nuevo cerca.",
                                                          "Вы свободны в полдень? Рядом открылось новое место.");
+        public static string SampleSessionTwo => T("Fix the login page", "Corrigir a página de login", "Arreglar la página de inicio de sesión", "Исправить страницу входа");
         public static string SampleSession => T("Refactor the settings panel", "Refatorar o painel de ajustes", "Refactorizar el panel de ajustes", "Переработать панель настроек");
 
         public static string IdleSessions(int count)
@@ -222,6 +223,11 @@ namespace WindowsIsland
         public static string GroupTimes => T("Times", "Tempos", "Tiempos", "Время");
         public static string GroupSizePos => T("Size and position", "Tamanho e posição", "Tamaño y posición", "Размер и положение");
         public static string GroupApiMore => T("Token, guide and browser extension", "Token, guia e extensão do navegador", "Token, guía y extensión del navegador", "Токен, руководство и расширение браузера");
+        public static string LimitFiveHour => T("5-hour limit", "Limite de 5 horas", "Límite de 5 horas", "Лимит 5 часов");
+        public static string LimitWeekly => T("Weekly limit", "Limite semanal", "Límite semanal", "Недельный лимит");
+        public static string LimitReached(string window) => T(window + " reached", window + " atingido", window + " alcanzado", window + ": достигнут");
+        public static string LimitRenewed(string window) => T(window + " renewed", window + " renovado", window + " renovado", window + ": обновлён");
+        public static string LimitFull => T("Your full limit is available again", "Seu limite está cheio de novo", "Tu límite está completo otra vez", "Лимит снова полный");
         public static string SectionPages => T("Pages", "Páginas", "Páginas", "Страницы");
         public static string HintPages => T("The pages you can switch between when the island is open",
                                             "As páginas entre as quais você alterna com a ilha aberta",
