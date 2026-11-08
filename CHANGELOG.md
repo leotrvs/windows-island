@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.1.9
+
+- **YouTube and other video sites:** the island no longer stays on the browser logo. The video preview is read again when it arrives late, and a preview already shown is kept instead of flipping back to the logo
+
+
 ## 2.1.8
 
 - **Volume bar:** reads the volume every 40 ms (was 250 ms) and glides to each level, so holding a key moves smoothly instead of in jumps

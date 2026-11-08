@@ -390,7 +390,7 @@ namespace WindowsIsland
             return a.Equals(b, StringComparison.OrdinalIgnoreCase) || a.Contains(b, StringComparison.OrdinalIgnoreCase) || b.Contains(a, StringComparison.OrdinalIgnoreCase);
         }
 
-        async Task ReadPropertiesAsync(int expected)
+        async Task ReadPropertiesAsync(int expected, int retry = 0)
         {
             GlobalSystemMediaTransportControlsSession current = session;
             if (current == null) return;
@@ -423,7 +423,9 @@ namespace WindowsIsland
                 return;
             }
 
-            if (!trackChanged && Art != null) return;
+            // A browser first hands over its own square logo and the video's real (wide) preview a moment later, or
+            // flips between them. A wide preview already shown for this title is kept; anything else is read again.
+            if (!trackChanged && Art != null && (!fromBrowser || IsWide(Art))) return;
             IRandomAccessStreamReference thumbnail = properties.Thumbnail;
             if (thumbnail == null)
             {
@@ -435,9 +437,22 @@ namespace WindowsIsland
 
             Tuple<BitmapSource, Color> loaded = await Task.Run(() => LoadArtAsync(thumbnail));
             if (expected != generation || title != Title) return;
+            if (fromBrowser && !trackChanged && Art != null && IsWide(Art) && (loaded == null || !IsWide(loaded.Item1))) return; // Keep the preview
             Art = loaded?.Item1;
             Accent = loaded?.Item2 ?? Colors.White;
             Changed?.Invoke();
+
+            // The preview may arrive a moment after the logo without another notice: look again a couple of times
+            if (fromBrowser && retry < 2 && (loaded == null || !IsWide(loaded.Item1)))
+            {
+                await Task.Delay(1500 * (retry + 1));
+                if (expected == generation && title == Title) await ReadPropertiesAsync(expected, retry + 1);
+            }
+        }
+
+        static bool IsWide(BitmapSource image)
+        {
+            return image != null && image.PixelHeight > 0 && (double)image.PixelWidth / image.PixelHeight > 1.4;
         }
 
         static readonly Regex UnreadCount = new Regex(@"^\(\d+\+?\)\s*");
