@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
@@ -136,6 +137,14 @@ namespace WindowsIsland
             codex = new CodexService(Dispatcher);
             timer = new TimerService(Dispatcher);
             privacy = new PrivacyService(Dispatcher);
+            privacy.IsIgnored = name => settings.PrivacyIgnored.Contains(name, StringComparer.OrdinalIgnoreCase);
+            privacy.AppSeen += name =>
+            {
+                if (settings.PrivacySeen.Contains(name, StringComparer.OrdinalIgnoreCase) || name == "?") return;
+                settings.PrivacySeen.Add(name);
+                if (settings.PrivacySeen.Count > 12) settings.PrivacySeen.RemoveAt(0);
+                settings.Save();
+            };
             battery = new BatteryService(Dispatcher);
             levels = new LevelService(Dispatcher);
             osd = new WindowsOsd();
@@ -228,7 +237,7 @@ namespace WindowsIsland
             Action applySettings = () =>
             {
                 if (!sample) Strings.Use(settings.Language);
-                if (settings.ShowPrivacyDots && !sample) privacy.Start();
+                if (settings.ShowPrivacyDots && !sample) { privacy.Start(); privacy.Refresh(); }
                 else privacy.Stop();
                 battery.AlertsOn = settings.BatteryAlerts;
                 if ((settings.BatteryAlerts || settings.BatteryActivity) && !sample) battery.Start();

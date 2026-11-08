@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.6.1
+
+- **Ignore an app's dots:** apps seen using the microphone, camera or screen are listed in Settings, Activities, Privacy, and one can be turned off (a call app such as Discord keeps the microphone busy for hours)
+- The screen sharing option now says that only apps that tell Windows about their capture are seen (Discord does; many browsers and web apps do not)
+
+
 ## 2.6.0
 
 - **Screen sharing dot:** a blue dot beside the island while an app shares or records the screen (read from the same Windows record as the microphone and camera dots). Settings, Activities, Privacy, "Screen sharing"

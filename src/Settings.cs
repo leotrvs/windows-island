@@ -24,6 +24,8 @@ namespace WindowsIsland
         public bool ClaudeBanners { get; set; } = true;
         public bool PermissionPrompts { get; set; } = false; // Allow or deny Claude's permission requests on the island (installs a hook)
         public string Theme { get; set; } = "Auto"; // Colors of the Settings window: Auto (follows Windows), Dark or Light
+        public System.Collections.Generic.List<string> PrivacyIgnored { get; set; } = new System.Collections.Generic.List<string>(); // Apps whose microphone, camera or screen use shows no dot
+        public System.Collections.Generic.List<string> PrivacySeen { get; set; } = new System.Collections.Generic.List<string>();    // Apps seen using them, offered in Settings to ignore
         public bool ShowScreenShare { get; set; } = true; // A blue dot while the screen is shared or recorded (needs the privacy dots)
         public bool LimitAt75 { get; set; } = true;     // Which limit alerts to show
         public bool LimitAt90 { get; set; } = true;

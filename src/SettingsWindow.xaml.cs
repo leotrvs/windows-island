@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Windows;
@@ -378,6 +379,20 @@ namespace WindowsIsland
             {
                 Toggle("\uE720", Strings.MenuPrivacyDots, Strings.HintPrivacyDots, () => settings.ShowPrivacyDots, v => settings.ShowPrivacyDots = v);
                 Toggle("\uE7F4", Strings.MenuScreenShare, Strings.HintScreenShare, () => settings.ShowScreenShare, v => settings.ShowScreenShare = v);
+                // Apps seen using the microphone, camera or screen: one can be turned off here, like a call app that keeps the microphone busy
+                bool firstApp = true;
+                foreach (string app in settings.PrivacySeen.ToArray())
+                {
+                    string name = app;
+                    Toggle("\uE77B", Strings.MenuIgnoreApp(name), firstApp ? Strings.HintIgnoreApps : null,
+                        () => settings.PrivacyIgnored.Contains(name, StringComparer.OrdinalIgnoreCase),
+                        on =>
+                        {
+                            settings.PrivacyIgnored.RemoveAll(n => string.Equals(n, name, StringComparison.OrdinalIgnoreCase));
+                            if (on) settings.PrivacyIgnored.Add(name);
+                        });
+                    firstApp = false;
+                }
                 int[] nameSeconds = { 0, 1, 2, 3 };
                 string[] nameLabels = { Strings.Off, Strings.Duration(1, false), Strings.Duration(2, false), Strings.Duration(3, false) };
                 Row("\uE77B", Strings.MenuPrivacyNames, Strings.HintPrivacyNames, null,

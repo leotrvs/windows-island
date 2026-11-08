@@ -208,11 +208,16 @@ namespace WindowsIsland
         public static string ThemeAuto => T("Auto", "Auto", "Auto", "Авто");
         public static string ThemeDark => T("Dark", "Escuro", "Oscuro", "Тёмная");
         public static string ThemeLight => T("Light", "Claro", "Claro", "Светлая");
+        public static string MenuIgnoreApp(string app) => T("No dot for " + app, "Sem ponto para " + app, "Sin punto para " + app, "Без точки для " + app);
+        public static string HintIgnoreApps => T("Apps that used the microphone, camera or screen show up here; turn one on to stop its dot (a call app keeps the microphone busy for hours)",
+                                                 "Apps que usaram o microfone, a câmera ou a tela aparecem aqui; ligue um para tirar o ponto dele (um app de chamadas deixa o microfone ocupado por horas)",
+                                                 "Las apps que usaron el micrófono, la cámara o la pantalla aparecen aquí; activa una para quitar su punto (una app de llamadas mantiene el micrófono ocupado durante horas)",
+                                                 "Здесь появляются приложения, которые использовали микрофон, камеру или экран; включите одно, чтобы убрать его точку (приложение для звонков держит микрофон занятым часами)");
         public static string MenuScreenShare => T("Screen sharing (blue dot)", "Compartilhamento de tela (ponto azul)", "Compartir pantalla (punto azul)", "Показ экрана (синяя точка)");
-        public static string HintScreenShare => T("A blue dot while an app shares or records the screen, such as a call or a recording. Needs the dots above",
-                                                   "Um ponto azul enquanto um app compartilha ou grava a tela, como numa chamada ou numa gravação. Precisa dos pontos acima",
-                                                   "Un punto azul mientras una app comparte o graba la pantalla, como en una llamada o una grabación. Necesita los puntos de arriba",
-                                                   "Синяя точка, пока приложение показывает или записывает экран, например при звонке или записи. Нужны точки выше");
+        public static string HintScreenShare => T("A blue dot while an app shares or records the screen. Only apps that tell Windows about it are seen (Discord does; many browsers and web apps do not). Needs the dots above",
+                                                   "Um ponto azul enquanto um app compartilha ou grava a tela. Só aparecem apps que avisam o Windows (o Discord avisa; muitos navegadores e apps da web não). Precisa dos pontos acima",
+                                                   "Un punto azul mientras una app comparte o graba la pantalla. Solo se ven las apps que avisan a Windows (Discord lo hace; muchos navegadores y apps web no). Necesita los puntos de arriba",
+                                                   "Синяя точка, пока приложение показывает или записывает экран. Видны только приложения, которые сообщают об этом Windows (Discord сообщает; многие браузеры и веб-приложения нет). Нужны точки выше");
         public static string OpenClaude => T("Open Claude", "Abrir o Claude", "Abrir Claude", "Открыть Claude");
         public static string MenuUninstall => T("Uninstall Windows Island", "Desinstalar o Windows Island", "Desinstalar Windows Island", "Удалить Windows Island");
         public static string MenuOpenSettings => T("Open settings file", "Abrir arquivo de configurações", "Abrir archivo de configuración", "Открыть файл настроек");

@@ -128,8 +128,16 @@ namespace WindowsIsland
         public IReadOnlyList<string> MicrophoneApps { get; private set; } = new List<string>();
         public IReadOnlyList<string> CameraApps { get; private set; } = new List<string>();
         public event Action Changed;
+        public event Action<string> AppSeen;              // An app was seen using the microphone, camera or screen
+        public Func<string, bool> IsIgnored = name => false; // Apps the user chose not to get a dot for
 
         readonly DispatcherTimer timer;
+
+        // Reads again now, after the list of ignored apps changed.
+        public void Refresh()
+        {
+            if (timer.IsEnabled) Poll();
+        }
 
         public PrivacyService(Dispatcher dispatcher)
         {
@@ -166,6 +174,12 @@ namespace WindowsIsland
             foreach (string name in UsersOf("graphicsCaptureWithoutBorder"))
                 if (!screenApps.Contains(name, StringComparer.OrdinalIgnoreCase)) screenApps.Add(name);
             screenApps.RemoveAll(n => string.Equals(n, Installer.Name, StringComparison.OrdinalIgnoreCase));
+
+            // Every app seen is offered in Settings, where one can be ignored (a call app keeps the microphone busy for hours)
+            foreach (string name in micApps.Concat(camApps).Concat(screenApps)) AppSeen?.Invoke(name);
+            micApps.RemoveAll(n => IsIgnored(n));
+            camApps.RemoveAll(n => IsIgnored(n));
+            screenApps.RemoveAll(n => IsIgnored(n));
 
             bool mic = micApps.Count > 0, cam = camApps.Count > 0, screen = screenApps.Count > 0;
             bool same = mic == Microphone && cam == Camera && screen == Screen &&
