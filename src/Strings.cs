@@ -261,6 +261,14 @@ namespace WindowsIsland
         public static string ApiTokenCopied => T("Token copied", "Token copiado", "Token copiado", "Токен скопирован");
         public static string ApiNewToken => T("Make a new token", "Gerar um novo token", "Generar un token nuevo", "Создать новый токен");
         public static string ApiNewTokenDone => T("New token made. Apps using the old one must be updated", "Novo token gerado. Apps que usavam o antigo precisam ser atualizados", "Token nuevo generado. Las apps con el anterior deben actualizarse", "Токен создан. Приложения со старым токеном нужно обновить");
+        public static string ExtInstall => T("Install browser extension", "Instalar extensão do navegador", "Instalar extensión del navegador", "Установить расширение для браузера");
+        public static string ExtHint => T("Gives web audio the site's icon. Opens the browser's extensions page", "Dá ao áudio da web o ícone do site. Abre a página de extensões do navegador", "Da al audio web el icono del sitio. Abre la página de extensiones del navegador", "Показывает значок сайта для веб-аудио. Открывает страницу расширений браузера");
+        public static string ExtSteps(string folder) => T("Folder copied. In the browser: turn on Developer mode, click Load unpacked and paste the folder (Ctrl+V). " + folder,
+                                                          "Pasta copiada. No navegador: ligue o Modo do desenvolvedor, clique em Carregar sem compactação e cole a pasta (Ctrl+V). " + folder,
+                                                          "Carpeta copiada. En el navegador: active el Modo desarrollador, pulse Cargar descomprimida y pegue la carpeta (Ctrl+V). " + folder,
+                                                          "Папка скопирована. В браузере: включите режим разработчика, нажмите «Загрузить распакованное» и вставьте папку (Ctrl+V). " + folder);
+        public static string ExtNoBrowser => T("That browser was not found. The folder is ready:", "Esse navegador não foi encontrado. A pasta está pronta:", "No se encontró ese navegador. La carpeta está lista:", "Браузер не найден. Папка готова:");
+        public static string ExtFailed => T("Could not prepare the extension", "Não foi possível preparar a extensão", "No se pudo preparar la extensión", "Не удалось подготовить расширение");
         public static string ApiPortBusy => T("The port is in use by another program", "A porta está em uso por outro programa", "El puerto está en uso por otro programa", "Порт занят другой программой");
         public static string MenuLevels => T("Volume and brightness", "Volume e brilho", "Volumen y brillo", "Громкость и яркость");
         public static string HintLevels => T("A small bar while you change the volume or the screen brightness (laptop screens only)",

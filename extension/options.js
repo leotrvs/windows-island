@@ -2,9 +2,17 @@ const tokenInput = document.getElementById("token");
 const portInput = document.getElementById("port");
 const status = document.getElementById("status");
 
-chrome.storage.local.get(["port", "token"]).then(({ port, token }) => {
+chrome.storage.local.get(["port", "token"]).then(async ({ port, token }) => {
   if (port) portInput.value = port;
   if (token) tokenInput.value = token;
+  try {
+    const config = await (await fetch(chrome.runtime.getURL("config.json"))).json();
+    if (config && config.token) {
+      portInput.value = config.port || 47613;
+      tokenInput.value = config.token;
+      status.textContent = "Set up by Windows Island. Nothing to paste.";
+    }
+  } catch (e) { /* no config file: the fields above are the manual way */ }
 });
 
 document.getElementById("save").addEventListener("click", async () => {

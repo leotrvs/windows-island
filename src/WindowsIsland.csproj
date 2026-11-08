@@ -29,4 +29,9 @@
     <Resource Include="Assets\fonts\*.ttf" />
   </ItemGroup>
 
+  <!-- The browser extension travels inside the exe; Settings unpacks it for the user -->
+  <ItemGroup>
+    <EmbeddedResource Include="..\extension\manifest.json;..\extension\background.js;..\extension\options.html;..\extension\options.js" LogicalName="extension/%(Filename)%(Extension)" />
+  </ItemGroup>
+
 </Project>

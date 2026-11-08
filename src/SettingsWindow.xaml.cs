@@ -600,11 +600,38 @@ Top = taskbarTop ? work.Top + 12 : work.Bottom - Height - 12;
             Button renew = new Button { Content = Strings.ApiNewToken, Style = (Style)FindResource("LinkButton"), HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Center };
             renew.Click += (s, e) =>
             {
-                api.RegenerateToken();
+                string fresh = api.RegenerateToken();
+                // An unpacked extension keeps its own copy of the token: refresh it so it keeps working
+                try { if (System.IO.Directory.Exists(ExtensionInstaller.Folder)) ExtensionInstaller.Extract(fresh, api.Port); } catch (Exception) { }
                 note.Text = Strings.ApiNewTokenDone;
                 note.Visibility = Visibility.Visible;
             };
             Row("\uE72C", null, null, null, null, renew);
+
+            StackPanel browsers = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
+            foreach (bool edge in new[] { false, true })
+            {
+                bool isEdge = edge;
+                Button install = new Button { Content = isEdge ? "Edge" : "Chrome", Style = (Style)FindResource("LinkButton"), Margin = new Thickness(0, 0, 14, 0) };
+                install.Click += (s, e) =>
+                {
+                    try
+                    {
+                        string token = api.Token ?? api.RegenerateToken();
+                        string folder = ExtensionInstaller.Extract(token, api.Port > 0 ? api.Port : settings.ApiPort);
+                        try { Clipboard.SetText(folder); } catch (Exception) { }
+                        bool opened = ExtensionInstaller.OpenExtensionsPage(isEdge);
+                        note.Text = opened ? Strings.ExtSteps(folder) : Strings.ExtNoBrowser + " " + folder;
+                    }
+                    catch (Exception)
+                    {
+                        note.Text = Strings.ExtFailed;
+                    }
+                    note.Visibility = Visibility.Visible;
+                };
+                browsers.Children.Add(install);
+            }
+            Row("\uE896", Strings.ExtInstall, Strings.ExtHint, null, null, browsers);
             if (api.LastStartFailed)
                 ((StackPanel)card.Children[card.Children.Count - 1]).Children.Add(new TextBlock { Text = Strings.ApiPortBusy, FontSize = 12, Foreground = Brushes.IndianRed, Margin = new Thickness(60, 0, 14, 10) });
             ((StackPanel)card.Children[card.Children.Count - 1]).Children.Add(note);

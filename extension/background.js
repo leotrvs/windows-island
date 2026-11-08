@@ -5,7 +5,13 @@
 const DEFAULT_PORT = 47613;
 let lastSent = "";
 
+// config.json is written next to the extension by Windows Island's Settings and is the first choice, so no
+// token has to be pasted. What was typed into the options page is the fallback.
 async function settings() {
+  try {
+    const config = await (await fetch(chrome.runtime.getURL("config.json"))).json();
+    if (config && config.token) return { port: Number(config.port) || DEFAULT_PORT, token: String(config.token).trim() };
+  } catch (e) { /* no config file: use the stored values */ }
   const { port, token } = await chrome.storage.local.get(["port", "token"]);
   return { port: Number(port) || DEFAULT_PORT, token: (token || "").trim() };
 }

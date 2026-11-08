@@ -11,7 +11,7 @@
 - **Do not disturb:** a small moon on the island while Do not disturb or a focus session is on
 - **Clock and system page:** the time and date, with processor and memory load
 - **Keyboard shortcut:** opens and closes the island from anywhere. Off by default and configurable (Ctrl+Alt+I to begin with); it uses Windows' own hotkey call, so no keyboard hook is installed
-- **Browser extension:** the `extension/` folder has a small Chrome and Edge extension that tells the island which tab is playing, so web audio shows that site's icon instead of a letter
+- **Browser extension:** the `extension/` folder has a small Chrome and Edge extension that tells the island which tab is playing, so web audio shows that site's icon instead of a letter. Settings has an install button that unpacks it with its token and opens the browser's extensions page
 - **Local API:** scripts and apps can show their own live activities and alerts, and a browser extension can say which tab is playing. Off by default; it listens on 127.0.0.1 only and needs a secret token. The `island.cmd` command line beside the app does the same from a terminal. See [docs/API.md](docs/API.md)
 
 ## 1.13.0
