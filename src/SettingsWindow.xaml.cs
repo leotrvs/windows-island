@@ -367,6 +367,11 @@ namespace WindowsIsland
             Segmented("\uE790", Strings.RingColorLabel, new[] { Strings.ColorBlue, Strings.ColorGreen, Strings.ColorPurple },
                 () => Math.Max(0, Array.FindIndex(ringValues, v => string.Equals(v, settings.RingColor, StringComparison.OrdinalIgnoreCase))),
                 i => settings.RingColor = ringValues[i]);
+            Toggle("\uE9D9", Strings.MenuSystemMonitor, Strings.HintSystemMonitor, () => settings.SystemMonitor, v => settings.SystemMonitor = v);
+            string[] monitorValues = { "Rings", "Bars", "Numbers" };
+            Segmented("\uE790", Strings.MonitorStyleLabel, new[] { Strings.StyleRings, Strings.StyleBars, Strings.StyleNumbers },
+                () => Math.Max(0, Array.FindIndex(monitorValues, v => string.Equals(v, settings.MonitorStyle, StringComparison.OrdinalIgnoreCase))),
+                i => settings.MonitorStyle = monitorValues[i]);
             string[] bannerValues = { "Small", "Normal" };
             Segmented("\uE8A1", Strings.BannerSizeLabel, new[] { Strings.BannerSmall, Strings.BannerNormal },
                 () => string.Equals(settings.BannerSize, "Normal", StringComparison.OrdinalIgnoreCase) ? 1 : 0,

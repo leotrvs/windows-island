@@ -27,6 +27,8 @@ Uma Dynamic Island para o Windows. Música, Claude Code, os limites de uso e sua
 - **Nomes dos apps nos pontos:** veja qual app usa o microfone ou a câmera ao passar o mouse sobre a ilha
 - **Barra de volume e brilho**, avisos de **Bluetooth, USB e rede** e uma lua para **Não perturbe**
 - **Página de relógio e sistema** com hora, data, carga do processador e da memória
+- **Monitor do sistema** (desligado por padrão): mantém a carga do processador e da memória na ilha quando nada mais está acontecendo, em anéis, barras ou números
+- **Recolher:** arraste a ilha para cima para guardá-la e usar o que está atrás; ela volta com uma nova atividade ou quando o mouse fica parado no lugar dela
 - **API local e linha de comando** (desligadas por padrão) para seus scripts e apps mostrarem atividades e avisos próprios, veja [docs/API.md](docs/API.md), e uma pequena [extensão de navegador](extension/README.md) que dá ao áudio da web o ícone do site
 - **Atalho de teclado** para abrir e fechar a ilha (desligado por padrão, configurável)
 - **Avisos** quando o Claude termina uma tarefa ou precisa de você

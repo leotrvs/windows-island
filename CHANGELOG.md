@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.1.0
+
+- **System monitor:** an option in Settings, Appearance, keeps the processor and memory load on the island when nothing else is happening. Rings (the default), bars or numbers; off by default
+- **Tuck away:** drag the island up (down when it sits at the bottom) to put it away so you can use what is behind it, such as browser tabs. It comes back with a new activity, an alert, a microphone or camera in use, or when the mouse rests on its spot for a few seconds
+
 ## 2.0.1
 
 - **Settings window:** remembers its size and place, and no longer jumps when it opens

@@ -18,7 +18,7 @@ namespace WindowsIsland
 {
     public partial class IslandWindow : Window
     {
-        enum View { Hidden, Minimal, Idle, MusicCompact, ClaudeCompact, CodexCompact, TimerCompact, BatteryCompact, ExternalCompact, MusicExpanded, ClaudeExpanded, TimerExpanded, SystemExpanded, ExternalExpanded, Banner, Toast, Level }
+        enum View { Hidden, Minimal, Idle, MusicCompact, ClaudeCompact, CodexCompact, TimerCompact, BatteryCompact, ExternalCompact, SystemCompact, MusicExpanded, ClaudeExpanded, TimerExpanded, SystemExpanded, ExternalExpanded, Banner, Toast, Level }
         enum Activity { None, Music, Claude, Codex, Timer, Battery, System, External }
 
         static readonly Dictionary<View, Size> Sizes = new Dictionary<View, Size>
@@ -27,6 +27,7 @@ namespace WindowsIsland
             [View.Minimal] = new Size(76, 6),
             [View.Idle] = new Size(112, 30),
             [View.MusicCompact] = new Size(176, 34),
+            [View.SystemCompact] = new Size(140, 34),
             [View.ClaudeCompact] = new Size(176, 34),
             [View.CodexCompact] = new Size(176, 34),
             [View.TimerCompact] = new Size(150, 34),
@@ -120,6 +121,7 @@ namespace WindowsIsland
             panels[View.TimerCompact] = TimerCompact;
             panels[View.BatteryCompact] = BatteryCompact;
             panels[View.ExternalCompact] = ExternalCompact;
+            panels[View.SystemCompact] = SystemCompact;
             panels[View.ExternalExpanded] = ExternalExpanded;
             panels[View.TimerExpanded] = TimerExpanded;
             panels[View.SystemExpanded] = SystemExpanded;
@@ -156,6 +158,10 @@ namespace WindowsIsland
             ApplyTexts();
             ApplyBannerSize();
 
+            monitorTimer.Tick += (s, e) => UpdateSystemMonitor();
+            Pill.PreviewMouseLeftButtonDown += (s, e) => { dragStart = e.GetPosition(this); suppressClick = false; };
+            Pill.PreviewMouseMove += OnPillDrag;
+            Pill.PreviewMouseLeftButtonUp += (s, e) => dragStart = null;
             PrivacyDots.MouseEnter += (s, e) => { dotHover = true; UpdatePrivacy(); };
             PrivacyDots.MouseLeave += (s, e) => { dotHover = false; UpdatePrivacy(); };
             Pill.MouseEnter += OnPillEnter;
@@ -227,6 +233,64 @@ namespace WindowsIsland
             CpuFill.Width = 132.0 * systemStats.Cpu / 100;
             MemoryFill.Width = 132.0 * systemStats.Memory / 100;
         }
+        // The system monitor on the collapsed island: processor and memory as rings, bars or numbers, once a second.
+        static readonly Brush MonitorBlue = Freeze(new SolidColorBrush(Color.FromRgb(0x0A, 0x84, 0xFF)));
+        static readonly Brush MonitorGreen = Freeze(new SolidColorBrush(Color.FromRgb(0x30, 0xD1, 0x58)));
+        readonly DispatcherTimer monitorTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+        double monitorWidth = 140;
+        string monitorStyleDrawn;
+
+        string MonitorStyle
+        {
+            get
+            {
+                string style = settings.MonitorStyle ?? "";
+                return style.Equals("Bars", StringComparison.OrdinalIgnoreCase) ? "Bars" : style.Equals("Numbers", StringComparison.OrdinalIgnoreCase) ? "Numbers" : "Rings";
+            }
+        }
+
+        void UpdateSystemMonitor()
+        {
+            UpdateSystemPage();
+            int cpu = systemStats.Cpu, memory = systemStats.Memory;
+            string style = MonitorStyle;
+            if (style != monitorStyleDrawn)
+            {
+                monitorStyleDrawn = style;
+                SysRings.Visibility = style == "Rings" ? Visibility.Visible : Visibility.Collapsed;
+                SysBars.Visibility = style == "Bars" ? Visibility.Visible : Visibility.Collapsed;
+                SysNumbers.Visibility = style == "Numbers" ? Visibility.Visible : Visibility.Collapsed;
+                FrameworkElement active = style == "Rings" ? (FrameworkElement)SysRings : style == "Bars" ? SysBars : SysNumbers;
+                active.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+                monitorWidth = Math.Ceiling(active.DesiredSize.Width) + 34; // The same breathing room on both sides
+                SystemCompact.Width = monitorWidth;
+                if (view == View.SystemCompact) ApplyTargets();
+            }
+            Brush cpuBrush = cpu >= 90 ? Red : cpu >= 70 ? Amber : MonitorBlue;
+            Brush memoryBrush = memory >= 90 ? Red : memory >= 70 ? Amber : MonitorGreen;
+            if (style == "Rings")
+            {
+                SysCpuRing.Data = Arc(Math.Max(cpu, 2), 20, 3);
+                SysMemRing.Data = Arc(Math.Max(memory, 2), 20, 3);
+                SysCpuRing.Stroke = cpuBrush;
+                SysMemRing.Stroke = memoryBrush;
+                SysCpuRingText.Text = cpu + "%";
+                SysMemRingText.Text = memory + "%";
+            }
+            else if (style == "Bars")
+            {
+                SysCpuBar.Width = 42.0 * cpu / 100;
+                SysMemBar.Width = 42.0 * memory / 100;
+                SysCpuBar.Background = cpuBrush;
+                SysMemBar.Background = memoryBrush;
+            }
+            else
+            {
+                SysCpuNumber.Text = cpu + "%";
+                SysMemNumber.Text = memory + "%";
+            }
+        }
+
         void OnFocusChanged() { UpdateFocusMoon(); }
 
         // ---- Live activities pushed by scripts and apps through the local API ----
@@ -429,6 +493,7 @@ namespace WindowsIsland
         {
             if (value == View.ClaudeExpanded) return new Size(372, ClaudePanelHeight);
             if (value == View.Banner) return new Size(Banner.Width, Banner.Height);
+            if (value == View.SystemCompact) return new Size(monitorWidth, 34);
             return Sizes[value];
         }
 
@@ -549,7 +614,7 @@ namespace WindowsIsland
         public void RenderStates(string folder, string suffix)
         {
             Directory.CreateDirectory(folder);
-            View[] states = { View.Idle, View.MusicCompact, View.ClaudeCompact, View.CodexCompact, View.BatteryCompact, View.ExternalCompact, View.ExternalExpanded, View.MusicExpanded, View.ClaudeExpanded, View.TimerExpanded, View.SystemExpanded, View.Level, View.Banner };
+            View[] states = { View.Idle, View.MusicCompact, View.ClaudeCompact, View.CodexCompact, View.BatteryCompact, View.ExternalCompact, View.SystemCompact, View.ExternalExpanded, View.MusicExpanded, View.ClaudeExpanded, View.TimerExpanded, View.SystemExpanded, View.Level, View.Banner };
             double[] levels = { 0.55, 0.95, 0.4, 0.75 };
             Array.Copy(levels, eqLevel, levels.Length);
             BuildExternal(new List<ApiActivity>
@@ -580,6 +645,23 @@ namespace WindowsIsland
                 Root.UpdateLayout();
                 SaveSnapshot(System.IO.Path.Combine(folder, state.ToString().ToLowerInvariant() + suffix + ".png"));
             }
+
+            // The other two looks of the system monitor
+            foreach (string style in new[] { "Bars", "Numbers" })
+            {
+                settings.MonitorStyle = style;
+                forced = View.SystemCompact;
+                UpdateSystemMonitor();
+                Recompute();
+                SnapAll();
+                ApplyFrame();
+                Root.UpdateLayout();
+                ApplyFrame();
+                Root.UpdateLayout();
+                SaveSnapshot(System.IO.Path.Combine(folder, "systemcompact-" + style.ToLowerInvariant() + suffix + ".png"));
+            }
+            settings.MonitorStyle = "Rings";
+            UpdateSystemMonitor();
 
             // A made-up Windows notification on the same banner
             banners.Enqueue(new BannerItem { App = "Mail", Title = Strings.SampleNotificationTitle, Subtitle = Strings.SampleNotificationBody, Seconds = 5 });
@@ -729,6 +811,7 @@ namespace WindowsIsland
             UpdateTimerPage();
             UpdatePrivacy();
             UpdateCodex();
+            UpdateSystemMonitor();
             PlaceWindow();
             UpdateMusic();
             UpdateClaude();
@@ -748,6 +831,7 @@ namespace WindowsIsland
             else
             {
                 lastActive = DateTime.Now; // Also brings back an auto-hidden island
+                tucked = false;
                 SetHovering(true);
             }
             Recompute();
@@ -777,11 +861,21 @@ namespace WindowsIsland
             if (BatteryActive) active.Add(Activity.Battery);
             if (timer.Running) active.Insert(working && claude.Waiting > 0 ? 1 : 0, Activity.Timer);
             Activity primary = active.Count > 0 ? active[0] : Activity.None;
+            lastPrimary = primary;
+            if (tucked)
+            {
+                // Something new brings the island back: another activity, an alert or a note, or a microphone or camera in use
+                if (primary != tuckPrimary) { if (primary != Activity.None) tucked = false; else tuckPrimary = Activity.None; }
+                if (DateTime.Now < bannerUntil || DateTime.Now < toastUntil) tucked = false;
+                if (PrivacyOn && !tuckPrivacy) tucked = false;
+                tuckPrivacy = PrivacyOn;
+            }
             Activity second = active.Count > 1 ? active[1] : Activity.None;
 
             View next;
             if (forced.HasValue) next = forced.Value;
             else if (fullscreen && settings.HideInFullscreen) next = View.Hidden;
+            else if (tucked) next = View.Hidden;
             else if (hovering || DateTime.Now < peekUntil)
                 next = PickedPage() ?? DefaultPage(primary);
             else if (DateTime.Now < bannerUntil) next = View.Banner;
@@ -794,6 +888,8 @@ namespace WindowsIsland
             else if (primary == Activity.External && !settings.EmptyIsland) next = View.ExternalCompact;
             else if (primary == Activity.Battery && !settings.EmptyIsland) next = View.BatteryCompact;
             else if (primary == Activity.Timer) next = View.TimerCompact;
+            else if (settings.SystemMonitor && maximized && !IsBottom) next = View.Minimal;
+            else if (settings.SystemMonitor) next = View.SystemCompact;
             else if (!settings.ShowIdlePill && !PrivacyOn) next = View.Hidden;
             else if (maximized && !IsBottom) next = View.Minimal; // Stay out of the way of tab strips
             else next = View.Idle;
@@ -805,7 +901,8 @@ namespace WindowsIsland
             autoHidden = idle && !forced.HasValue && settings.AutoHideSeconds > 0 &&
                          DateTime.Now - lastActive > TimeSpan.FromSeconds(settings.AutoHideSeconds);
             if (autoHidden) next = View.Hidden;
-            if (autoHidden != revealTimer.IsEnabled) revealTimer.IsEnabled = autoHidden;
+            bool watchMouse = autoHidden || tucked;
+            if (watchMouse != revealTimer.IsEnabled) revealTimer.IsEnabled = watchMouse;
 
             Activity shownActivity = next == View.MusicCompact ? Activity.Music
                                    : next == View.ClaudeCompact ? Activity.Claude
@@ -834,6 +931,12 @@ namespace WindowsIsland
             shown.Target = view == View.Hidden ? 0 : 1;
             stateScale.Target = IsExpandedView(view) ? settings.ExpandedScale : settings.CollapsedScale;
             Pill.IsHitTestVisible = view != View.Hidden;
+            if (view == View.SystemCompact)
+            {
+                if (!monitorTimer.IsEnabled) monitorTimer.Start();
+                UpdateSystemMonitor();
+            }
+            else monitorTimer.Stop();
             if (view == View.ClaudeExpanded && forced == null) claude.RefreshUsage();
 
             foreach (KeyValuePair<View, FrameworkElement> pair in panels)
@@ -878,7 +981,8 @@ namespace WindowsIsland
         // The page the island opens on: the one for what is happening, if it is on, else the first page that is.
         View DefaultPage(Activity primary)
         {
-            Activity wanted = primary == Activity.Music ? Activity.Music
+            Activity wanted = primary == Activity.None && settings.SystemMonitor ? Activity.System
+                            : primary == Activity.Music ? Activity.Music
                             : primary == Activity.Timer ? Activity.Timer
                             : primary == Activity.External ? Activity.External
                             : settings.ShowClaude || CodexSectionVisible ? Activity.Claude
@@ -971,6 +1075,7 @@ namespace WindowsIsland
 
         void OnPillClick(object sender, MouseButtonEventArgs e)
         {
+            if (suppressClick) { suppressClick = false; return; } // That press was a drag, not a click
             enterTimer.Stop();
             if (view == View.Banner)
             {
@@ -1127,6 +1232,32 @@ namespace WindowsIsland
             Recompute();
         }
 
+        // ---------- Tucking the island away ----------
+        // Dragging the island up (down when it sits at the bottom) puts it away, so what is behind can be used.
+        // It comes back with new activity or an alert, or when the mouse rests on its spot for a few seconds.
+        const double TuckDistance = 10, TuckRevealSeconds = 4;
+        bool tucked, tuckPrivacy, suppressClick;
+        Activity tuckPrimary, lastPrimary;
+        DateTime? dwellStart;
+        Point? dragStart;
+
+        void OnPillDrag(object sender, MouseEventArgs e)
+        {
+            if (!dragStart.HasValue || e.LeftButton != MouseButtonState.Pressed) { dragStart = null; return; }
+            double dy = e.GetPosition(this).Y - dragStart.Value.Y;
+            if ((IsBottom ? dy : -dy) < TuckDistance) return;
+            dragStart = null;
+            suppressClick = true;
+            tucked = true;
+            tuckPrimary = lastPrimary;
+            tuckPrivacy = PrivacyOn;
+            dwellStart = null;
+            enterTimer.Stop();
+            leaveTimer.Stop();
+            SetHovering(false);
+            Recompute();
+        }
+
         // While auto-hidden, bringing the mouse to the island's spot brings it back.
         void CheckReveal()
         {
@@ -1141,8 +1272,16 @@ namespace WindowsIsland
             double depth = settings.OffsetY + reach;
             bool insideX = Math.Abs(cursor.X - center) <= halfWidth;
             bool insideY = IsBottom ? cursor.Y >= edge - depth && cursor.Y <= edge : cursor.Y >= edge && cursor.Y <= edge + depth;
-            if (!insideX || !insideY) return;
+            if (!insideX || !insideY) { dwellStart = null; return; }
 
+            if (tucked)
+            {
+                // A tucked island comes back after the mouse has rested on its spot for a while
+                if (!dwellStart.HasValue) { dwellStart = DateTime.Now; return; }
+                if (DateTime.Now - dwellStart.Value < TimeSpan.FromSeconds(TuckRevealSeconds)) return;
+                tucked = false;
+                dwellStart = null;
+            }
             lastActive = DateTime.Now;
             Recompute();
         }

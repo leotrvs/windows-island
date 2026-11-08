@@ -277,6 +277,12 @@ namespace WindowsIsland
         public static string ExtNoBrowser => T("That browser was not found. The folder is ready:", "Esse navegador não foi encontrado. A pasta está pronta:", "No se encontró ese navegador. La carpeta está lista:", "Браузер не найден. Папка готова:");
         public static string ExtFailed => T("Could not prepare the extension", "Não foi possível preparar a extensão", "No se pudo preparar la extensión", "Не удалось подготовить расширение");
         public static string ApiPortBusy => T("The port is in use by another program", "A porta está em uso por outro programa", "El puerto está en uso por otro programa", "Порт занят другой программой");
+        public static string MenuSystemMonitor => T("CPU and memory on the island", "CPU e memória na ilha", "CPU y memoria en la isla", "ЦП и память на острове");
+        public static string HintSystemMonitor => T("Keeps a small monitor on the island when nothing else is happening", "Mantém um pequeno monitor na ilha quando nada mais está acontecendo", "Mantiene un pequeño monitor en la isla cuando no pasa nada más", "Показывает маленький монитор на острове, когда больше ничего не происходит");
+        public static string MonitorStyleLabel => T("Monitor style", "Estilo do monitor", "Estilo del monitor", "Стиль монитора");
+        public static string StyleRings => T("Rings", "Anéis", "Anillos", "Кольца");
+        public static string StyleBars => T("Bars", "Barras", "Barras", "Полосы");
+        public static string StyleNumbers => T("Numbers", "Números", "Números", "Числа");
         public static string MenuHideOsd => T("Hide Windows' volume popup (experimental)", "Esconder a barra de volume do Windows (experimental)", "Ocultar la barra de volumen de Windows (experimental)", "Скрывать окно громкости Windows (экспериментально)");
         public static string HintHideOsd => T("Shows only the island's bar. Needs the volume bar above. A Windows update can stop it from working; turn it off to get the popup back",
                                               "Mostra só a barra da ilha. Precisa da barra de volume acima. Uma atualização do Windows pode quebrar isso; desligue para a barra voltar",

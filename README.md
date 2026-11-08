@@ -27,6 +27,8 @@ A Dynamic Island for Windows. Music, Claude Code, its usage limits and your noti
 - **App names on the dots:** see which app is using the microphone or camera
 - **Volume and brightness** bar, **Bluetooth, USB and network** notes, and a moon for **Do not disturb**
 - **Clock and system page** with the time, date, processor and memory load
+- **System monitor** (off by default): keeps the processor and memory load on the island when nothing else is happening, as rings, bars or numbers
+- **Tuck away:** drag the island up to put it away and use what is behind it; it comes back with new activity or when the mouse rests on its spot
 - **Local API and command line** (off by default) so your scripts and apps can show their own activities and alerts, see [docs/API.md](docs/API.md), plus a small [browser extension](extension/README.md) that gives web audio the site's icon
 - **Keyboard shortcut** to open and close the island (off by default, configurable)
 - **Alerts** when Claude finishes a task or needs you
