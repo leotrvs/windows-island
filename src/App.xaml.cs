@@ -149,6 +149,8 @@ namespace WindowsIsland
             }
 
             settings = sample ? new Settings() : Settings.Load();
+            if (!sample && !settings.OnboardingDone)
+                settings.Save(); // Started again (new, or from before the welcome): saved at once, so it is not started again next time
             if (!sample) Strings.Use(settings.Language);
             media = new MediaService(Dispatcher);
             claude = new ClaudeService(Dispatcher);
@@ -260,8 +262,16 @@ namespace WindowsIsland
                         SettingsWindow page = new SettingsWindow(new Settings { Theme = Environment.GetEnvironmentVariable("ISLAND_PREVIEW_THEME") ?? "Dark" }, () => { }, null, () => { });
                         page.SaveSnapshot(System.IO.Path.Combine(render, "settings" + suffix + ".png"));
                         // The search box must never break the page: try a few words (and empty it again)
-                        foreach (string term in new[] { "a", "di", "steam", "zzz", "linha", "thin", "Claude", "é", "  ", "(" }) page.SearchBox.Text = term;
+                        foreach (string term in new[] { "a", "di", "steam", "zzz", "linha", "thin", "Claude", "é", "  ", "(" }) { page.SearchBox.Text = term; page.RunSearch(); }
                         page.SearchBox.Text = "";
+                        page.RunSearch();
+                        // The welcome steps, as images
+                        for (int step = 0; step < 3; step++)
+                        {
+                            SettingsWindow welcomePage = new SettingsWindow(new Settings { Theme = Environment.GetEnvironmentVariable("ISLAND_PREVIEW_THEME") ?? "Dark" }, () => { }, null, () => { }, true);
+                            welcomePage.WelcomeStep(step);
+                            welcomePage.SaveSnapshot(System.IO.Path.Combine(render, "welcome-" + (step + 1) + suffix + ".png"));
+                        }
                         Shutdown();
                     }));
                     window.Show();
@@ -389,6 +399,20 @@ namespace WindowsIsland
                 ThreadPool.RegisterWaitForSingleObject(showSettings,
                     (state, timedOut) => Dispatcher.BeginInvoke(openSettings), null, Timeout.Infinite, false);
             }
+
+            // First run, or the first run after the settings were started again: the welcome steps, once
+            if (!settings.OnboardingDone && !dev)
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    if (settingsWindow != null) return;
+                    settingsWindow = new SettingsWindow(settings, applySettings, updates, () => { foreach (IslandWindow island in islands) island.PeekExpanded(); }, true);
+                    settingsWindow.Closed += (s, a) =>
+                    {
+                        settingsWindow = null;
+                        if (!settings.OnboardingDone) { settings.OnboardingDone = true; settings.Save(); } // Closed with the X: counts as skipped
+                    };
+                    settingsWindow.Show();
+                }), DispatcherPriority.ApplicationIdle);
 
             _ = media.StartAsync();
             claude.Start();

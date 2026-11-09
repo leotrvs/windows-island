@@ -17,7 +17,7 @@ namespace WindowsIsland
         public bool EmptyIsland { get; set; } = false; // Plain pill only; activities show when it expands
         public int AlertSeconds { get; set; } = 3;       // Claude alerts, notifications and app messages
         public int PausedMusicSeconds { get; set; } = 0; // How long a paused song stays on the island
-        public int AutoHideSeconds { get; set; } = 5;    // Hide the idle island after this long; 0 = never
+        public int AutoHideSeconds { get; set; } = 0;    // Hide the idle island after this long; 0 = never
         public bool ExpandOnHover { get; set; } = true;
         public bool ShowMusic { get; set; } = true;
         public bool ShowClaude { get; set; } = true;
@@ -30,14 +30,18 @@ namespace WindowsIsland
         public string DiscordClientId { get; set; } = "";
         public bool MonitorKeepsPlace { get; set; } = true; // With the system monitor on, an activity (music, Claude...) is a bubble beside it instead of replacing it
         public bool ShowSteamDownloads { get; set; } = true; // Progress of Steam downloads and updates, read from Steam's manifest files
-        public string IdleStyle { get; set; } = "Pill"; // When nothing is happening: Pill (the small pill) or Line (a thin line)
+        public string IdleStyle { get; set; } = "Line"; // When nothing is happening: Pill (the small pill) or Line (a thin line)
         public string MaximizedMode { get; set; } = "Thin"; // With a maximized window in front: Thin (a thin line), Normal (as always) or Hidden
         public bool ShowFootball { get; set; } = false;  // The live score of one team, from ESPN's public scoreboard (asks the internet, so it starts off)
         public string FootballTeam { get; set; } = "";   // A name or an abbreviation
         public string FootballLeagues { get; set; } = "bra.1"; // ESPN league codes, separated by commas
         public bool ShowObs { get; set; } = true;        // OBS recording or streaming, read from OBS's own log
         public bool ShowWindowsUpdate { get; set; } = true; // Windows installing updates, and the restart that follows
-        public bool AlwaysThin { get; set; } = true; // The collapsed island is the thin line with a tiny icon of what matters most; hover to open it
+        public bool AlwaysThin { get; set; } = false; // The collapsed island is the thin line with a tiny icon of what matters most; hover to open it
+        public const int CurrentVersion = 4;
+        public int SettingsVersion { get; set; } = 0;        // Settings from an older version are started again, with the welcome
+        public bool OnboardingDone { get; set; } = true;     // False until the welcome steps were gone through or skipped
+        public string SettingsMode { get; set; } = "Essentials"; // Essentials (a few switches) or Advanced (every setting)
         public bool MinimalMusicPosition { get; set; } = false; // The thin line fills along the song while music plays
         public bool MaximizedActivitiesThin { get; set; } = false; // With a maximized window and the thin line: activities too become the thin line (hover to see them)
         public bool ShowScreenShare { get; set; } = true; // A blue dot while the screen is shared or recorded (needs the privacy dots)
@@ -93,9 +97,9 @@ namespace WindowsIsland
         public bool BatteryAlerts { get; set; } = true;
         public bool BatteryActivity { get; set; } = true; // Charging shows in the island like any other activity
         public bool ShowScreenshotAlert { get; set; } = true;
-        public bool ShowNotifications { get; set; } = false; // Reads notification content, so it is opt-in
+        public bool ShowNotifications { get; set; } = true; // Reads notification content: on by default, asked again in the welcome
         public bool HideInFullscreen { get; set; } = true;
-        public bool StartWithWindows { get; set; } = false;
+        public bool StartWithWindows { get; set; } = true;
         public bool AutoUpdate { get; set; } = true;
         public bool ApiEnabled { get; set; } = false; // Local API for scripts and apps, on 127.0.0.1 only: off by default
         public int ApiPort { get; set; } = LocalApi.DefaultPort;
@@ -118,13 +122,41 @@ namespace WindowsIsland
             try
             {
                 if (File.Exists(FilePath))
-                    return (JsonSerializer.Deserialize<Settings>(File.ReadAllText(FilePath)) ?? new Settings()).Sanitized();
+                {
+                    Settings loaded = JsonSerializer.Deserialize<Settings>(File.ReadAllText(FilePath)) ?? new Settings();
+                    if (loaded.SettingsVersion < CurrentVersion) loaded = Started(loaded);
+                    return loaded.Sanitized();
+                }
             }
             catch (Exception)
             {
                 // A broken file falls back to the defaults instead of stopping the app.
             }
-            return new Settings();
+            return Started(null);
+        }
+
+        // The settings of someone new, or of someone from before the welcome existed: the defaults of this version, and the
+        // welcome. What is a login, a key or a list the person built is kept (language, Discord, the API, the hook, the apps
+        // hidden from the privacy dots and where the Settings window sits).
+        static Settings Started(Settings old)
+        {
+            Settings fresh = new Settings { SettingsVersion = CurrentVersion, OnboardingDone = false };
+            if (old != null)
+            {
+                fresh.Language = old.Language;
+                fresh.DiscordEnabled = old.DiscordEnabled;
+                fresh.DiscordClientId = old.DiscordClientId;
+                fresh.ApiEnabled = old.ApiEnabled;
+                fresh.ApiPort = old.ApiPort;
+                fresh.PermissionPrompts = old.PermissionPrompts;
+                fresh.PrivacyIgnored = old.PrivacyIgnored ?? new System.Collections.Generic.List<string>();
+                fresh.PrivacySeen = old.PrivacySeen ?? new System.Collections.Generic.List<string>();
+                fresh.SettingsLeft = old.SettingsLeft;
+                fresh.SettingsTop = old.SettingsTop;
+                fresh.SettingsWidth = old.SettingsWidth;
+                fresh.SettingsHeight = old.SettingsHeight;
+            }
+            return fresh;
         }
 
         // The file is hand-editable, so values are kept within sensible bounds.
@@ -132,6 +164,7 @@ namespace WindowsIsland
         {
             if (!string.Equals(IdleStyle, "Line", StringComparison.OrdinalIgnoreCase)) IdleStyle = "Pill";
             if (!string.Equals(MaximizedMode, "Normal", StringComparison.OrdinalIgnoreCase) && !string.Equals(MaximizedMode, "Hidden", StringComparison.OrdinalIgnoreCase)) MaximizedMode = "Thin";
+            if (!string.Equals(SettingsMode, "Advanced", StringComparison.OrdinalIgnoreCase)) SettingsMode = "Essentials";
             AlertSeconds = Math.Clamp(AlertSeconds, 1, 60);
             LimitAlertSeconds = Math.Clamp(LimitAlertSeconds, 1, 60);
             NotificationSeconds = Math.Clamp(NotificationSeconds, 1, 60);

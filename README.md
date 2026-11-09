@@ -39,7 +39,7 @@ A Dynamic Island for Windows. Music, Claude Code, its usage limits and your noti
 - **Keyboard shortcut** to open and close the island (off by default, configurable)
 - **Alerts** when Claude finishes a task or needs you
 - **Limit alerts:** a note when the Claude 5-hour or weekly limit reaches 75%, 90% and 100%, and when it renews
-- **Windows notifications** in the island, with the sending app's icon, if you turn them on
+- **Windows notifications** in the island, with the sending app's icon (on by default, asked in the welcome; you can turn them off)
 - **Two activities at once:** the second one splits off into a bubble beside the island
 - **Several Claude chats at once:** the island counts them (for example `2 · 0:58`, or `1/2 · Waiting` when one of two waits for you) and the Claude page lists each chat with its own state and time
 - **Claude Desktop permissions:** a chat in the Claude desktop app that asks for a permission or puts a question shows as waiting for you, like in the terminal The question (when it is short) is shown in the alert, with an **Open Claude** link on the Claude page that brings the app to the front to answer.
@@ -104,6 +104,12 @@ The collapsed island is a thin line by default (Settings, Behavior, "Thin line a
 | A change of song: the cover, the name and a symbol | <img src="docs/images/thin-peek-en.png" alt="A change of song: the cover, the name and a symbol" width="300"> |
 | Volume or brightness: a small bar | <img src="docs/images/thin-level-en.png" alt="Volume or brightness: a small bar" width="300"> |
 
+### First run and settings
+
+The first time it runs (and the first time after updating to 4.0), a short welcome asks how the island should look (a thin line when idle, always a thin line, or a pill) and what it should show (music, Claude, Windows notifications, microphone and camera dots, Claude permissions, start with Windows). Settings has two modes: **Essentials**, a few switches, and **Advanced**, every setting in four tabs with a search box.
+
+<img src="docs/images/welcome-1-en.png" alt="Welcome, step 1" width="200"> <img src="docs/images/welcome-2-en.png" alt="Welcome, step 2" width="200"> <img src="docs/images/welcome-3-en.png" alt="Welcome, step 3" width="200">
+
 ## Install
 
 1. **Download** `WindowsIsland.exe` from the [latest release](https://github.com/leotrvs/windows-island/releases/latest). Windows may show a SmartScreen warning because the app has no paid code-signing certificate: choose **More info**, then **Run anyway**.
@@ -130,7 +136,7 @@ To try it without installing, run `WindowsIsland.exe --portable`.
 | Limit alerts | A note when the 5-hour or weekly Claude limit reaches 75%, 90% and 100%, and when it renews |
 | Microphone and camera dots | Shows a small dot beside the island while an app uses the microphone (orange) or the camera (green) |
 | Battery alerts | Charger connected or removed, low battery and fully charged. Laptops only |
-| Show Windows notifications | Shows new notifications in the island. Off by default |
+| Show Windows notifications | Shows new notifications in the island. On by default |
 | Alert size | Small or normal alerts and notifications |
 | Screenshot alert | A very small note when a screenshot is taken with Print Screen or Win+Shift+S |
 | Usage ring color | Blue, green or purple. The rings turn amber and red near the limit |

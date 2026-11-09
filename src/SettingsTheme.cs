@@ -25,7 +25,7 @@ namespace WindowsIsland
                 Separator = Color.FromRgb(0xE5, 0xE5, 0xEA);
                 Secondary = Color.FromRgb(0x6C, 0x6C, 0x70);
                 Accent = Color.FromRgb(0x00, 0x7A, 0xFF);
-                On = Color.FromRgb(0x34, 0xC7, 0x59);
+                On = Color.FromRgb(0x0A, 0x84, 0xFF);
                 SwitchOff = Color.FromRgb(0xE5, 0xE5, 0xEA);
                 TabTrack = Color.FromRgb(0xE3, 0xE3, 0xE8);
                 SegTrack = Color.FromRgb(0xE3, 0xE3, 0xE8);
@@ -45,7 +45,7 @@ namespace WindowsIsland
                 Separator = Color.FromRgb(0x38, 0x38, 0x3A);
                 Secondary = Color.FromRgb(0x8E, 0x8E, 0x93);
                 Accent = Color.FromRgb(0x0A, 0x84, 0xFF);
-                On = Color.FromRgb(0x30, 0xD1, 0x58);
+                On = Color.FromRgb(0x0A, 0x84, 0xFF);
                 SwitchOff = Color.FromRgb(0x39, 0x39, 0x3D);
                 TabTrack = Color.FromRgb(0x1C, 0x1C, 0x1E);
                 SegTrack = Color.FromRgb(0x2C, 0x2C, 0x2E);

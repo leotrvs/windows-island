@@ -104,6 +104,12 @@ A ilha recolhida é uma linha fina por padrão (Ajustes, Comportamento, "Linha f
 | Troca de música: a capa, o nome e um símbolo | <img src="docs/images/thin-peek-pt.png" alt="Troca de música: a capa, o nome e um símbolo" width="300"> |
 | Volume ou brilho: uma barrinha | <img src="docs/images/thin-level-pt.png" alt="Volume ou brilho: uma barrinha" width="300"> |
 
+### Primeiro uso e Ajustes
+
+Na primeira vez que roda (e na primeira vez depois de atualizar para a 4.0), uma boas-vindas curta pergunta como a ilha deve ficar (linha fina quando parada, sempre linha fina ou pílula) e o que mostrar (música, Claude, notificações do Windows, pontos de microfone e câmera, permissões do Claude, iniciar com o Windows). Os Ajustes têm dois modos: **Essenciais**, com poucos interruptores, e **Avançado**, com todos os ajustes em quatro abas e uma caixa de busca.
+
+<img src="docs/images/welcome-1-pt.png" alt="Welcome, step 1" width="200"> <img src="docs/images/welcome-2-pt.png" alt="Welcome, step 2" width="200"> <img src="docs/images/welcome-3-pt.png" alt="Welcome, step 3" width="200">
+
 ## Instalar
 
 1. **Baixe** o `WindowsIsland.exe` da [última release](https://github.com/leotrvs/windows-island/releases/latest). O Windows pode mostrar um aviso do SmartScreen porque o app não tem certificado pago de assinatura de código: escolha **Mais informações** e depois **Executar assim mesmo**.
@@ -130,7 +136,7 @@ Para testar sem instalar, rode `WindowsIsland.exe --portable`.
 | Avisos de limite | Um aviso quando o limite do Claude de 5 horas ou o semanal chega a 75%, 90% e 100%, e quando renova |
 | Pontos de microfone e câmera | Mostra um pontinho ao lado da ilha enquanto um app usa o microfone (laranja) ou a câmera (verde) |
 | Avisos de bateria | Carregador conectado ou removido, bateria baixa e carregada. Só em notebooks |
-| Mostrar notificações do Windows | Mostra as notificações novas na ilha. Vem desligado |
+| Mostrar notificações do Windows | Mostra as notificações novas na ilha. Vem ligado |
 | Tamanho dos avisos | Avisos e notificações pequenos ou normais |
 | Aviso de captura de tela | Uma nota bem pequena quando você tira um print com Print Screen ou Win+Shift+S |
 | Cor dos anéis de uso | Azul, verde ou roxo. Os anéis ficam amarelos e vermelhos perto do limite |

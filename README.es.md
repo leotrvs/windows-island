@@ -104,6 +104,12 @@ La isla recogida es una línea fina por defecto (Ajustes, Comportamiento, "Líne
 | Cambio de canción: la portada, el nombre y un símbolo | <img src="docs/images/thin-peek-en.png" alt="Cambio de canción: la portada, el nombre y un símbolo" width="300"> |
 | Volumen o brillo: una barrita | <img src="docs/images/thin-level-en.png" alt="Volumen o brillo: una barrita" width="300"> |
 
+### Primer uso y Ajustes
+
+La primera vez que se ejecuta (y la primera vez tras actualizar a la 4.0), una breve bienvenida pregunta cómo debe verse la isla (línea fina en reposo, siempre línea fina o píldora) y qué debe mostrar (música, Claude, notificaciones de Windows, puntos de micrófono y cámara, permisos de Claude, iniciar con Windows). Los Ajustes tienen dos modos: **Esenciales**, con pocos interruptores, y **Avanzado**, con todos los ajustes en cuatro pestañas y un cuadro de búsqueda.
+
+<img src="docs/images/welcome-1-en.png" alt="Welcome, step 1" width="200"> <img src="docs/images/welcome-2-en.png" alt="Welcome, step 2" width="200"> <img src="docs/images/welcome-3-en.png" alt="Welcome, step 3" width="200">
+
 ## Instalar
 
 1. **Descarga** `WindowsIsland.exe` de la [última versión](https://github.com/leotrvs/windows-island/releases/latest). Windows puede mostrar un aviso de SmartScreen porque la app no tiene un certificado de firma de código de pago: elige **Más información** y luego **Ejecutar de todas formas**.
@@ -129,7 +135,7 @@ Para probarla sin instalar, ejecuta `WindowsIsland.exe --portable`.
 | Show Codex, Codex alerts | Actividad y límites de Codex, y el aviso cuando termina. Solo aparecen mientras Codex está trabajando |
 | Microphone and camera dots | Muestra un punto junto a la isla mientras una app usa el micrófono (naranja) o la cámara (verde) |
 | Battery alerts | Cargador conectado o retirado, batería baja y carga completa. Solo en portátiles |
-| Show Windows notifications | Muestra las notificaciones nuevas en la isla. Desactivado por defecto |
+| Show Windows notifications | Muestra las notificaciones nuevas en la isla. Activado por defecto |
 | Alert size | Avisos y notificaciones pequeños o normales |
 | Screenshot alert | Una nota muy pequeña cuando haces una captura con Impr Pant o Win+Mayús+S |
 | Usage ring color | Azul, verde o morado. Los anillos pasan a ámbar y rojo cerca del límite |

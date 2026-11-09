@@ -1,5 +1,14 @@
 # Changelog
 
+## 4.0.0
+
+- **Welcome:** on the first run, and once after updating to 4.0, a short welcome asks how the island should look (a thin line when idle, always a thin line, or a pill) and what it should show (music, Claude, Windows notifications, microphone and camera dots, answering Claude permissions, start with Windows)
+- **Settings started again:** the settings of earlier versions go back to the new defaults, once. Kept: language, Discord, the local API, the permission hook and the apps hidden from the privacy dots
+- **Essentials and Advanced:** Settings opens on Essentials (a few switches and "More settings"); Advanced is every setting, in four tabs, with the search
+- **New defaults:** start with Windows on, Windows notifications on, the idle island is a thin line (also with a maximized window), it never hides by itself, and "Thin line always" is off
+- **Search:** typing is never held up (the page changes when you pause), the page is built once per search, and the window stops at a comfortable height and stays on the taskbar's edge
+- **Blue switches** instead of green
+
 ## 3.0.12
 
 - **Fixed a crash:** typing in the Settings search box closed the app. Every row is now built as usual and the ones that do not match are only hidden

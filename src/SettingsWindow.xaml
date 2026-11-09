@@ -180,8 +180,9 @@
                           StrokeEndLineCap="Round" Width="10" Height="10" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                 </Border>
             </Grid>
+            <ContentControl x:Name="ModeBar" Margin="0,0,0,8"/>
             <ContentControl x:Name="TabBar"/>
-            <Border Margin="0,10,0,0" CornerRadius="10" Height="34" Padding="11,0" Background="{DynamicResource Card}"
+            <Border x:Name="SearchHost" Margin="0,10,0,0" CornerRadius="10" Height="34" Padding="11,0" Background="{DynamicResource Card}"
                     BorderBrush="{DynamicResource Separator}" BorderThickness="1">
                 <Grid>
                     <Grid.ColumnDefinitions>

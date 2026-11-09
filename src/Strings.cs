@@ -274,6 +274,29 @@ namespace WindowsIsland
                                     "A ilha recolhida é uma linha fina com um ícone pequeno do que mais importa. Passe o mouse para abrir",
                                     "La isla recogida es una línea fina con un icono pequeño de lo más importante. Pasa el ratón para abrirla",
                                     "Свёрнутый остров — тонкая линия с маленьким значком самого важного. Наведите мышь, чтобы открыть");
+        public static string ModeEssentials => T("Essentials", "Essenciais", "Esenciales", "Основное");
+        public static string ModeAdvanced => T("Advanced", "Avançado", "Avanzado", "Расширенные");
+        public static string SectionEssentials => T("Essentials", "Essenciais", "Esenciales", "Основное");
+        public static string MoreSettings => T("More settings", "Mais ajustes", "Más ajustes", "Больше настроек");
+        public static string WelcomeTitle => T("Welcome", "Boas-vindas", "Bienvenido", "Добро пожаловать");
+        public static string WelcomeLookTitle => T("How should the island look?", "Como a ilha deve ficar?", "¿Cómo debe verse la isla?", "Как должен выглядеть остров?");
+        public static string WelcomeChangeLater => T("You can change everything later in Settings.", "Você pode mudar tudo depois em Ajustes.", "Puedes cambiarlo todo después en Ajustes.", "Всё можно изменить позже в настройках.");
+        public static string LookIdleLine => T("Thin line when idle", "Linha fina quando parada", "Línea fina en reposo", "Тонкая линия в покое");
+        public static string LookIdleLineHint => T("A pill with the activity when something happens", "Uma pílula com a atividade quando algo acontece", "Una píldora con la actividad cuando algo pasa", "Капсула с активностью, когда что-то происходит");
+        public static string LookAlwaysLine => T("Always a thin line", "Sempre uma linha fina", "Siempre una línea fina", "Всегда тонкая линия");
+        public static string LookAlwaysLineHint => T("Even with activities; hover to open", "Mesmo com atividades; passe o mouse para abrir", "Incluso con actividades; pasa el ratón para abrir", "Даже с активностями; наведите мышь, чтобы открыть");
+        public static string LookPill => T("Pill", "Pílula", "Píldora", "Капсула");
+        public static string LookPillHint => T("A small pill when idle", "Uma pílula pequena quando parada", "Una píldora pequeña en reposo", "Маленькая капсула в покое");
+        public static string WelcomeShowTitle => T("What should it show?", "O que ela deve mostrar?", "¿Qué debe mostrar?", "Что показывать?");
+        public static string WelcomeDoneTitle => T("All set", "Tudo pronto", "Todo listo", "Всё готово");
+        public static string WelcomeDoneText => T("Everything you chose can be changed in Settings: click the island's icon in the tray, or its right-click menu.",
+                                    "Tudo o que você escolheu pode ser mudado em Ajustes: clique no ícone da ilha na bandeja, ou no menu do botão direito.",
+                                    "Todo lo que elegiste se puede cambiar en Ajustes: haz clic en el icono de la isla en la bandeja, o en su menú contextual.",
+                                    "Всё выбранное можно изменить в настройках: нажмите значок острова в трее или его контекстное меню.");
+        public static string WelcomeContinue => T("Continue", "Continuar", "Continuar", "Продолжить");
+        public static string WelcomeBack => T("Back", "Voltar", "Atrás", "Назад");
+        public static string WelcomeSkip => T("Skip", "Pular", "Omitir", "Пропустить");
+        public static string WelcomeFinish => T("Finish", "Concluir", "Terminar", "Готово");
         public static string GroupThinLine => T("Collapsed island (thin line)", "Ilha recolhida (linha fina)", "Isla recogida (línea fina)", "Свёрнутый остров (тонкая линия)");
         public static string GroupMonitor => T("System monitor", "Monitor do sistema", "Monitor del sistema", "Монитор системы");
         public static string MenuMinimalPosition => T("Song position on the line", "Posição da música na linha", "Posición de la canción en la línea", "Позиция трека на линии");
