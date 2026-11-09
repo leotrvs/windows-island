@@ -41,6 +41,7 @@ namespace WindowsIsland
         internal LocalApi Api { get { return api; } } // Activities and alerts from scripts and apps
         SteamService steam;
         ObsService obs;
+        GameBarService gameBar;
         FootballService football;
         string footballKey = "";
 
@@ -174,6 +175,8 @@ namespace WindowsIsland
             football.Goal += (title, text) => MainIsland?.ShowApiAlert(new ApiAlert { App = Strings.MenuFootball, Title = title, Text = text, IconGlyph = LocalApi.Glyph("star"), Seconds = 6 });
             obs = new ObsService(Dispatcher);
             obs.Updated += watched;
+            gameBar = new GameBarService(Dispatcher);
+            gameBar.Updated += watched;
             windowsUpdate = new WindowsUpdateService(Dispatcher);
             windowsUpdate.Updated += watched;
             steam = new SteamService(Dispatcher);
@@ -320,8 +323,8 @@ namespace WindowsIsland
                 if (settings.ShowSteamDownloads && !sample) steam.Start();
                 else steam.Stop();
                 ApplyFootball(sample);
-                if (settings.ShowObs && !sample) obs.Start();
-                else obs.Stop();
+                if (settings.ShowObs && !sample) { obs.Start(); gameBar.Start(); }
+                else { obs.Stop(); gameBar.Stop(); }
                 if (settings.ShowWindowsUpdate && !sample) windowsUpdate.Start();
                 else windowsUpdate.Stop();
                 if (!sample) ReconcileIslands();
@@ -372,7 +375,7 @@ namespace WindowsIsland
             if (settings.DiscordEnabled) discord.Start(settings.DiscordClientId);
             if (settings.ShowSteamDownloads) steam.Start();
             ApplyFootball(false);
-            if (settings.ShowObs) obs.Start();
+            if (settings.ShowObs) { obs.Start(); gameBar.Start(); }
             if (settings.ShowWindowsUpdate) windowsUpdate.Start();
             if (Installer.IsInstalledCopy) { Installer.EnsureCommandShim(); Installer.RefreshAppsEntry(); }
             if (settings.PermissionPrompts && !dev) { string hookError; ClaudeHook.Apply(true, out hookError); } // Keeps the hook pointing at this exe // Copies updated from before 2.0 get island.cmd too
@@ -481,6 +484,7 @@ namespace WindowsIsland
             discord?.Stop();
             steam?.Stop();
             obs?.Stop();
+            gameBar?.Stop();
             football?.Stop();
             windowsUpdate?.Stop();
             osd?.Apply(false); // Gives Windows its volume popup back

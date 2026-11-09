@@ -98,6 +98,76 @@ namespace WindowsIsland
         }
     }
 
+    // The Windows Game Bar's screen recording (Win+Alt+R): it writes a video in Videos\Captures while it records, a file that grows
+    // every second and that no other program can open until it stops. Only that folder is looked at, only for the newest video.
+    sealed class GameBarService
+    {
+        public event Action<WatchedActivity> Updated;
+
+        readonly DispatcherTimer timer;
+        bool recording;
+        DateTime seenSince = DateTime.MinValue;
+
+        public GameBarService(Dispatcher dispatcher)
+        {
+            timer = new DispatcherTimer(DispatcherPriority.Background, dispatcher) { Interval = TimeSpan.FromSeconds(2) };
+            timer.Tick += (s, e) => Poll();
+        }
+
+        public void Start()
+        {
+            if (timer.IsEnabled) return;
+            Poll();
+            timer.Start();
+        }
+
+        public void Stop()
+        {
+            timer.Stop();
+            if (recording) Updated?.Invoke(new WatchedActivity { Id = "gamebar-rec", Gone = true });
+            recording = false;
+        }
+
+        void Poll()
+        {
+            try
+            {
+                string folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyVideos), "Captures");
+                FileInfo newest = Directory.Exists(folder)
+                    ? new DirectoryInfo(folder).GetFiles("*.mp4").OrderByDescending(f => f.LastWriteTimeUtc).FirstOrDefault()
+                    : null;
+                bool on = false;
+                if (newest != null && DateTime.UtcNow - newest.LastWriteTimeUtc < TimeSpan.FromSeconds(6))
+                {
+                    try
+                    {
+                        using (new FileStream(newest.FullName, FileMode.Open, FileAccess.Read, FileShare.None)) { }
+                    }
+                    catch (IOException)
+                    {
+                        on = true; // Still being written
+                    }
+                }
+                if (!on)
+                {
+                    if (recording) Updated?.Invoke(new WatchedActivity { Id = "gamebar-rec", Gone = true });
+                    recording = false;
+                    seenSince = DateTime.MinValue;
+                    return;
+                }
+                DateTime start = ObsLog.StartFromName(newest.Name) ?? (seenSince == DateTime.MinValue ? (seenSince = DateTime.Now) : seenSince);
+                TimeSpan elapsed = DateTime.Now - start;
+                if (elapsed < TimeSpan.Zero) elapsed = TimeSpan.Zero;
+                recording = true;
+                Updated?.Invoke(new WatchedActivity { Id = "gamebar-rec", App = "Xbox Game Bar", Title = Strings.ObsRecording, Text = ObsLog.Clock(elapsed), Glyph = "\uE7C8" });
+            }
+            catch (Exception)
+            {
+                // Tried again on the next tick
+            }
+        }
+    }
+
     // Windows Update: that it is installing (the servicing process is busy for a while) and that a restart is needed.
     // Both only as notices: the island cannot read a percentage that Windows keeps to itself.
     sealed class WindowsUpdateService

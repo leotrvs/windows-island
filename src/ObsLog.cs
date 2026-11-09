@@ -25,6 +25,21 @@ namespace WindowsIsland
             }
         }
 
+        // The Xbox Game Bar names its recordings "<window> 2026-11-08 23-40-41.mp4": the start is in the name.
+        static readonly Regex CaptureName = new Regex("(?<d>\\d{4}-\\d{2}-\\d{2}) (?<h>\\d{2})-(?<m>\\d{2})-(?<s>\\d{2})\\.mp4$", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+
+        public static DateTime? StartFromName(string fileName)
+        {
+            if (string.IsNullOrEmpty(fileName)) return null;
+            Match match = CaptureName.Match(fileName);
+            if (!match.Success) return null;
+            DateTime day;
+            if (!DateTime.TryParseExact(match.Groups["d"].Value, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out day)) return null;
+            int h = int.Parse(match.Groups["h"].Value, CultureInfo.InvariantCulture), m = int.Parse(match.Groups["m"].Value, CultureInfo.InvariantCulture), s = int.Parse(match.Groups["s"].Value, CultureInfo.InvariantCulture);
+            if (h > 23 || m > 59 || s > 59) return null;
+            return day.AddHours(h).AddMinutes(m).AddSeconds(s);
+        }
+
         // How long since a time of day, when it can be yesterday's evening.
         public static TimeSpan Since(TimeSpan start, TimeSpan now)
         {

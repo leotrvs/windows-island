@@ -35,6 +35,16 @@ namespace WindowsIsland.Tests
         }
 
         [Fact]
+        public void TheGameBarRecordingStartIsReadFromItsName()
+        {
+            Assert.Equal(new DateTime(2026, 11, 8, 23, 40, 41), ObsLog.StartFromName("Claude 2026-11-08 23-40-41.mp4"));
+            Assert.Equal(new DateTime(2026, 1, 2, 3, 4, 5), ObsLog.StartFromName("My game 2026-01-02 03-04-05.MP4"));
+            Assert.Null(ObsLog.StartFromName("holiday.mp4"));
+            Assert.Null(ObsLog.StartFromName("x 2026-11-08 25-00-00.mp4"));
+            Assert.Null(ObsLog.StartFromName(null));
+        }
+
+        [Fact]
         public void TimeSinceCrossesMidnightAndIsWrittenAsAClock()
         {
             Assert.Equal(TimeSpan.FromMinutes(90), ObsLog.Since(new TimeSpan(23, 30, 0), new TimeSpan(1, 0, 0)));

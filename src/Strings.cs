@@ -261,8 +261,8 @@ namespace WindowsIsland
         public static string FootballLeaguesLabel => T("Leagues (ESPN codes, e.g. bra.1, eng.1)", "Campeonatos (códigos da ESPN, ex.: bra.1, eng.1)", "Ligas (códigos de ESPN, p. ej. bra.1, eng.1)", "Лиги (коды ESPN, напр. bra.1, eng.1)");
         public static string FootballGoal => T("GOAL!", "GOL!", "¡GOL!", "ГОЛ!");
         public static string FootballFinal => T("Full time", "Fim de jogo", "Final", "Матч окончен");
-        public static string MenuObs => T("OBS recording", "Gravação do OBS", "Grabación de OBS", "Запись OBS");
-        public static string HintObs => T("Shows OBS recording or streaming and for how long", "Mostra o OBS gravando ou transmitindo e há quanto tempo", "Muestra OBS grabando o transmitiendo y desde cuándo", "Показывает запись или трансляцию OBS и сколько она идёт");
+        public static string MenuObs => T("Screen recording", "Gravação de tela", "Grabación de pantalla", "Запись экрана");
+        public static string HintObs => T("Shows OBS or the Windows Game Bar (Win+Alt+R) recording, and for how long", "Mostra o OBS ou o Game Bar do Windows (Win+Alt+R) gravando, e há quanto tempo", "Muestra OBS o la Game Bar de Windows (Win+Alt+R) grabando, y desde cuándo", "Показывает запись OBS или игровой панели Windows (Win+Alt+R) и её длительность");
         public static string ObsRecording => T("Recording", "Gravando", "Grabando", "Запись");
         public static string ObsStreaming => T("Live", "Ao vivo", "En directo", "Эфир");
         public static string MenuWindowsUpdate => T("Windows Update", "Windows Update", "Windows Update", "Windows Update");

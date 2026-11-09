@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.0.8
+
+- **Screen recording:** the Windows Game Bar's recording (Win+Alt+R) now shows in the island, with its time, as OBS does (a pulsing red line on the thin line). It is noticed by the video the Game Bar writes in Videos\Captures while it records. The switch is now "Screen recording" (OBS and Game Bar)
+
 ## 3.0.7
 
 - **Settings:** the search box looks like one: a magnifier, the words "Search settings", a thin outline and an x to clear it

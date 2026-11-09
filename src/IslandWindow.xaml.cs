@@ -1225,7 +1225,7 @@ namespace WindowsIsland
             else if (primary == Activity.External && api != null && api.Activities.Count > 0)
             {
                 ApiActivity first = api.Activities.OrderByDescending(a => a.Updated).First();
-                bool recording = first.Id.StartsWith("obs-", StringComparison.Ordinal);
+                bool recording = first.Id.StartsWith("obs-", StringComparison.Ordinal) || first.Id.StartsWith("gamebar-", StringComparison.Ordinal);
                 if (first.State == "done") { kind = Thin.Done; color = ThinGreen; }
                 else if (first.State == "error" || recording) { kind = Thin.Alert; color = ThinRed; }
                 else if (first.Progress >= 0) { kind = Thin.Progress; color = ThinBlue; fraction = first.Progress / 100.0; }
