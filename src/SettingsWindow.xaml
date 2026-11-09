@@ -170,6 +170,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <StackPanel Grid.Row="0" Margin="20,12,14,6">
             <Grid Margin="0,0,0,8">
@@ -205,5 +206,6 @@
         <ScrollViewer x:Name="Scroller" Grid.Row="1" VerticalScrollBarVisibility="Auto" Focusable="False">
             <StackPanel x:Name="Content" Margin="20,0,16,22"/>
         </ScrollViewer>
+        <Border x:Name="FooterHost" Grid.Row="2" Margin="26,2,22,12"/>
     </Grid>
 </Window>

@@ -332,8 +332,8 @@ namespace WindowsIsland
         public static string MenuUninstall => T("Uninstall Windows Island", "Desinstalar o Windows Island", "Desinstalar Windows Island", "Удалить Windows Island");
         public static string ReopenedAfterFailure => T("It stopped and reopened. Settings, System, has a report to copy.", "Parou e reabriu. Em Ajustes, Sistema, há um relatório para copiar.", "Se detuvo y se reabrió. En Ajustes, Sistema, hay un informe para copiar.", "Остановилось и открылось снова. В настройках, Система, есть отчёт для копирования.");
         public static string DiagCopy => T("Copy report for a problem", "Copiar relatório de um problema", "Copiar informe de un problema", "Скопировать отчёт о проблеме");
-        public static string DiagCopied => T("Copied. Paste it in the GitHub issue.", "Copiado. Cole na issue do GitHub.", "Copiado. Pégalo en el issue de GitHub.", "Скопировано. Вставьте в issue на GitHub.");
-        public static string DiagReport => T("Report a problem on GitHub", "Relatar um problema no GitHub", "Informar un problema en GitHub", "Сообщить о проблеме на GitHub");
+        public static string DiagCopied => T("Report copied: paste it in the page", "Relatório copiado: cole na página", "Informe copiado: pégalo en la página", "Отчёт скопирован: вставьте на странице");
+        public static string DiagReport => T("Report a problem", "Relatar problema", "Informar un problema", "Сообщить о проблеме");
         public static string DiagHint => T("Nothing is sent: the report only stays on this PC until you paste it. No names or keys", "Nada é enviado: o relatório só fica neste PC até você colar. Sem nomes nem chaves", "No se envía nada: el informe solo queda en este PC hasta que lo pegues. Sin nombres ni claves", "Ничего не отправляется: отчёт остаётся на этом ПК, пока вы его не вставите. Без имён и ключей");
         public static string MenuOpenSettings => T("Open settings file", "Abrir arquivo de configurações", "Abrir archivo de configuración", "Открыть файл настроек");
         public static string MenuQuit => T("Quit", "Sair", "Salir", "Выход");

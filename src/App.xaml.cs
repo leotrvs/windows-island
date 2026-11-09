@@ -289,6 +289,11 @@ namespace WindowsIsland
                         foreach (string term in new[] { "a", "di", "steam", "zzz", "linha", "thin", "Claude", "é", "  ", "(" }) { page.SearchBox.Text = term; page.RunSearch(); }
                         page.SearchBox.Text = "";
                         page.RunSearch();
+                        if (Environment.GetEnvironmentVariable("ISLAND_RENDER_WINDOWS") == "1")
+                        {
+                            new SettingsWindow(new Settings { Theme = "Dark" }, () => { }, null, () => { }).SaveWindowShot(System.IO.Path.Combine(render, "win-essentials" + suffix + ".png"), "Essentials", 0);
+                            new SettingsWindow(new Settings { Theme = "Dark" }, () => { }, null, () => { }).SaveWindowShot(System.IO.Path.Combine(render, "win-system" + suffix + ".png"), "Advanced", 3);
+                        }
                         // The welcome steps, as images
                         for (int step = 0; step < 3; step++)
                         {

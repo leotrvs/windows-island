@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.2.1
+
+- **Settings:** the version and the project's link stay at the bottom of every page; Essentials ends with a row split in two, "More settings" and the update button (so "Check for updates" in the tray menu shows its result there); "Report a problem" is one button that copies the report and opens the issues page; the language is a row of flags (globe for automatic) on the same line as its name
+
 ## 4.2.0
 
 - **Pomodoro:** a third button on the timer page starts focus and break cycles (25, 5 and a long 15 after four, adjustable in Settings, Behavior, Pomodoro), with an alert at each change; the "+" button skips to the next phase. A break is green, focus is orange (also on the thin line)

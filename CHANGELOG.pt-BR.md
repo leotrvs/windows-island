@@ -2,6 +2,10 @@
 
 > Tradução de [CHANGELOG.md](CHANGELOG.md), que é o original em inglês.
 
+## 4.2.1
+
+- **Ajustes:** a versão e o link do projeto ficam no rodapé de todas as páginas; Essenciais termina com uma linha dividida em duas, "Mais ajustes" e o botão de atualização (então "Procurar atualizações" no menu da bandeja mostra o resultado ali); "Relatar problema" é um botão só que copia o relatório e abre a página de issues; o idioma é uma fileira de bandeiras (globo para automático) na mesma linha do nome
+
 ## 4.2.0
 
 - **Pomodoro:** um terceiro botão na página do timer inicia ciclos de foco e pausa (25, 5 e uma pausa longa de 15 a cada quatro, ajustáveis em Ajustes, Comportamento, Pomodoro), com um aviso a cada mudança; o botão "+" pula para a próxima fase. A pausa é verde e o foco é laranja (também na linha fina)

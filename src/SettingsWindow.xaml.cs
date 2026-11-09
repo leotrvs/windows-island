@@ -166,13 +166,71 @@ namespace WindowsIsland
             string[] values = { "Auto", "en", "pt", "es", "ru" };
             string[] names = { Strings.LanguageAuto, "English", "Português", "Español", "Русский" };
             int current = Math.Max(0, Array.FindIndex(values, v => string.Equals(v, settings.Language, StringComparison.OrdinalIgnoreCase)));
-            Row("\uE774", Strings.LanguageLabel, null, null, SegmentBar(names, current, i =>
+            StackPanel flags = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
+            for (int i = 0; i < values.Length; i++)
             {
-                settings.Language = values[i];
-                Strings.Use(settings.Language);
-                Apply();
-                Dispatcher.BeginInvoke(new Action(RefreshTexts)); // After this click has finished
-            }));
+                int index = i;
+                Border chip = new Border
+                {
+                    Width = 34, Height = 28, CornerRadius = new CornerRadius(8), Margin = new Thickness(2, 0, 0, 0),
+                    Background = index == current ? new SolidColorBrush(SettingsTheme.Pill) : Brushes.Transparent,
+                    BorderBrush = index == current ? new SolidColorBrush(SettingsTheme.Accent) : Brushes.Transparent, BorderThickness = new Thickness(1.2),
+                    Cursor = System.Windows.Input.Cursors.Hand, ToolTip = names[i],
+                    Child = Flag(values[i]),
+                };
+                chip.MouseLeftButtonUp += (s, e) =>
+                {
+                    settings.Language = values[index];
+                    Strings.Use(settings.Language);
+                    Apply();
+                    Dispatcher.BeginInvoke(new Action(RefreshTexts)); // After this click has finished
+                };
+                flags.Children.Add(chip);
+            }
+            Row("\uE774", Strings.LanguageLabel, null, flags);
+        }
+
+        // A small flag drawn in 20 x 14 (the system's fonts have no flag emoji): a globe for "automatic"
+        FrameworkElement Flag(string code)
+        {
+            if (code == "Auto")
+                return new TextBlock { Text = "\uE774", FontFamily = IconFont, FontSize = 15, Foreground = IconBrush, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
+            Canvas canvas = new Canvas { Width = 20, Height = 14 };
+            Func<string, Brush> brush = hex => new SolidColorBrush((Color)ColorConverter.ConvertFromString(hex));
+            Action<double, double, double, double, string> rect = (x, y, w, h, hex) =>
+            {
+                System.Windows.Shapes.Rectangle r = new System.Windows.Shapes.Rectangle { Width = w, Height = h, Fill = brush(hex) };
+                Canvas.SetLeft(r, x); Canvas.SetTop(r, y); canvas.Children.Add(r);
+            };
+            Action<double, double, double, double, string, double> line = (x1, y1, x2, y2, hex, width) =>
+                canvas.Children.Add(new System.Windows.Shapes.Line { X1 = x1, Y1 = y1, X2 = x2, Y2 = y2, Stroke = brush(hex), StrokeThickness = width });
+            if (code == "pt")
+            {
+                rect(0, 0, 20, 14, "#009B3A");
+                canvas.Children.Add(new System.Windows.Shapes.Polygon { Points = new PointCollection { new Point(10, 1.6), new Point(18.4, 7), new Point(10, 12.4), new Point(1.6, 7) }, Fill = brush("#FEDF00") });
+                System.Windows.Shapes.Ellipse disc = new System.Windows.Shapes.Ellipse { Width = 6.6, Height = 6.6, Fill = brush("#002776") };
+                Canvas.SetLeft(disc, 6.7); Canvas.SetTop(disc, 3.7); canvas.Children.Add(disc);
+            }
+            else if (code == "es")
+            {
+                rect(0, 0, 20, 14, "#AA151B");
+                rect(0, 3.5, 20, 7, "#F1BF00");
+            }
+            else if (code == "ru")
+            {
+                rect(0, 0, 20, 4.7, "#FFFFFF");
+                rect(0, 4.7, 20, 4.7, "#0039A6");
+                rect(0, 9.4, 20, 4.6, "#D52B1E");
+            }
+            else
+            {
+                rect(0, 0, 20, 14, "#012169");
+                line(0, 0, 20, 14, "#FFFFFF", 3); line(20, 0, 0, 14, "#FFFFFF", 3);
+                line(0, 0, 20, 14, "#C8102E", 1.1); line(20, 0, 0, 14, "#C8102E", 1.1);
+                rect(0, 4.6, 20, 4.8, "#FFFFFF"); rect(8.1, 0, 3.8, 14, "#FFFFFF");
+                rect(0, 5.7, 20, 2.6, "#C8102E"); rect(8.9, 0, 2.2, 14, "#C8102E");
+            }
+            return new Border { Width = 20, Height = 14, CornerRadius = new CornerRadius(2.5), ClipToBounds = true, Child = canvas, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
         }
 
         // Titles, tabs and rows again, in the language just chosen.
@@ -192,6 +250,11 @@ namespace WindowsIsland
 
         void UpdateRow()
         {
+            Row(null, null, null, null, null, MakeUpdateLine());
+        }
+
+        FrameworkElement MakeUpdateLine()
+        {
             spin = new RotateTransform();
             updateGlyph = new TextBlock { FontFamily = IconFont, FontSize = 16, Margin = new Thickness(0, 0, 14, 0), VerticalAlignment = VerticalAlignment.Center, RenderTransform = spin, RenderTransformOrigin = new Point(0.5, 0.5) };
             updateText = new TextBlock { VerticalAlignment = VerticalAlignment.Center };
@@ -204,13 +267,13 @@ namespace WindowsIsland
                 if (updates.State == UpdateFlow.Phase.Available) _ = updates.InstallAsync();
                 else if (updates.State == UpdateFlow.Phase.Idle || updates.State == UpdateFlow.Phase.UpToDate || updates.State == UpdateFlow.Phase.Failed) _ = updates.CheckAsync(true);
             };
-            Row(null, null, null, null, null, line);
             if (updates != null)
             {
                 updates.Changed -= OnUpdateChanged;
                 updates.Changed += OnUpdateChanged;
             }
             RefreshUpdateRow();
+            return line;
         }
 
         void OnUpdateChanged()
@@ -247,6 +310,7 @@ namespace WindowsIsland
         // Opens on the System tab, where updates live.
         public void GoToSystem()
         {
+            if (welcome) return;
             tab = 3;
             BuildTabs();
             Rebuild();
@@ -286,11 +350,38 @@ namespace WindowsIsland
             if (SystemParameters.ClientAreaAnimation) Top = restingTop + 22;
         }
 
+        // The version on the left and the project's page on the right, always at the bottom
+        void BuildFooter()
+        {
+            // Version on the left, the project's page on the right
+            Grid footer = new Grid { Margin = new Thickness(0) };
+            footer.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            footer.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            footer.Children.Add(new TextBlock { Text = Installer.Name + " v" + Installer.Version, Foreground = (Brush)FindResource("Secondary"), FontSize = 12, VerticalAlignment = VerticalAlignment.Center });
+            Button repo = new Button { Style = (Style)FindResource("LinkButton"), FontSize = 12, HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Center };
+            // The GitHub mark (an Octicon path) in the link's own color, then the account and project
+            System.Windows.Shapes.Path mark = new System.Windows.Shapes.Path
+            {
+                Data = Geometry.Parse("M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"),
+                Width = 14, Height = 14, Stretch = Stretch.Uniform, Margin = new Thickness(0, 0, 7, 0), VerticalAlignment = VerticalAlignment.Center,
+            };
+            mark.SetBinding(System.Windows.Shapes.Shape.FillProperty, new System.Windows.Data.Binding("Foreground") { Source = repo });
+            StackPanel repoContent = new StackPanel { Orientation = Orientation.Horizontal };
+            repoContent.Children.Add(mark);
+            repoContent.Children.Add(new TextBlock { Text = "@leotrvs/windows-island", VerticalAlignment = VerticalAlignment.Center });
+            repo.Content = repoContent;
+            repo.Click += (s, e) => { try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("https://github.com/leotrvs/windows-island") { UseShellExecute = true }); } catch (Exception) { } };
+            Grid.SetColumn(repo, 1);
+            footer.Children.Add(repo);
+            FooterHost.Child = footer;
+        }
+
         void BuildTabs()
         {
+            BuildFooter();
             if (welcome)
             {
-                ModeBar.Visibility = TabBar.Visibility = SearchHost.Visibility = Visibility.Collapsed;
+                ModeBar.Visibility = TabBar.Visibility = SearchHost.Visibility = FooterHost.Visibility = Visibility.Collapsed;
                 return;
             }
             bool essentials = !string.Equals(settings.SettingsMode, "Advanced", StringComparison.OrdinalIgnoreCase);
@@ -448,13 +539,33 @@ namespace WindowsIsland
             Toggle("\uE7E7", Strings.MenuNotifications, null, () => settings.ShowNotifications, v => settings.ShowNotifications = v);
             Toggle("\uE720", Strings.MenuPrivacyDots, null, () => settings.ShowPrivacyDots, v => settings.ShowPrivacyDots = v);
             Toggle("\uE7E8", Strings.MenuStartup, null, () => settings.StartWithWindows, v => settings.StartWithWindows = v);
-            ActionRow("\uE713", Strings.MoreSettings, () =>
+
+            // Not part of the list: a row of its own, split in two (more settings | updates)
+            Grid split = new Grid();
+            split.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            split.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1) });
+            split.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            StackPanel more = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, Background = Brushes.Transparent, Cursor = System.Windows.Input.Cursors.Hand, Margin = new Thickness(0, 14, 0, 14) };
+            more.Children.Add(new TextBlock { Text = "\uE713", FontFamily = IconFont, FontSize = 16, Foreground = (Brush)FindResource("Accent"), Margin = new Thickness(0, 0, 10, 0), VerticalAlignment = VerticalAlignment.Center });
+            more.Children.Add(new TextBlock { Text = Strings.MoreSettings, Foreground = (Brush)FindResource("Accent"), VerticalAlignment = VerticalAlignment.Center });
+            more.MouseLeftButtonUp += (s, e) =>
             {
                 settings.SettingsMode = "Advanced";
                 Apply();
                 BuildTabs();
                 Rebuild();
-            });
+            };
+            split.Children.Add(more);
+            Border divider = new Border { Background = (Brush)FindResource("Separator"), Margin = new Thickness(0, 8, 0, 8) };
+            Grid.SetColumn(divider, 1);
+            split.Children.Add(divider);
+            FrameworkElement update = MakeUpdateLine();
+            update.HorizontalAlignment = HorizontalAlignment.Center;
+            update.VerticalAlignment = VerticalAlignment.Center;
+            update.Margin = new Thickness(0, 14, 0, 14);
+            Grid.SetColumn(update, 2);
+            split.Children.Add(update);
+            Content.Children.Add(new Border { Child = split, Background = (Brush)FindResource("Card"), CornerRadius = new CornerRadius(12), Margin = new Thickness(0, 12, 0, 0) });
         }
 
         // ---- The first-run welcome: how it looks, what it shows, done ----
@@ -553,6 +664,25 @@ namespace WindowsIsland
             };
             buttons.Children.Add(plain);
             Content.Children.Add(buttons);
+        }
+
+        // The whole window as it is, for checking the layout (not part of the README images)
+        internal void SaveWindowShot(string file, string mode, int tabIndex)
+        {
+            settings.SettingsMode = mode;
+            tab = tabIndex;
+            Show();
+            BuildTabs();
+            Rebuild();
+            UpdateLayout();
+            FitHeight(false);
+            UpdateLayout();
+            System.Windows.Media.Imaging.RenderTargetBitmap bitmap = new System.Windows.Media.Imaging.RenderTargetBitmap((int)Math.Ceiling(ActualWidth * 2), (int)Math.Ceiling(ActualHeight * 2), 192, 192, PixelFormats.Pbgra32);
+            bitmap.Render((Visual)VisualTreeHelper.GetChild(this, 0));
+            System.Windows.Media.Imaging.PngBitmapEncoder encoder = new System.Windows.Media.Imaging.PngBitmapEncoder();
+            encoder.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(bitmap));
+            using (System.IO.FileStream stream = System.IO.File.Create(file)) encoder.Save(stream);
+            Close();
         }
 
         internal void WelcomeStep(int step) { welcomeStep = step; }
@@ -883,28 +1013,25 @@ namespace WindowsIsland
             ApiRows();
             UpdateRow();
             LanguageRow();
-            // Help: a short report to copy (nothing is sent) and the page to open an issue
-            Button copyReport = new Button { Content = Strings.DiagCopy, Style = (Style)FindResource("LinkButton"), HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Center };
-            copyReport.Click += (s, e) =>
+            // Help: one button copies a short report (nothing is sent) and opens the page to report the problem
+            Button report = new Button { Content = Strings.DiagReport, Style = (Style)FindResource("LinkButton"), HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Center };
+            report.Click += (s, e) =>
             {
-                try { Clipboard.SetText(Diagnostics.Report(settings)); copyReport.Content = Strings.DiagCopied; }
-                catch (Exception) { copyReport.Content = Strings.DiagCopy; }
-                DispatcherTimer back = new DispatcherTimer { Interval = TimeSpan.FromSeconds(4) };
-                back.Tick += (a, b) => { back.Stop(); copyReport.Content = Strings.DiagCopy; };
+                try
+                {
+                    Clipboard.SetText(Diagnostics.Report(settings));
+                    report.Content = Strings.DiagCopied;
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("https://github.com/leotrvs/windows-island/issues/new") { UseShellExecute = true })?.Dispose();
+                }
+                catch (Exception)
+                {
+                    report.Content = Strings.DiagReport;
+                }
+                DispatcherTimer back = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
+                back.Tick += (a2, b2) => { back.Stop(); report.Content = Strings.DiagReport; };
                 back.Start();
             };
-            Row("\uE8C8", null, null, null, null, copyReport);
-            ((StackPanel)card.Children[card.Children.Count - 1]).Children.Add(new TextBlock { Text = Strings.DiagHint, FontSize = 12, Foreground = (Brush)FindResource("Secondary"), TextWrapping = TextWrapping.Wrap, Margin = new Thickness(58, 0, 14, 10) });
-            ActionRow("\uE897", Strings.DiagReport, () =>
-            {
-                try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("https://github.com/leotrvs/windows-island/issues/new") { UseShellExecute = true })?.Dispose(); }
-                catch (Exception) { }
-            });
-            ActionRow("\uE81C", Strings.MenuChangelog, () =>
-            {
-                try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(WhatsNew.ChangelogUrl(settings.Language)) { UseShellExecute = true })?.Dispose(); }
-                catch (Exception) { }
-            });
+            Row("\uE897", null, null, null, null, report);
             ActionRow("\uE8A5", Strings.MenuOpenSettings, () =>
             {
                 settings.Save();
@@ -919,27 +1046,7 @@ namespace WindowsIsland
                     catch (Exception) { }
                 }, true);
 
-            // Version on the left, the project's page on the right
-            Grid footer = new Grid { Margin = new Thickness(6, 18, 6, 0) };
-            footer.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-            footer.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-            footer.Children.Add(new TextBlock { Text = Installer.Name + " v" + Installer.Version, Foreground = (Brush)FindResource("Secondary"), FontSize = 12, VerticalAlignment = VerticalAlignment.Center });
-            Button repo = new Button { Style = (Style)FindResource("LinkButton"), FontSize = 12, HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Center };
-            // The GitHub mark (an Octicon path) in the link's own color, then the account and project
-            System.Windows.Shapes.Path mark = new System.Windows.Shapes.Path
-            {
-                Data = Geometry.Parse("M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"),
-                Width = 14, Height = 14, Stretch = Stretch.Uniform, Margin = new Thickness(0, 0, 7, 0), VerticalAlignment = VerticalAlignment.Center,
-            };
-            mark.SetBinding(System.Windows.Shapes.Shape.FillProperty, new System.Windows.Data.Binding("Foreground") { Source = repo });
-            StackPanel repoContent = new StackPanel { Orientation = Orientation.Horizontal };
-            repoContent.Children.Add(mark);
-            repoContent.Children.Add(new TextBlock { Text = "@leotrvs/windows-island", VerticalAlignment = VerticalAlignment.Center });
-            repo.Content = repoContent;
-            repo.Click += (s, e) => { try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("https://github.com/leotrvs/windows-island") { UseShellExecute = true }); } catch (Exception) { } };
-            Grid.SetColumn(repo, 1);
-            footer.Children.Add(repo);
-            Content.Children.Add(footer);
+
         }
 
         string filter = "";       // What the search box holds
