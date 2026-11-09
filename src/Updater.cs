@@ -194,39 +194,56 @@ namespace WindowsIsland
 #if UPDATE_TEST
             return await DownloadFromAsync(BaseUrl + fileName, maxBytes);
 #else
-            try
+            // When the release address did not answer a moment ago, the API goes first: waiting for it again for every file is what made updates slow
+            if (DateTime.UtcNow - primaryFailedAt > TimeSpan.FromMinutes(30))
             {
-                return await DownloadFromAsync(BaseUrl + fileName, maxBytes);
+                try
+                {
+                    return await DownloadFromAsync(BaseUrl + fileName, maxBytes, TimeSpan.FromSeconds(8));
+                }
+                catch (Exception)
+                {
+                    primaryFailedAt = DateTime.UtcNow;
+                }
             }
-            catch (Exception)
-            {
-                return await DownloadThroughApiAsync(fileName, maxBytes);
-            }
+            return await DownloadThroughApiAsync(fileName, maxBytes);
 #endif
         }
+
+        static DateTime primaryFailedAt = DateTime.MinValue;
+        static System.Collections.Generic.Dictionary<string, string> apiAssets;
+        static DateTime apiAssetsAt = DateTime.MinValue;
 
         const string ApiLatest = "https://api.github.com/repos/leotrvs/windows-island/releases/latest";
 
         static async Task<byte[]> DownloadThroughApiAsync(string fileName, int maxBytes)
         {
             string assetUrl = null;
-            using (HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, ApiLatest))
-            using (HttpResponseMessage response = await Http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead))
+            // The list of the release's files is asked for once and kept for a minute: the manifest, its signature and the app all come from it
+            if (apiAssets == null || DateTime.UtcNow - apiAssetsAt > TimeSpan.FromMinutes(1))
             {
-                response.EnsureSuccessStatusCode();
-                if (response.Content.Headers.ContentLength > 512 * 1024) throw new InvalidDataException();
-                using (JsonDocument release = JsonDocument.Parse(await response.Content.ReadAsStringAsync()))
+                System.Collections.Generic.Dictionary<string, string> found = new System.Collections.Generic.Dictionary<string, string>();
+                using (HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, ApiLatest))
+                using (HttpResponseMessage response = await Http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead))
                 {
-                    JsonElement assets;
-                    if (!release.RootElement.TryGetProperty("assets", out assets)) throw new InvalidDataException();
-                    foreach (JsonElement asset in assets.EnumerateArray())
+                    response.EnsureSuccessStatusCode();
+                    if (response.Content.Headers.ContentLength > 512 * 1024) throw new InvalidDataException();
+                    using (JsonDocument release = JsonDocument.Parse(await response.Content.ReadAsStringAsync()))
                     {
-                        JsonElement name, url;
-                        if (asset.TryGetProperty("name", out name) && name.GetString() == fileName && asset.TryGetProperty("url", out url))
-                            assetUrl = url.GetString();
+                        JsonElement assets;
+                        if (!release.RootElement.TryGetProperty("assets", out assets)) throw new InvalidDataException();
+                        foreach (JsonElement asset in assets.EnumerateArray())
+                        {
+                            JsonElement name, url;
+                            if (asset.TryGetProperty("name", out name) && asset.TryGetProperty("url", out url) && name.GetString() != null && url.GetString() != null)
+                                found[name.GetString()] = url.GetString();
+                        }
                     }
                 }
+                apiAssets = found;
+                apiAssetsAt = DateTime.UtcNow;
             }
+            apiAssets.TryGetValue(fileName, out assetUrl);
             if (assetUrl == null || !assetUrl.StartsWith("https://api.github.com/repos/leotrvs/windows-island/releases/assets/", StringComparison.Ordinal)) throw new InvalidDataException();
             using (HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, assetUrl))
             {
@@ -236,9 +253,11 @@ namespace WindowsIsland
             }
         }
 
-        static async Task<byte[]> DownloadFromAsync(string address, int maxBytes)
+        static async Task<byte[]> DownloadFromAsync(string address, int maxBytes, TimeSpan? waitForAnswer = null)
         {
-            using (HttpResponseMessage response = await Http.GetAsync(address, HttpCompletionOption.ResponseHeadersRead))
+            // The wait covers only the answer's start (the headers); the file itself may take as long as it needs
+            using (System.Threading.CancellationTokenSource limit = new System.Threading.CancellationTokenSource(waitForAnswer ?? System.Threading.Timeout.InfiniteTimeSpan))
+            using (HttpResponseMessage response = await Http.GetAsync(address, HttpCompletionOption.ResponseHeadersRead, limit.Token))
                 return await ReadLimitedAsync(response, maxBytes);
         }
 

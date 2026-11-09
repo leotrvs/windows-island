@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.5.2
+
+- **Faster updates from the island:** when the release address does not answer, it is skipped for the next 30 minutes (it waited for it again on every file), the list of the release's files is asked for once, and after a download you asked for the app restarts at once instead of waiting for the notice to go away
+- **Questions from Claude on the island:** a question (AskUserQuestion) is shown as plain words, the question and its options, and says to answer it in Claude, instead of showing raw text and "too long to approve"
+
 ## 4.5.1
 
 - **Thin line by default:** with a maximized window in front the island is the thin line, and activities (music and the rest) become the thin line too, so it never covers the browser tabs. New installs start this way, and copies already installed get both switched on once (you can turn them off again in Settings)

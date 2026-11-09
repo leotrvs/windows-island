@@ -207,7 +207,7 @@ namespace WindowsIsland
         public static string PermissionAsks => T("Claude asks for permission", "Claude pede permissão", "Claude pide permiso", "Claude просит разрешение");
         public static string Allow => T("Allow", "Permitir", "Permitir", "Разрешить");
         public static string Deny => T("Deny", "Negar", "Denegar", "Отклонить");
-        public static string PermissionPartial => T("Too long to approve here. Look at it in Claude.", "Longo demais para aprovar aqui. Veja no Claude.", "Demasiado largo para aprobar aquí. Míralo en Claude.", "Слишком длинно, чтобы разрешать здесь. Посмотрите в Claude.");
+        public static string PermissionPartial => T("Answer this one in Claude.", "Responda esta no Claude.", "Responde esta en Claude.", "Ответьте на это в Claude.");
         public static string PermissionScroll => T("Long: scroll to read it all.", "Longo: role para ler tudo.", "Largo: desplázate para leerlo todo.", "Длинно: прокрутите, чтобы прочитать.");
         public static string PermissionCheck => T("Not sure? Check it in Claude.", "Em dúvida? Confira no Claude.", "¿Dudas? Compruébalo en Claude.", "Не уверены? Проверьте в Claude.");
         public static string MenuPermissionPrompts => T("Answer permissions on the island", "Responder permissões pela ilha", "Responder permisos en la isla", "Отвечать на разрешения на острове");

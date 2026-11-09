@@ -123,7 +123,8 @@ namespace WindowsIsland
                 if (announce) Tell("downloading", Strings.UpdateDownloading);
                 if (await Updater.DownloadVerifiedAsync(found))
                 {
-                    while (islandBusy()) await Task.Delay(2000);
+                    // Someone who asked for the update from the island is waiting for it: no waiting for the mouse to leave
+                    if (!announce) while (islandBusy()) await Task.Delay(2000);
                     if (Updater.ApplyAndRestart())
                     {
                         quit();

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
@@ -92,12 +93,49 @@ namespace WindowsIsland
                 }
                 JsonElement args;
                 bool technical = true;
-                string text = root.TryGetProperty("tool_input", out args) ? Summarize(args, out technical) : "";
+                string text = "";
+                if (root.TryGetProperty("tool_input", out args))
+                {
+                    if (tool == "AskUserQuestion") { text = SummarizeQuestions(args); technical = false; }
+                    else text = Summarize(args, out technical);
+                }
                 // One line and short enough to read whole: line breaks are shown, runs of spaces are folded before anything is cut
                 text = System.Text.RegularExpressions.Regex.Replace(text.Replace("\r\n", "\n").Replace('\r', '\n').Replace("\n", " \u23CE "), @"[ \t]{2,}", " ").Trim();
                 partial = !technical; // A long command is still allowed: it is shown whole and scrolls
                 summary = text.Length > ShownLength ? text.Substring(0, ShownLength - 1) + "\u2026" : text;
                 return true;
+            }
+        }
+
+        // A question Claude asks: the questions and their options, as plain words (the answer is given in Claude)
+        static string SummarizeQuestions(JsonElement args)
+        {
+            try
+            {
+                JsonElement questions;
+                if (args.ValueKind != JsonValueKind.Object || !args.TryGetProperty("questions", out questions) || questions.ValueKind != JsonValueKind.Array) return args.GetRawText();
+                List<string> parts = new List<string>();
+                foreach (JsonElement q in questions.EnumerateArray())
+                {
+                    JsonElement text, options;
+                    string line = q.TryGetProperty("question", out text) && text.ValueKind == JsonValueKind.String ? text.GetString() : "";
+                    if (q.TryGetProperty("options", out options) && options.ValueKind == JsonValueKind.Array)
+                    {
+                        List<string> labels = new List<string>();
+                        foreach (JsonElement option in options.EnumerateArray())
+                        {
+                            JsonElement label;
+                            if (option.TryGetProperty("label", out label) && label.ValueKind == JsonValueKind.String) labels.Add(label.GetString());
+                        }
+                        if (labels.Count > 0) line += " (" + string.Join(" / ", labels) + ")";
+                    }
+                    if (line.Length > 0) parts.Add(line);
+                }
+                return parts.Count > 0 ? string.Join(" · ", parts) : args.GetRawText();
+            }
+            catch (Exception)
+            {
+                return args.GetRawText();
             }
         }
 

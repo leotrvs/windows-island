@@ -2,6 +2,11 @@
 
 > Tradução de [CHANGELOG.md](CHANGELOG.md), que é o original em inglês.
 
+## 4.5.2
+
+- **Atualizações mais rápidas pela ilha:** quando o endereço de download não responde, ele é ignorado pelos próximos 30 minutos (esperava por ele de novo a cada arquivo), a lista de arquivos da release é pedida uma vez só, e depois de um download que você pediu o app reinicia na hora em vez de esperar o aviso sumir
+- **Perguntas do Claude na ilha:** uma pergunta (AskUserQuestion) aparece em palavras normais, a pergunta e as opções, e diz para responder no Claude, em vez de mostrar texto cru e "longo demais para aprovar"
+
 ## 4.5.1
 
 - **Linha fina por padrão:** com uma janela maximizada na frente a ilha vira a linha fina, e as atividades (música e o resto) também viram a linha fina, para nunca cobrir as abas do navegador. Instalações novas já começam assim, e as cópias já instaladas ganham as duas opções ligadas uma vez (dá para desligar de novo nos Ajustes)
