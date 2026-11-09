@@ -1,0 +1,16 @@
+name: Suggest an idea
+description: A new activity, a new setting, or a better way for something to look or work
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: The idea
+      description: What should the island do? A picture or a link to how another app does it helps. You can write in English or Portuguese.
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why it would help
+      description: What you were doing when you missed it.

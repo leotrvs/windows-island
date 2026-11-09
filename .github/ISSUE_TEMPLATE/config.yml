@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Security problem
+    url: https://github.com/leotrvs/windows-island/security/advisories/new
+    about: Report a security problem privately (see SECURITY.md). Please do not open a public issue for it.

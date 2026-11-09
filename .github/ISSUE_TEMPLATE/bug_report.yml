@@ -1,0 +1,27 @@
+name: Report a problem
+description: Something does not work, looks wrong, or breaks
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for telling us. You can write in English or Portuguese.
+        The easiest way: in the app, open **Settings, System, Report a problem**. It copies a report (it hides your user name, app names and keys) and opens this page. Paste it below.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected and what you got instead. A short video or a picture helps a lot (check it does not show private things).
+    validations:
+      required: true
+  - type: textarea
+    id: report
+    attributes:
+      label: Report from the app
+      description: Paste the report that "Report a problem" copied. Look it over before you paste.
+      render: text
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Shown at the bottom of Settings, such as 4.6.7
