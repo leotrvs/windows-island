@@ -2,6 +2,10 @@
 
 > Tradução de [CHANGELOG.md](CHANGELOG.md), que é o original em inglês.
 
+## 4.2.2
+
+- **Atualizações:** quando a verificação automática (a cada hora enquanto o app roda, a primeira 30 segundos depois de abrir) encontra uma versão nova, a ilha agora avisa "Atualização X disponível · baixando" antes de baixar e reiniciar nela
+
 ## 4.2.1
 
 - **Ajustes:** a versão e o link do projeto ficam no rodapé de todas as páginas; Essenciais termina com uma linha dividida em duas, "Mais ajustes" e o botão de atualização (então "Procurar atualizações" no menu da bandeja mostra o resultado ali); "Relatar problema" é um botão só que copia o relatório e abre a página de issues; o idioma é uma fileira de bandeiras (globo para automático) na mesma linha do nome

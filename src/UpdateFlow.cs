@@ -65,6 +65,7 @@ namespace WindowsIsland
                         Set(Phase.Available);
                         return;
                     }
+                    say(Strings.UpdateFoundAuto(Version)); // The island says so, then it downloads
                     working = false;
                     await InstallAsync();
                     return;

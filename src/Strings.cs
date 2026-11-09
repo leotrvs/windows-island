@@ -191,6 +191,7 @@ namespace WindowsIsland
         public static string WhatsNewGotIt => T("Got it", "Entendi", "Entendido", "Понятно");
         public static string WhatsNewHint => T("news in Settings", "novidades em Ajustes", "novedades en Ajustes", "новое в настройках");
         public static string MenuChangelog => T("Change history", "Histórico de mudanças", "Historial de cambios", "История изменений");
+        public static string UpdateFoundAuto(string version) => T("Update " + version + " available · downloading", "Atualização " + version + " disponível · baixando", "Actualización " + version + " disponible · descargando", "Доступно обновление " + version + " · загрузка");
         public static string UpdatedTo(string version) => T("Updated to version ", "Atualizado para a versão ", "Actualizado a la versión ", "Обновлено до версии ") + version;
         public static string PermissionAsks => T("Claude asks for permission", "Claude pede permissão", "Claude pide permiso", "Claude просит разрешение");
         public static string Allow => T("Allow", "Permitir", "Permitir", "Разрешить");

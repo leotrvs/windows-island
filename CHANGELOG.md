@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.2.2
+
+- **Updates:** when the automatic check (every hour while the app runs, the first one 30 seconds after it opens) finds a new version, the island now says "Update X available · downloading" before it downloads and restarts into it
+
 ## 4.2.1
 
 - **Settings:** the version and the project's link stay at the bottom of every page; Essentials ends with a row split in two, "More settings" and the update button (so "Check for updates" in the tray menu shows its result there); "Report a problem" is one button that copies the report and opens the issues page; the language is a row of flags (globe for automatic) on the same line as its name
