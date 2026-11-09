@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.0.4
+
+- **Claude asking you something the island did not notice:** the Claude app's own Windows notice was always hidden because the island expected to announce it itself, so a question it could not read passed in silence (only the white dot showed). Now, if the island has not announced Claude within a moment of that notice, the notice is shown
+
 ## 4.0.3
 
 - **Thin line:** the dots (recording, microphone, camera, screen sharing and the unread notification) now sit at the left end of the line, always, instead of in the middle

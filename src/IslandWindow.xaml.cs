@@ -1700,6 +1700,7 @@ namespace WindowsIsland
         void ShowBanner(bool waiting, string name)
         {
             if (!settings.ShowClaude || !settings.ClaudeBanners) return;
+            lastClaudeBanner = DateTime.Now;
             Enqueue(new BannerItem
             {
                 FromClaude = true,
@@ -1709,12 +1710,31 @@ namespace WindowsIsland
             });
         }
 
+        DateTime lastClaudeBanner = DateTime.MinValue; // When the island last announced Claude by itself
+
         internal void ShowNotification(IslandNotification notification)
         {
             if (!settings.ShowNotifications) return;
+            // The island announces Claude itself, so the Claude app's own toasts would repeat it. But when the island did not
+            // notice (a question it could not read, for example), the app's own notice is the only one: it is shown after a moment.
+            if (settings.ShowClaude && settings.ClaudeBanners && notification.App == "Claude")
+            {
+                DateTime arrived = DateTime.Now;
+                DispatcherTimer wait = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2.5) };
+                wait.Tick += (s, e) =>
+                {
+                    wait.Stop();
+                    if (lastClaudeBanner < arrived.AddSeconds(-8)) EnqueueNotification(notification);
+                };
+                wait.Start();
+                return;
+            }
+            EnqueueNotification(notification);
+        }
+
+        void EnqueueNotification(IslandNotification notification)
+        {
             unreadAt = DateTime.Now;
-            // The island already announces Claude itself, so the Claude app's own toasts would repeat it.
-            if (settings.ShowClaude && settings.ClaudeBanners && notification.App == "Claude") return;
             Enqueue(new BannerItem
             {
                 App = notification.App,
