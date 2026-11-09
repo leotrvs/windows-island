@@ -467,10 +467,11 @@ namespace WindowsIsland
             if (settings.ShowNotifications) notifications.Start();
 
             Updater.CleanUp();
+            // The notice waits a moment after the island is up (it was lost when the app was still starting), then stays for a few seconds
             if (afterUpdate)
-                MainIsland.Loaded += (s, a) => MainIsland.ShowStatus("uptodate", Strings.UpdatedTo(Installer.Version), settings.WhatsNewSeen != WhatsNew.Key ? Strings.WhatsNewHint : null); // The green check, as when the update is looked for
+                MainIsland.Loaded += (s, a) => AfterStart(() => MainIsland.ShowStatus("uptodate", Strings.UpdatedTo(Installer.Version), settings.WhatsNewSeen != WhatsNew.Key ? Strings.WhatsNewHint : null, 6)); // The green check, as when the update is looked for
             if (afterCrash)
-                MainIsland.Loaded += (s, a) => MainIsland.ShowStatus("failed", Strings.ReopenedAfterFailure);
+                MainIsland.Loaded += (s, a) => AfterStart(() => MainIsland.ShowStatus("failed", Strings.ReopenedAfterFailure, null, 6));
             updateTimer = new DispatcherTimer { Interval = FirstUpdateCheck };
             updateTimer.Tick += (s, a) =>
             {
@@ -478,6 +479,13 @@ namespace WindowsIsland
                 if (settings.AutoUpdate) _ = updates.CheckAsync(false);
             };
             updateTimer.Start();
+        }
+
+        void AfterStart(Action show)
+        {
+            DispatcherTimer wait = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1.3) };
+            wait.Tick += (s, e) => { wait.Stop(); show(); };
+            wait.Start();
         }
 
         // The island on the primary monitor (or the only one) speaks for the app, such as update messages.

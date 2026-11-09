@@ -2,6 +2,11 @@
 
 > Tradução de [CHANGELOG.md](CHANGELOG.md), que é o original em inglês.
 
+## 4.6.2
+
+- **O nome da música não corta mais a capa e o equalizador:** a ilha agora toma a largura nova assim que o nome abre (antes ela ficava estreita e a capa e o equalizador eram cortados), e o conteúdo acompanha as bordas da ilha enquanto ela cresce e encolhe
+- **O aviso depois de atualizar:** espera um momento depois que a ilha subiu (ele podia se perder enquanto o app ainda abria) e fica seis segundos. O mesmo vale para o aviso depois de uma falha
+
 ## 4.6.1
 
 - **O nome da música, no espaço da própria ilha:** na ilha normal o nome não troca mais a ilha por outra forma com um símbolo. A ilha abre um pouco mais, a capa desliza para fora e a nova desliza para dentro, o nome entra ao lado, e depois de um momento o nome some e a ilha volta ao tamanho dela. Funciona também com o nome sempre visível

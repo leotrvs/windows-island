@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.6.2
+
+- **The song's name no longer cuts the cover and the equalizer:** the island now takes its new width as soon as the name opens (before, it stayed narrow and the cover and the equalizer were cut off), and the content follows the island's edges while it grows and shrinks
+- **The notice after an update:** it waits a moment after the island is up (it could be lost while the app was still starting) and stays for six seconds. The same for the notice after a failure
+
 ## 4.6.1
 
 - **The song's name, in the island's own room:** on the normal island the name no longer swaps the island for another shape with a symbol. The island opens a little wider, the cover slides out and the new one slides in, the name comes in beside it, and after a moment the name fades and the island goes back to its size. It works with the name always shown too

@@ -1689,7 +1689,9 @@ namespace WindowsIsland
             if (renderThin && next == View.Minimal) { gauges = renderGauges; nextBubble = renderBubble; }
             bool gaugesChanged = gauges != thinGauges;
             thinGauges = gauges;
-            if (next != view || nextBubble != bubble || minimalChanged || gaugesChanged)
+            Size wanted = SizeOf(next);
+            bool sizeChanged = next == view && (Math.Abs(wanted.Width - morphToW) > 0.5 || Math.Abs(wanted.Height - morphToH) > 0.5); // The name opening beside the cover widens the island in the same view
+            if (next != view || nextBubble != bubble || minimalChanged || gaugesChanged || sizeChanged)
             {
                 view = next;
                 bubble = nextBubble;
@@ -2458,9 +2460,9 @@ namespace WindowsIsland
 
         // The update status on the island, one at a time: each replaces the one before instead of queueing behind it.
         // kind: checking, downloading (a turning arrow), found (a green arrow down), uptodate (a green check that pops), failed (an amber warning)
-        internal void ShowStatus(string kind, string text, string body = null)
+        internal void ShowStatus(string kind, string text, string body = null, double seconds = 0)
         {
-            BannerItem item = new BannerItem { App = Installer.Name, Title = text, Subtitle = body, Seconds = kind == "checking" ? 30 : kind == "downloading" ? 60 : Math.Max(3, settings.AlertSeconds) };
+            BannerItem item = new BannerItem { App = Installer.Name, Title = text, Subtitle = body, Seconds = seconds > 0 ? seconds : kind == "checking" ? 30 : kind == "downloading" ? 60 : Math.Max(3, settings.AlertSeconds) };
             switch (kind)
             {
                 case "checking": item.Glyph = "\uE895"; item.GlyphBrush = White; item.Spin = true; break;
@@ -2701,7 +2703,6 @@ namespace WindowsIsland
         void ApplyCompactName()
         {
             bool show = SongNameShown;
-            MusicCompact.Width = show ? 236 : 176;
             CompactTitle.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
         }
 
@@ -3063,6 +3064,7 @@ namespace WindowsIsland
                 scale.CenterY = bottom ? panel.Height : 0;
                 // The old content slides up as it leaves and the new one comes up from below, a little
                 double slide = (incoming ? 1 : -1) * (1 - Math.Clamp(p, 0, 1)) * 9 * (bottom ? -1 : 1);
+                if (pair.Key == View.MusicCompact) panel.Width = Math.Max(90, Math.Min(w, SongNameShown ? 236 : 176));
                 Canvas.SetLeft(panel, (w - panel.Width) / 2);
                 Canvas.SetTop(panel, (bottom ? h - panel.Height : 0) + slide);
                 if (pair.Key == View.MusicExpanded || pair.Key == View.ClaudeExpanded || pair.Key == View.TimerExpanded || pair.Key == View.QuickExpanded || pair.Key == View.SystemExpanded || pair.Key == View.ExternalExpanded)
