@@ -37,6 +37,7 @@ namespace WindowsIsland
         public string FootballLeagues { get; set; } = "bra.1"; // ESPN league codes, separated by commas
         public bool ShowObs { get; set; } = true;        // OBS recording or streaming, read from OBS's own log
         public bool ShowWindowsUpdate { get; set; } = true; // Windows installing updates, and the restart that follows
+        public bool AlwaysThin { get; set; } = true; // The collapsed island is the thin line with a tiny icon of what matters most; hover to open it
         public bool MinimalMusicPosition { get; set; } = false; // The thin line fills along the song while music plays
         public bool MaximizedActivitiesThin { get; set; } = false; // With a maximized window and the thin line: activities too become the thin line (hover to see them)
         public bool ShowScreenShare { get; set; } = true; // A blue dot while the screen is shared or recorded (needs the privacy dots)

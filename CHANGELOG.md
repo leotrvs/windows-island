@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.0.1
+
+- **The thin line is the default look** ("Thin line always" in Settings, Behavior): the collapsed island is a thin line, and hovering opens it
+- **The line shows what is happening on the line itself:** a glow sweeps along it while Claude works (yellow or red as the limit fills), it pulses when Claude waits for you, a tiny equalizer plays for music, a timer, a download or the charge fill it, an alert (or OBS recording) pulses it red and "done" turns it green. The focus moon stays a small moon
+- **Privacy dots:** they follow the island much faster, with no bounce, when it grows or shrinks
+
 ## 3.0.0
 
 - **The thin line grows up:** with a maximized window (and "Activities become the line too"), the line shows a tiny icon of what matters most, in its own color: music (pink note), Claude (clay spark, yellow from 75% of the limit and red from 90%, breathing while it works, pulsing while it waits for you), timer (clock, the line empties as time runs out), an app's activity (its icon, the line fills with its progress), charging (green, the line fills with the charge) and focus (a crescent moon). Only the most important state shows, never a mix

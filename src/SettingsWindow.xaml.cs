@@ -564,6 +564,7 @@ namespace WindowsIsland
                 SegmentBar(new[] { Strings.IdlePill, Strings.IdleLine },
                     string.Equals(settings.IdleStyle, "Line", StringComparison.OrdinalIgnoreCase) ? 1 : 0,
                     i => settings.IdleStyle = idleValues[i]));
+            Toggle("\uE740", Strings.MenuAlwaysThin, Strings.HintAlwaysThin, () => settings.AlwaysThin, v => settings.AlwaysThin = v);
             string[] maxValues = { "Thin", "Normal", "Hidden" };
             Row("\uE740", Strings.MenuMaximized, Strings.HintMaximized, null,
                 SegmentBar(new[] { Strings.MaxThin, Strings.MaxNormal, Strings.MaxHidden },

@@ -269,6 +269,11 @@ namespace WindowsIsland
         public static string HintWindowsUpdate => T("Shows when Windows installs updates and when a restart is needed", "Mostra quando o Windows instala atualizações e quando precisa reiniciar", "Muestra cuándo Windows instala actualizaciones y cuándo hay que reiniciar", "Показывает установку обновлений Windows и необходимость перезагрузки");
         public static string WuInstalling => T("Installing updates", "Instalando atualizações", "Instalando actualizaciones", "Установка обновлений");
         public static string WuReboot => T("Restart to finish", "Reiniciar para concluir", "Reiniciar para terminar", "Перезагрузите для завершения");
+        public static string MenuAlwaysThin => T("Thin line always", "Linha fina sempre", "Línea fina siempre", "Всегда тонкая линия");
+        public static string HintAlwaysThin => T("The collapsed island is a thin line with a tiny icon of what matters most. Hover to open it",
+                                    "A ilha recolhida é uma linha fina com um ícone pequeno do que mais importa. Passe o mouse para abrir",
+                                    "La isla recogida es una línea fina con un icono pequeño de lo más importante. Pasa el ratón para abrirla",
+                                    "Свёрнутый остров — тонкая линия с маленьким значком самого важного. Наведите мышь, чтобы открыть");
         public static string MenuMinimalPosition => T("Song position on the line", "Posição da música na linha", "Posición de la canción en la línea", "Позиция трека на линии");
         public static string MenuMaxActivities => T("Activities become the line too", "Atividades também viram a linha", "Las actividades también son la línea", "Активности тоже становятся линией");
         public static string HintMaxActivities => T("With a maximized window, music and others stay a thin line; hover to see them",

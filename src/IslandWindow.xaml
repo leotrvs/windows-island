@@ -126,10 +126,12 @@
 
                 <!-- The thin line: a tiny icon of what is happening and a rail that fills -->
                 <Grid x:Name="MinimalPanel" Width="76" Height="16">
-                    <TextBlock x:Name="MinimalGlyph" FontSize="9" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,1,0,0" Visibility="Collapsed"/>
-                    <Border x:Name="MinimalTrack" Height="2" CornerRadius="1" VerticalAlignment="Bottom" Margin="8,0,8,2.5" Background="#26FFFFFF" Visibility="Collapsed">
-                        <Border x:Name="MinimalFill" HorizontalAlignment="Left" CornerRadius="1" Width="0" Background="White"/>
+                    <Border x:Name="MinimalBase" Height="6" VerticalAlignment="Top" CornerRadius="3" Opacity="0"/>
+                    <Border x:Name="MinimalTrack" Height="6" VerticalAlignment="Top" CornerRadius="3" Background="#26FFFFFF" Visibility="Collapsed">
+                        <Border x:Name="MinimalFill" HorizontalAlignment="Left" CornerRadius="3" Width="0" Background="White"/>
                     </Border>
+                    <StackPanel x:Name="MinimalBars" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Top" Height="6" Visibility="Collapsed"/>
+                    <TextBlock x:Name="MinimalGlyph" FontSize="9" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,2,0,0" Visibility="Collapsed"/>
                 </Grid>
 
                 <!-- A change in the music (pause, play, next, previous) while the island is a thin line -->
