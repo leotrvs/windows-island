@@ -2,6 +2,11 @@
 
 > Tradução de [CHANGELOG.md](CHANGELOG.md), que é o original em inglês.
 
+## 4.4.1
+
+- **Ajustes:** a linha de atualização em Essenciais quebra o texto em vez de cortá-lo, e tem mais espaço que o lado "Mais ajustes"
+- O cartão "Novidades" agora descreve a 4.4
+
 ## 4.4.0
 
 - **Menu da bandeja:** ícones em cada item, "Sair" virou "Fechar" em vermelho, o timer saiu dele, e o fundo segue o tema (preto no escuro, branco no claro). Ele liga e desliga a linha fina e ativa o Não perturbe da ilha (os avisos não aparecem; só o que o Claude pergunta continua aparecendo)

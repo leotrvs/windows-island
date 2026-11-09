@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.4.1
+
+- **Settings:** the update line in Essentials wraps its text instead of cutting it off, and has more room than the "More settings" side
+- The "What's new" card now describes 4.4
+
 ## 4.4.0
 
 - **Tray menu:** icons on each item, "Quit" is now a red "Close", the timer is gone from it, and the background follows the theme (black in dark, white in light). It can switch the thin line on or off and turn on Do not disturb for the island (banners stay away; only what Claude asks still shows)

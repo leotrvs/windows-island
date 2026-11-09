@@ -257,8 +257,12 @@ namespace WindowsIsland
         {
             spin = new RotateTransform();
             updateGlyph = new TextBlock { FontFamily = IconFont, FontSize = 16, Margin = new Thickness(0, 0, 14, 0), VerticalAlignment = VerticalAlignment.Center, RenderTransform = spin, RenderTransformOrigin = new Point(0.5, 0.5) };
-            updateText = new TextBlock { VerticalAlignment = VerticalAlignment.Center };
-            StackPanel line = new StackPanel { Orientation = Orientation.Horizontal, Background = Brushes.Transparent, Cursor = System.Windows.Input.Cursors.Hand };
+            updateText = new TextBlock { VerticalAlignment = VerticalAlignment.Center, TextWrapping = TextWrapping.Wrap };
+            // The text wraps inside the space it has, so a long message is never cut off
+            Grid line = new Grid { Background = Brushes.Transparent, Cursor = System.Windows.Input.Cursors.Hand };
+            line.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            line.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            Grid.SetColumn(updateText, 1);
             line.Children.Add(updateGlyph);
             line.Children.Add(updateText);
             line.MouseLeftButtonUp += (s, e) =>
@@ -559,9 +563,9 @@ namespace WindowsIsland
 
             // Not part of the list: a row of its own, split in two (more settings | updates)
             Grid split = new Grid();
-            split.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            split.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(2, GridUnitType.Star) });
             split.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1) });
-            split.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            split.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) });
             StackPanel more = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, Background = Brushes.Transparent, Cursor = System.Windows.Input.Cursors.Hand, Margin = new Thickness(0, 14, 0, 14) };
             more.Children.Add(new TextBlock { Text = "\uE713", FontFamily = IconFont, FontSize = 16, Foreground = (Brush)FindResource("Accent"), Margin = new Thickness(0, 0, 10, 0), VerticalAlignment = VerticalAlignment.Center });
             more.Children.Add(new TextBlock { Text = Strings.MoreSettings, Foreground = (Brush)FindResource("Accent"), VerticalAlignment = VerticalAlignment.Center });
@@ -577,7 +581,7 @@ namespace WindowsIsland
             Grid.SetColumn(divider, 1);
             split.Children.Add(divider);
             FrameworkElement update = MakeUpdateLine();
-            update.HorizontalAlignment = HorizontalAlignment.Center;
+            update.HorizontalAlignment = HorizontalAlignment.Stretch;
             update.VerticalAlignment = VerticalAlignment.Center;
             update.Margin = new Thickness(16, 14, 16, 14); // Room on both sides: the text does not touch the edge
             Grid.SetColumn(update, 2);
