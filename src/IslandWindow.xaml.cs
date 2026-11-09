@@ -290,8 +290,7 @@ namespace WindowsIsland
             else if (playing != musicWasPlaying) glyph = playing ? "\uE768" : "\uE769";
             musicWasPlaying = playing;
             if (glyph == null || !settings.ShowMusic) return;
-            // On the thin line every change shows; on the normal island only a new song does, and only while the name is not already there
-            if (!ThinActive && (!songChanged || settings.SongNameAlways || settings.EmptyIsland)) return;
+            if (!ThinActive) return; // The normal island shows the name in its own room (see UpdateMusic)
             PeekGlyph.Text = glyph;
             PeekTitle.Text = string.IsNullOrEmpty(title) ? Strings.UnknownTrack : title;
             musicPeekUntil = DateTime.Now.AddSeconds(2.6);
@@ -790,7 +789,7 @@ namespace WindowsIsland
             if (value == View.Banner) return new Size(Banner.Width, Banner.Height);
             if (value == View.Permission) return new Size(372, permissionHeight);
             if (value == View.SystemCompact) return new Size(monitorWidth, 34);
-            if (value == View.MusicCompact && settings.SongNameAlways) return new Size(236, 34);
+            if (value == View.MusicCompact && SongNameShown) return new Size(236, 34);
             if (value == View.Minimal && minimalHasContent) return new Size(108, 18);
             return Sizes[value];
         }
@@ -1644,7 +1643,7 @@ namespace WindowsIsland
             else if (DateTime.Now < toastUntil) next = View.Toast;
             else if (DateTime.Now < levelUntil) next = ThinActive ? View.LevelMini : View.Level;
             // The same thin line for the activities too, when asked: hover to see them
-            else if (DateTime.Now < musicPeekUntil && (ThinActive || (primary == Activity.Music && !settings.EmptyIsland && !settings.SongNameAlways))) next = View.MusicPeek;
+            else if (DateTime.Now < musicPeekUntil && ThinActive) next = View.MusicPeek;
             else if (ThinActive && primary != Activity.None) next = View.Minimal;
             else if (settings.MaximizedActivitiesThin && maximized && !IsBottom && settings.MaximizedMode == "Thin") next = View.Minimal;
             // With the system monitor on, it stays and the activity is the small bubble beside it
@@ -2689,40 +2688,97 @@ namespace WindowsIsland
             return musicHistory.Contains(title) ? -1 : 1;
         }
 
+        // What is on screen now, read when a slide reaches its middle (a cover or a title that arrives while it slides is never overwritten by an older one)
+        Brush artNow;
+        string titleNow, artistNow;
+        DateTime songNameUntil = DateTime.MinValue;
+        DispatcherTimer songNameTimer;
+        readonly Dictionary<FrameworkElement, int> swapToken = new Dictionary<FrameworkElement, int>();
+
+        bool SongNameShown { get { return settings.SongNameAlways || DateTime.Now < songNameUntil; } }
+
+        // The compact island has room for the name while it is always shown, or for a moment after the song changed
+        void ApplyCompactName()
+        {
+            bool show = SongNameShown;
+            MusicCompact.Width = show ? 236 : 176;
+            CompactTitle.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        TranslateTransform MoveOf(FrameworkElement element)
+        {
+            TranslateTransform move = element.RenderTransform as TranslateTransform;
+            if (move == null && (element.RenderTransform == null || element.RenderTransform.Value.IsIdentity))
+                element.RenderTransform = move = new TranslateTransform();
+            return move;
+        }
+
         // The old content slides out to one side and fades, the new slides in from the other
         void SlideSwap(FrameworkElement element, int direction, Action apply, int delayMs = 0)
         {
-            TranslateTransform move = element.RenderTransform as TranslateTransform;
-            if (move == null)
-            {
-                if (element.RenderTransform != null && !element.RenderTransform.Value.IsIdentity) { apply(); return; }
-                move = new TranslateTransform();
-                element.RenderTransform = move;
-            }
-            CubicEase easeIn = new CubicEase { EasingMode = EasingMode.EaseIn }, easeOut = new CubicEase { EasingMode = EasingMode.EaseOut };
+            TranslateTransform move = MoveOf(element);
+            if (move == null) { apply(); return; }
+            int token = swapToken.TryGetValue(element, out int last) ? last + 1 : 1;
+            swapToken[element] = token;
+            CubicEase easeIn = new CubicEase { EasingMode = EasingMode.EaseIn };
             TimeSpan delay = TimeSpan.FromMilliseconds(delayMs);
             DoubleAnimation away = new DoubleAnimation(0, -22 * direction, TimeSpan.FromMilliseconds(140)) { BeginTime = delay, EasingFunction = easeIn, FillBehavior = FillBehavior.HoldEnd };
             away.Completed += (s, e) =>
             {
+                if (swapToken[element] != token) return; // Another change took over
                 apply();
-                move.BeginAnimation(TranslateTransform.XProperty, new DoubleAnimation(22 * direction, 0, TimeSpan.FromMilliseconds(260)) { EasingFunction = easeOut });
-                element.BeginAnimation(OpacityProperty, new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(260)));
+                SlideIn(element, direction);
             };
             move.BeginAnimation(TranslateTransform.XProperty, away);
             element.BeginAnimation(OpacityProperty, new DoubleAnimation(1, 0, TimeSpan.FromMilliseconds(140)) { BeginTime = delay, FillBehavior = FillBehavior.HoldEnd });
         }
 
+        // Comes in from the side it is going to
+        void SlideIn(FrameworkElement element, int direction, int delayMs = 0)
+        {
+            TranslateTransform move = MoveOf(element);
+            if (move == null) return;
+            CubicEase easeOut = new CubicEase { EasingMode = EasingMode.EaseOut };
+            TimeSpan delay = TimeSpan.FromMilliseconds(delayMs);
+            move.BeginAnimation(TranslateTransform.XProperty, new DoubleAnimation(22 * direction, 0, TimeSpan.FromMilliseconds(260)) { BeginTime = delay, EasingFunction = easeOut, FillBehavior = FillBehavior.Stop });
+            element.BeginAnimation(OpacityProperty, new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(260)) { BeginTime = delay, FillBehavior = FillBehavior.Stop });
+        }
+
+        // After a moment the name goes away and the island is as small as before
+        void StartSongNameTimer()
+        {
+            if (songNameTimer == null)
+            {
+                songNameTimer = new DispatcherTimer();
+                songNameTimer.Tick += (s, e) =>
+                {
+                    songNameTimer.Stop();
+                    if (settings.SongNameAlways) return;
+                    DoubleAnimation fade = new DoubleAnimation(1, 0, TimeSpan.FromMilliseconds(160));
+                    fade.Completed += (s2, e2) =>
+                    {
+                        songNameUntil = DateTime.MinValue;
+                        CompactTitle.BeginAnimation(OpacityProperty, null);
+                        CompactTitle.Opacity = 1;
+                        ApplyCompactName();
+                        Recompute();
+                    };
+                    CompactTitle.BeginAnimation(OpacityProperty, fade);
+                };
+            }
+            songNameTimer.Stop();
+            songNameTimer.Interval = TimeSpan.FromSeconds(2.8);
+            songNameTimer.Start();
+        }
+
         void UpdateMusic()
         {
             string shownTitle = string.IsNullOrEmpty(media.Title) ? Strings.UnknownTrack : media.Title;
-            string shownArtist = media.Artist;
             bool songChanged = songShown != null && songShown != shownTitle && !string.IsNullOrEmpty(media.Title);
             songShown = shownTitle;
             int way = songChanged ? SongDirection(media.Title) : 1;
             bool expandedSeen = songChanged && presence[MusicExpanded].Value > 0.5;
             bool compactSeen = songChanged && presence[MusicCompact].Value > 0.5;
-            MusicCompact.Width = settings.SongNameAlways ? 236 : 176;
-            CompactTitle.Visibility = settings.SongNameAlways ? Visibility.Visible : Visibility.Collapsed;
 
             ImageBrush artBrush = null;
             if (media.Art != null)
@@ -2730,32 +2786,50 @@ namespace WindowsIsland
                 artBrush = new ImageBrush(media.Art) { Stretch = Stretch.UniformToFill };
                 RenderOptions.SetBitmapScalingMode(artBrush, BitmapScalingMode.HighQuality); // Small icons stay smooth, not blocky
             }
-            Brush art = artBrush != null ? Freeze(artBrush) : (Brush)FindResource("ArtPlaceholder");
+            artNow = artBrush != null ? Freeze(artBrush) : (Brush)FindResource("ArtPlaceholder");
+            titleNow = shownTitle;
+            artistNow = media.Artist;
+
+            // A new song on the normal island: the name opens beside the cover for a moment, in the room the island already has
+            bool reveal = compactSeen && settings.ShowMusic && !ThinActive && !settings.SongNameAlways && !settings.EmptyIsland;
+            if (reveal)
+            {
+                songNameUntil = DateTime.Now.AddSeconds(2.8);
+                StartSongNameTimer();
+            }
+            ApplyCompactName();
+
             if (compactSeen)
             {
-                SlideSwap(CompactArt, way, () => CompactArt.Background = art);
-                if (settings.SongNameAlways) SlideSwap(CompactTitle, way, () => CompactTitle.Text = shownTitle, 30);
-                else CompactTitle.Text = shownTitle;
+                SlideSwap(CompactArt, way, () => CompactArt.Background = artNow);
+                if (reveal)
+                {
+                    CompactTitle.Text = titleNow;
+                    CompactTitle.BeginAnimation(OpacityProperty, null);
+                    SlideIn(CompactTitle, way, 60);
+                }
+                else if (settings.SongNameAlways) SlideSwap(CompactTitle, way, () => CompactTitle.Text = titleNow, 30);
+                else CompactTitle.Text = titleNow;
             }
             else
             {
-                CompactArt.Background = art;
-                CompactTitle.Text = shownTitle;
+                CompactArt.Background = artNow;
+                CompactTitle.Text = titleNow;
             }
             if (expandedSeen)
             {
-                SlideSwap(ExpandedArt, way, () => ExpandedArt.Background = art);
-                SlideSwap(TrackTitle, way, () => TrackTitle.Text = shownTitle, 30);
-                SlideSwap(TrackArtist, way, () => TrackArtist.Text = shownArtist, 60);
+                SlideSwap(ExpandedArt, way, () => ExpandedArt.Background = artNow);
+                SlideSwap(TrackTitle, way, () => TrackTitle.Text = titleNow, 30);
+                SlideSwap(TrackArtist, way, () => TrackArtist.Text = artistNow, 60);
             }
             else
             {
-                ExpandedArt.Background = art;
-                TrackTitle.Text = shownTitle;
-                TrackArtist.Text = shownArtist;
+                ExpandedArt.Background = artNow;
+                TrackTitle.Text = titleNow;
+                TrackArtist.Text = artistNow;
             }
-            BubbleArt.Fill = art;
-            PeekArt.Background = art;
+            BubbleArt.Fill = artNow;
+            PeekArt.Background = artNow;
             if (songChanged && presence[MusicCompact].Value > 0.5)
             {
                 // The island gives a small nudge when the song changes

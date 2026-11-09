@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.6.1
+
+- **The song's name, in the island's own room:** on the normal island the name no longer swaps the island for another shape with a symbol. The island opens a little wider, the cover slides out and the new one slides in, the name comes in beside it, and after a moment the name fades and the island goes back to its size. It works with the name always shown too
+- **Fewer glitches when a song changes:** a cover or a title that arrives while the slide is in progress is no longer overwritten by the older one, and two quick changes do not play on top of each other
+
 ## 4.6.0
 
 - **The song's name:** when the song changes, the cover and the name slide to one side (the direction follows next or previous), the island gives a small nudge, and on the normal island the name shows for a moment beside the cover and then goes away. New in Settings, Activities: **Song name always shown** (off by default)

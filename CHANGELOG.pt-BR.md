@@ -2,6 +2,11 @@
 
 > Tradução de [CHANGELOG.md](CHANGELOG.md), que é o original em inglês.
 
+## 4.6.1
+
+- **O nome da música, no espaço da própria ilha:** na ilha normal o nome não troca mais a ilha por outra forma com um símbolo. A ilha abre um pouco mais, a capa desliza para fora e a nova desliza para dentro, o nome entra ao lado, e depois de um momento o nome some e a ilha volta ao tamanho dela. Funciona também com o nome sempre visível
+- **Menos bugs na troca de música:** uma capa ou um título que chega durante o deslize não é mais sobrescrito pelo antigo, e duas trocas seguidas não tocam uma em cima da outra
+
 ## 4.6.0
 
 - **O nome da música:** quando a música muda, a capa e o nome deslizam para um lado (a direção segue próxima ou anterior), a ilha dá um pequeno empurrão, e na ilha normal o nome aparece por um momento ao lado da capa e depois some. Novo em Ajustes, Atividades: **Nome da música sempre visível** (desligado por padrão)
