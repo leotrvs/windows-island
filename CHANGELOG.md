@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.0.12
+
+- **Fixed a crash:** typing in the Settings search box closed the app. Every row is now built as usual and the ones that do not match are only hidden
+- **Settings reorganized:** the thin line, the system monitor and the sizes are now in Appearance (the thin line group opens first); Behavior keeps only how the island behaves (hover, fullscreen, hotkey, times, pages). With "Thin line always" on, the options that only matter without it are hidden
+
 ## 3.0.11
 
 - **Screen recording stays in sight:** a red dot for a recording (OBS or the Game Bar) sits with the microphone and camera dots (inside the line on the thin line), so it no longer disappears when music and Claude take the island's two places

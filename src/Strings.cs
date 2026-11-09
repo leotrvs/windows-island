@@ -274,6 +274,8 @@ namespace WindowsIsland
                                     "A ilha recolhida é uma linha fina com um ícone pequeno do que mais importa. Passe o mouse para abrir",
                                     "La isla recogida es una línea fina con un icono pequeño de lo más importante. Pasa el ratón para abrirla",
                                     "Свёрнутый остров — тонкая линия с маленьким значком самого важного. Наведите мышь, чтобы открыть");
+        public static string GroupThinLine => T("Collapsed island (thin line)", "Ilha recolhida (linha fina)", "Isla recogida (línea fina)", "Свёрнутый остров (тонкая линия)");
+        public static string GroupMonitor => T("System monitor", "Monitor do sistema", "Monitor del sistema", "Монитор системы");
         public static string MenuMinimalPosition => T("Song position on the line", "Posição da música na linha", "Posición de la canción en la línea", "Позиция трека на линии");
         public static string MenuMaxActivities => T("Activities become the line too", "Atividades também viram a linha", "Las actividades también son la línea", "Активности тоже становятся линией");
         public static string HintMaxActivities => T("With a maximized window, music and others stay a thin line; hover to see them",

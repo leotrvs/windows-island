@@ -555,26 +555,14 @@ namespace WindowsIsland
             Dispatcher.BeginInvoke(new Action(Rebuild), DispatcherPriority.Background);
         }
 
+        // How the island behaves: when it opens, when it steps away, the keyboard shortcut, the times and the pages.
         void BuildBehavior()
         {
             Section(Strings.SectionBehavior);
-            Toggle("\uE7B3", Strings.MenuEmptyIsland, Strings.HintEmptyIsland, () => settings.EmptyIsland, v => settings.EmptyIsland = v);
-            Toggle("\uE7F8", Strings.MenuIdlePill, null, () => settings.ShowIdlePill, v => settings.ShowIdlePill = v);
             Toggle("\uE7C9", Strings.MenuHover, null, () => settings.ExpandOnHover, v => settings.ExpandOnHover = v);
             Toggle("\uE740", Strings.MenuFullscreen, null, () => settings.HideInFullscreen, v => settings.HideInFullscreen = v);
-            string[] idleValues = { "Pill", "Line" };
-            Row("\uE7F8", Strings.MenuIdleStyle, null, null,
-                SegmentBar(new[] { Strings.IdlePill, Strings.IdleLine },
-                    string.Equals(settings.IdleStyle, "Line", StringComparison.OrdinalIgnoreCase) ? 1 : 0,
-                    i => settings.IdleStyle = idleValues[i]));
-            Toggle("\uE740", Strings.MenuAlwaysThin, Strings.HintAlwaysThin, () => settings.AlwaysThin, v => settings.AlwaysThin = v);
-            string[] maxValues = { "Thin", "Normal", "Hidden" };
-            Row("\uE740", Strings.MenuMaximized, Strings.HintMaximized, null,
-                SegmentBar(new[] { Strings.MaxThin, Strings.MaxNormal, Strings.MaxHidden },
-                    Math.Max(0, Array.FindIndex(maxValues, v => string.Equals(v, settings.MaximizedMode, StringComparison.OrdinalIgnoreCase))),
-                    i => settings.MaximizedMode = maxValues[i]));
-            Toggle("\uE8D6", Strings.MenuMinimalPosition, null, () => settings.MinimalMusicPosition, v => settings.MinimalMusicPosition = v);
-            Toggle("\uE740", Strings.MenuMaxActivities, Strings.HintMaxActivities, () => settings.MaximizedActivitiesThin, v => settings.MaximizedActivitiesThin = v);
+            Toggle("\uE7B3", Strings.MenuEmptyIsland, Strings.HintEmptyIsland, () => settings.EmptyIsland, v => settings.EmptyIsland = v);
+            Toggle("\uE7F8", Strings.MenuIdlePill, null, () => settings.ShowIdlePill, v => settings.ShowIdlePill = v);
             Toggle("\uE765", Strings.MenuHotkey, Strings.HintHotkey, () => settings.HotkeyEnabled, v => { settings.HotkeyEnabled = v; Dispatcher.BeginInvoke(new Action(Rebuild), DispatcherPriority.Background); });
             if (settings.HotkeyEnabled) HotkeyRow();
             Group("\uE916", Strings.GroupTimes, () =>
@@ -600,38 +588,67 @@ namespace WindowsIsland
             }
         }
 
+        // How the island looks: the theme, where it sits, the thin line when it is collapsed, the system monitor and the sizes.
         void BuildAppearance()
         {
             Section(Strings.SectionAppearance);
-            Segmented("\uE745", Strings.MenuPosition, new[] { Strings.MenuTop, Strings.MenuBottom },
-                () => string.Equals(settings.Position, "Bottom", StringComparison.OrdinalIgnoreCase) ? 1 : 0,
-                i => settings.Position = i == 1 ? "Bottom" : "Top");
-            MonitorRow();
             string[] themeValues = { "Auto", "Dark", "Light" };
             Segmented("\uE790", Strings.MenuTheme, new[] { Strings.ThemeAuto, Strings.ThemeDark, Strings.ThemeLight },
                 () => Math.Max(0, Array.FindIndex(themeValues, v => string.Equals(v, settings.Theme, StringComparison.OrdinalIgnoreCase))),
                 i => { settings.Theme = themeValues[i]; Dispatcher.BeginInvoke(new Action(ChangeTheme), DispatcherPriority.Background); });
+            Segmented("\uE745", Strings.MenuPosition, new[] { Strings.MenuTop, Strings.MenuBottom },
+                () => string.Equals(settings.Position, "Bottom", StringComparison.OrdinalIgnoreCase) ? 1 : 0,
+                i => settings.Position = i == 1 ? "Bottom" : "Top");
+            MonitorRow();
             string[] ringValues = { "Blue", "Green", "Purple" };
             Segmented("\uE790", Strings.RingColorLabel, new[] { Strings.ColorBlue, Strings.ColorGreen, Strings.ColorPurple },
                 () => Math.Max(0, Array.FindIndex(ringValues, v => string.Equals(v, settings.RingColor, StringComparison.OrdinalIgnoreCase))),
                 i => settings.RingColor = ringValues[i]);
-            Toggle("\uE9D9", Strings.MenuSystemMonitor, Strings.HintSystemMonitor, () => settings.SystemMonitor, v =>
-            {
-                settings.SystemMonitor = v;
-                Dispatcher.BeginInvoke(new Action(Rebuild), DispatcherPriority.Background);
-            });
-            if (settings.SystemMonitor)
-            {
-                Toggle("\uE7C9", Strings.MenuMonitorKeeps, Strings.HintMonitorKeeps, () => settings.MonitorKeepsPlace, v => settings.MonitorKeepsPlace = v);
-                string[] monitorValues = { "Rings", "Bars", "Numbers" };
-                Segmented("\uE790", Strings.MonitorStyleLabel, new[] { Strings.StyleRings, Strings.StyleBars, Strings.StyleNumbers },
-                    () => Math.Max(0, Array.FindIndex(monitorValues, v => string.Equals(v, settings.MonitorStyle, StringComparison.OrdinalIgnoreCase))),
-                    i => settings.MonitorStyle = monitorValues[i]);
-            }
             string[] bannerValues = { "Small", "Normal" };
             Segmented("\uE8A1", Strings.BannerSizeLabel, new[] { Strings.BannerSmall, Strings.BannerNormal },
                 () => string.Equals(settings.BannerSize, "Normal", StringComparison.OrdinalIgnoreCase) ? 1 : 0,
                 i => settings.BannerSize = bannerValues[i]);
+
+            // The collapsed island: the thin line, when it shows and what it shows
+            Group("\uE740", Strings.GroupThinLine, () =>
+            {
+                Toggle("\uE740", Strings.MenuAlwaysThin, Strings.HintAlwaysThin, () => settings.AlwaysThin, v => { settings.AlwaysThin = v; Dispatcher.BeginInvoke(new Action(Rebuild), DispatcherPriority.Background); });
+                if (!settings.AlwaysThin)
+                {
+                    string[] idleValues = { "Pill", "Line" };
+                    Row("\uE7F8", Strings.MenuIdleStyle, null, null,
+                        SegmentBar(new[] { Strings.IdlePill, Strings.IdleLine },
+                            string.Equals(settings.IdleStyle, "Line", StringComparison.OrdinalIgnoreCase) ? 1 : 0,
+                            i => settings.IdleStyle = idleValues[i]));
+                    string[] maxValues = { "Thin", "Normal", "Hidden" };
+                    Row("\uE740", Strings.MenuMaximized, Strings.HintMaximized, null,
+                        SegmentBar(new[] { Strings.MaxThin, Strings.MaxNormal, Strings.MaxHidden },
+                            Math.Max(0, Array.FindIndex(maxValues, v => string.Equals(v, settings.MaximizedMode, StringComparison.OrdinalIgnoreCase))),
+                            i => { settings.MaximizedMode = maxValues[i]; Dispatcher.BeginInvoke(new Action(Rebuild), DispatcherPriority.Background); }));
+                    if (string.Equals(settings.MaximizedMode, "Thin", StringComparison.OrdinalIgnoreCase))
+                        Toggle("\uE740", Strings.MenuMaxActivities, Strings.HintMaxActivities, () => settings.MaximizedActivitiesThin, v => settings.MaximizedActivitiesThin = v);
+                }
+                Toggle("\uE8D6", Strings.MenuMinimalPosition, null, () => settings.MinimalMusicPosition, v => settings.MinimalMusicPosition = v);
+            }, true);
+
+            // Processor and memory
+            Group("\uE9D9", Strings.GroupMonitor, () =>
+            {
+                Toggle("\uE9D9", Strings.MenuSystemMonitor, Strings.HintSystemMonitor, () => settings.SystemMonitor, v =>
+                {
+                    settings.SystemMonitor = v;
+                    Dispatcher.BeginInvoke(new Action(Rebuild), DispatcherPriority.Background);
+                });
+                if (settings.SystemMonitor)
+                {
+                    Toggle("\uE7C9", Strings.MenuMonitorKeeps, Strings.HintMonitorKeeps, () => settings.MonitorKeepsPlace, v => settings.MonitorKeepsPlace = v);
+                    string[] monitorValues = { "Rings", "Bars", "Numbers" };
+                    Segmented("\uE790", Strings.MonitorStyleLabel, new[] { Strings.StyleRings, Strings.StyleBars, Strings.StyleNumbers },
+                        () => Math.Max(0, Array.FindIndex(monitorValues, v => string.Equals(v, settings.MonitorStyle, StringComparison.OrdinalIgnoreCase))),
+                        i => settings.MonitorStyle = monitorValues[i]);
+                }
+            });
+
             Group("\uE740", Strings.GroupSizePos, () =>
             {
                 SliderRow("\uE740", Strings.CollapsedSize, Settings.MinScale, Settings.MaxScale, 0.05, Percent, () => settings.CollapsedScale, v => settings.CollapsedScale = v, false);
@@ -692,16 +709,49 @@ namespace WindowsIsland
             Content.Children.Add(footer);
         }
 
-        string filter = "";       // What the search box holds; the rows that do not match are left out
-        Border sectionBorder;     // The card and title of the section being built, shown only when a row is added while searching
-        TextBlock sectionTitle;
+        string filter = "";       // What the search box holds
 
         void Rebuild()
         {
             Content.Children.Clear();
             filter = (SearchBox.Text ?? "").Trim();
             Build(filter.Length > 0 ? AllTabs : tab);
+            if (filter.Length > 0) ApplyFilter();
             FitSoon();
+        }
+
+        // Searching: every row is built as usual, then the ones that do not match are hidden (and the cards and folds that
+        // end up empty). The rows carry their label and hint in their Tag.
+        void ApplyFilter()
+        {
+            for (int i = 0; i < Content.Children.Count; i++)
+            {
+                Border border = Content.Children[i] as Border;
+                StackPanel inner = border == null ? null : border.Child as StackPanel;
+                if (inner == null) continue;
+                bool any = FilterPanel(inner);
+                border.Visibility = any ? Visibility.Visible : Visibility.Collapsed;
+                if (i > 0 && Content.Children[i - 1] is TextBlock) Content.Children[i - 1].Visibility = any ? Visibility.Visible : Visibility.Collapsed;
+            }
+        }
+
+        bool FilterPanel(StackPanel panel)
+        {
+            bool any = false;
+            UIElement previous = null;
+            foreach (UIElement child in panel.Children)
+            {
+                bool show = false;
+                StackPanel row = child as StackPanel;
+                Border fold = child as Border;
+                if (row != null && row.Tag is string) show = Matches(row.Tag as string, null);
+                else if (fold != null && fold.Child is StackPanel) show = FilterPanel((StackPanel)fold.Child);
+                child.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
+                if (fold != null && show && previous != null) previous.Visibility = Visibility.Visible; // The header of a fold with a match
+                any |= show;
+                previous = child;
+            }
+            return any;
         }
 
         bool Matches(string label, string hint)
@@ -790,23 +840,18 @@ namespace WindowsIsland
                 Margin = new Thickness(0, !showTitles && Content.Children.Count > 0 ? 14 : 0, 0, 0), // Cards stacked without a title keep a gap
                 Child = card,
             };
-            sectionTitle = showTitles && Content.Children.Count > 0 ? Content.Children[Content.Children.Count - 1] as TextBlock : null;
             Content.Children.Add(border);
-            sectionBorder = border;
-            if (filter.Length > 0)
-            {
-                border.Visibility = Visibility.Collapsed; // Shown by its first matching row
-                if (sectionTitle != null) sectionTitle.Visibility = Visibility.Collapsed;
-            }
         }
 
         static readonly System.Collections.Generic.HashSet<string> openGroups = new System.Collections.Generic.HashSet<string>(); // Remembered while the app runs
 
         // A row with an arrow that folds away the rows inside it, so a tab shows the main choices first.
-        void Group(string icon, string title, Action build)
+        static readonly System.Collections.Generic.HashSet<string> openedOnce = new System.Collections.Generic.HashSet<string>();
+
+        void Group(string icon, string title, Action build, bool openByDefault = false)
         {
-            if (filter.Length > 0) { build(); return; } // Searching: the rows that match, without the folds
-            bool open = openGroups.Contains(title);
+            if (openByDefault && openedOnce.Add(title)) openGroups.Add(title);
+            bool open = openGroups.Contains(title) || filter.Length > 0; // Searching opens every fold; the rows that do not match are hidden
             TextBlock arrow = new TextBlock
             {
                 Text = "\uE70D",
@@ -854,12 +899,7 @@ namespace WindowsIsland
         // One row: label (and hint) on the left, a control on the right, a hairline above all but the first.
         void Row(string icon, string label, string hint, UIElement control, UIElement below = null, UIElement left = null)
         {
-            if (filter.Length > 0)
-            {
-                if (!Matches(label, hint)) return;
-                if (sectionBorder != null) sectionBorder.Visibility = Visibility.Visible;
-                if (sectionTitle != null) sectionTitle.Visibility = Visibility.Visible;
-            }
+
             Grid grid = new Grid { Margin = new Thickness(14, 10, 14, 10), MinHeight = 30 };
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
@@ -917,7 +957,7 @@ namespace WindowsIsland
                 grid.Children.Add(control);
             }
 
-            StackPanel row = new StackPanel();
+            StackPanel row = new StackPanel { Tag = (label ?? "") + "\n" + (hint ?? "") };
             if (card.Children.Count > 0)
                 row.Children.Add(new Border { Height = 1, Background = (Brush)FindResource("Separator"), Margin = new Thickness(16, 0, 0, 0), SnapsToDevicePixels = true });
             row.Children.Add(grid);

@@ -259,6 +259,9 @@ namespace WindowsIsland
                         window.RenderStates(render, suffix);
                         SettingsWindow page = new SettingsWindow(new Settings { Theme = Environment.GetEnvironmentVariable("ISLAND_PREVIEW_THEME") ?? "Dark" }, () => { }, null, () => { });
                         page.SaveSnapshot(System.IO.Path.Combine(render, "settings" + suffix + ".png"));
+                        // The search box must never break the page: try a few words (and empty it again)
+                        foreach (string term in new[] { "a", "di", "steam", "zzz", "linha", "thin", "Claude", "é", "  ", "(" }) page.SearchBox.Text = term;
+                        page.SearchBox.Text = "";
                         Shutdown();
                     }));
                     window.Show();
