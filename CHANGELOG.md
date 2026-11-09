@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.4.2
+
+- **Update notices on the island:** no more gray bell. Looking and downloading show the turning arrow, a new version a green arrow, "up to date" a green check that pops in, and a failure an amber warning. Each notice replaces the one before instead of waiting behind it
+
 ## 4.4.1
 
 - **Settings:** the update line in Essentials wraps its text instead of cutting it off, and has more room than the "More settings" side

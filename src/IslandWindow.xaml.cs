@@ -2061,6 +2061,8 @@ namespace WindowsIsland
             public string Subtitle;
             public double Seconds;
             public Action OnClick;     // A banner that asks: a click answers yes
+            public bool Spin;          // The glyph turns (looking, downloading)
+            public bool Pop;           // The glyph pops in (done)
         }
 
         readonly Queue<BannerItem> banners = new Queue<BannerItem>();
@@ -2366,6 +2368,24 @@ namespace WindowsIsland
             Enqueue(item, true);
         }
 
+        // The update status on the island, one at a time: each replaces the one before instead of queueing behind it.
+        // kind: checking, downloading (a turning arrow), found (a green arrow down), uptodate (a green check that pops), failed (an amber warning)
+        internal void ShowStatus(string kind, string text)
+        {
+            BannerItem item = new BannerItem { App = Installer.Name, Title = text, Seconds = kind == "checking" ? 30 : kind == "downloading" ? 60 : Math.Max(3, settings.AlertSeconds) };
+            switch (kind)
+            {
+                case "checking": item.Glyph = "\uE895"; item.GlyphBrush = White; item.Spin = true; break;
+                case "downloading": item.Glyph = "\uE895"; item.GlyphBrush = Green; item.Spin = true; break;
+                case "found": item.Glyph = "\uE896"; item.GlyphBrush = Green; break;
+                case "uptodate": item.Glyph = "\uE73E"; item.GlyphBrush = Green; item.Pop = true; break;
+                default: item.Glyph = "\uE7BA"; item.GlyphBrush = Amber; break;
+            }
+            banners.Clear();
+            bannerUntil = DateTime.MinValue;
+            Enqueue(item, true);
+        }
+
         internal void ShowSystemBanner(string title, string body, string kind = null)
         {
             BannerItem item = new BannerItem { App = Installer.Name, Title = title, Subtitle = body, Seconds = settings.AlertSeconds };
@@ -2419,6 +2439,23 @@ namespace WindowsIsland
             {
                 BannerGlyph.Text = item.Glyph;
                 BannerGlyph.Foreground = item.GlyphBrush ?? White;
+                BannerGlyph.RenderTransformOrigin = new Point(0.5, 0.5);
+                BannerGlyph.RenderTransform = Transform.Identity;
+                if (item.Spin)
+                {
+                    RotateTransform turn = new RotateTransform();
+                    turn.BeginAnimation(RotateTransform.AngleProperty, new System.Windows.Media.Animation.DoubleAnimation(0, 360, TimeSpan.FromSeconds(1)) { RepeatBehavior = System.Windows.Media.Animation.RepeatBehavior.Forever });
+                    BannerGlyph.RenderTransform = turn;
+                }
+                else if (item.Pop)
+                {
+                    ScaleTransform pop = new ScaleTransform(0.2, 0.2);
+                    System.Windows.Media.Animation.DoubleAnimation grow = new System.Windows.Media.Animation.DoubleAnimation(0.2, 1, TimeSpan.FromMilliseconds(420))
+                    { EasingFunction = new System.Windows.Media.Animation.BackEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut, Amplitude = 0.8 } };
+                    pop.BeginAnimation(ScaleTransform.ScaleXProperty, grow);
+                    pop.BeginAnimation(ScaleTransform.ScaleYProperty, grow);
+                    BannerGlyph.RenderTransform = pop;
+                }
             }
             bool appIcon = item.Icon != null && !item.FromClaude && !item.FromCodex && !glyph;
             BannerAppIcon.Visibility = appIcon ? Visibility.Visible : Visibility.Collapsed;

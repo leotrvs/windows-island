@@ -2,6 +2,10 @@
 
 > Tradução de [CHANGELOG.md](CHANGELOG.md), que é o original em inglês.
 
+## 4.4.2
+
+- **Avisos de atualização na ilha:** acabou o sino cinza. Procurar e baixar mostram a seta girando, uma versão nova uma seta verde, "atualizado" um visto verde que aparece com um pulinho, e uma falha um alerta âmbar. Cada aviso substitui o anterior em vez de esperar na fila
+
 ## 4.4.1
 
 - **Ajustes:** a linha de atualização em Essenciais quebra o texto em vez de cortá-lo, e tem mais espaço que o lado "Mais ajustes"

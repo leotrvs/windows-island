@@ -414,6 +414,7 @@ namespace WindowsIsland
             {
                 _ = updates.CheckFromMenuAsync();
             }, () => Shutdown(), timer);
+            updates.Status = (kind, text) => MainIsland?.ShowStatus(kind, text);
             updates.Ask = (version, yes) => MainIsland.ShowQuestion(Strings.UpdateAskTitle(version), Strings.UpdateAskBody, yes);
             if (dev && Array.IndexOf(e.Args, "--show-menu") >= 0) Dispatcher.BeginInvoke(new Action(() => tray.ShowMenu()), DispatcherPriority.Background); // For looking at the tray menu
             if (sample) return;

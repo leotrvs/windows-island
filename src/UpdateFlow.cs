@@ -18,6 +18,7 @@ namespace WindowsIsland
         readonly Func<bool> islandBusy; // Never restart under the user's mouse
         readonly Action quit;
         readonly Action<string> say;    // A message on the island
+        public Action<string, string> Status; // The update status on the island: a kind (checking, downloading, found, uptodate, failed) and a text
         public Action<string, Action> Ask; // A question on the island: the version, and what to do when the user says yes
         readonly DispatcherTimer settle;
         UpdateInfo found;
@@ -79,6 +80,11 @@ namespace WindowsIsland
             }
         }
 
+        void Tell(string kind, string text)
+        {
+            if (Status != null) Status(kind, text); else say(text);
+        }
+
         // From the tray menu: look in the background and, when there is a new version, ask on the island before downloading.
         public async Task CheckFromMenuAsync()
         {
@@ -88,7 +94,7 @@ namespace WindowsIsland
             Tuple<UpdateResult, UpdateInfo> check;
             try
             {
-                say(Strings.UpdateChecking);
+                Tell("checking", Strings.UpdateChecking);
                 check = await Updater.CheckAsync();
             }
             finally
@@ -99,20 +105,22 @@ namespace WindowsIsland
             {
                 found = check.Item2;
                 Version = check.Item2.Version;
-                if (Ask != null) Ask(Version, () => { _ = InstallAsync(); });
-                else await InstallAsync();
+                if (Ask != null) Ask(Version, () => { _ = InstallAsync(true); });
+                else await InstallAsync(true);
             }
-            else say(check.Item1 == UpdateResult.UpToDate ? Strings.UpToDate : Strings.UpdateFailed);
+            else if (check.Item1 == UpdateResult.UpToDate) Tell("uptodate", Strings.UpToDate);
+            else Tell("failed", Strings.UpdateFailed);
         }
 
         // Downloads the update that was found, checks it, and restarts into it.
-        public async Task InstallAsync()
+        public async Task InstallAsync(bool announce = false)
         {
             if (working || found == null) return;
             working = true;
             try
             {
                 Set(Phase.Downloading);
+                if (announce) Tell("downloading", Strings.UpdateDownloading);
                 if (await Updater.DownloadVerifiedAsync(found))
                 {
                     while (islandBusy()) await Task.Delay(2000);
@@ -123,6 +131,7 @@ namespace WindowsIsland
                     }
                 }
                 Set(Phase.Failed);
+                if (announce) Tell("failed", Strings.UpdateFailed);
             }
             finally
             {
