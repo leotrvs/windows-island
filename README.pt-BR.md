@@ -37,7 +37,7 @@ Uma Dynamic Island para o Windows. Música, Claude Code, os limites de uso e sua
 - **Uso do Claude:** anéis dos limites de **5 horas** e **semanal**, com o horário em que renovam
 - **Codex:** atividade ao vivo enquanto o Codex trabalha, os limites de 5 horas e semanal, e um aviso quando ele termina
 - **Páginas:** com a ilha expandida, role o mouse sobre ela ou clique nos pontinhos para alternar entre música, Claude e timer, que também tem seus botões ali
-- **Timer, cronômetro e Pomodoro** (ciclos de foco e pausa): inicie um pelo menu da bandeja; ele aparece como atividade ao vivo e avisa quando o tempo acaba
+- **Timer, cronômetro e Pomodoro** (ciclos de foco e pausa): inicie um pela página do Timer na ilha; ele aparece como atividade ao vivo e avisa quando o tempo acaba
 - **Pontos de microfone e câmera:** laranja com o microfone em uso, verde com a câmera, como no iPhone
 - **Bateria** em notebooks: aparece como atividade ao carregar, mais avisos de carregador conectado ou removido, bateria baixa e carregada
 - **Nomes dos apps nos pontos:** veja qual app usa o microfone ou a câmera ao passar o mouse sobre a ilha
@@ -46,7 +46,7 @@ Uma Dynamic Island para o Windows. Música, Claude Code, os limites de uso e sua
 - **Mais atividades ao vivo:** OBS gravando, atualizações do Windows, downloads do navegador (com a extensão) e o placar ao vivo do seu time (desligado por padrão), além de uma linha fina mais rica, com um ícone pequeno do que mais importa
 - **Discord mudo ou ensurdecido (experimental, desligado por padrão):** um microfone cortado ou um fone cortado ao lado da ilha enquanto você está mudo no Discord, não importa como se mutou. Precisa de um app seu no Discord, veja [docs/DISCORD.md](docs/DISCORD.md)
 - **Ajustes claro ou escuro:** a janela de Ajustes pode seguir o tema do Windows ou ficar no claro ou no escuro; a ilha em si é sempre preta
-- **Sua ordem e seus tempos:** escolha a ordem das páginas, quais avisos de limite mostrar (75%, 90%, 100%, renovado) e quanto tempo ficam os avisos, as notificações e os avisos de limite
+- **Sua ordem e seus tempos:** arraste as páginas para a ordem que quiser, quais avisos de limite mostrar (75%, 90%, 100%, renovado) e quanto tempo ficam os avisos, as notificações e os avisos de limite
 - **Barra de volume e brilho**, avisos de **Bluetooth, USB e rede** e uma lua para **Não perturbe**
 - **Página de relógio e sistema** com hora, data, carga do processador e da memória
 - **Monitor do sistema** (desligado por padrão): mantém a carga do processador e da memória na ilha quando nada mais está acontecendo, em anéis, barras ou números
@@ -146,7 +146,7 @@ Para testar sem instalar, rode `WindowsIsland.exe --portable`.
 1. **Passe o mouse** sobre a ilha para expandir, ou **clique** nela. Tire o mouse e ela recolhe.
 2. **Clique** na barra de progresso para ir até aquele ponto da música.
 3. **Clique** num aviso ou notificação para dispensar.
-4. **Clique** no ícone da bandeja, ou abra o atalho do Windows Island com ele rodando, para abrir os **Ajustes**. Clique com o botão direito no ícone para as ações rápidas e **Sair**. Clique de novo no ícone da bandeja para fechar os Ajustes.
+4. **Clique** no ícone da bandeja, ou abra o atalho do Windows Island com ele rodando, para abrir os **Ajustes**. Clique com o botão direito no ícone para um menu com a linha fina, o Não perturbe da ilha (os avisos não aparecem; só o que o Claude pergunta continua aparecendo), a ilha vazia, **Procurar atualizações** e um **Fechar** em vermelho. Clique de novo no ícone da bandeja para fechar os Ajustes.
 
 <img src="docs/images/settings-pt.png" alt="A janela de ajustes" width="900">
 
@@ -192,7 +192,7 @@ Detalhes em [SECURITY.md](docs/SECURITY.pt-BR.md).
 
 O histórico completo de mudanças está em [CHANGELOG.pt-BR.md](CHANGELOG.pt-BR.md) (português) e [CHANGELOG.md](CHANGELOG.md) (inglês, o original).
 
-A cada hora a ilha confere a última release do GitHub. Ela só instala uma atualização se a assinatura digital bater com a chave embutida no app e o hash do arquivo bater com a lista assinada, então um arquivo adulterado é recusado. Ela reinicia na versão nova quando você não está usando a ilha e mostra um aviso rápido. Desligue em **Atualizações automáticas** no menu da bandeja, onde **Procurar atualizações** faz uma verificação na hora.
+A cada hora a ilha confere a última release do GitHub. Ela só instala uma atualização se a assinatura digital bater com a chave embutida no app e o hash do arquivo bater com a lista assinada, então um arquivo adulterado é recusado. Ela reinicia na versão nova quando você não está usando a ilha e mostra um aviso rápido. Desligue em **Atualizações automáticas** nos Ajustes. **Procurar atualizações** no menu da bandeja procura em segundo plano e, se houver versão nova, a ilha pergunta: toque nela para baixar, conferir e reiniciar.
 
 ## Desinstalar
 

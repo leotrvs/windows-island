@@ -37,7 +37,7 @@ A Dynamic Island for Windows. Music, Claude Code, its usage limits and your noti
 - **Claude usage:** rings for the **5-hour** and **weekly** limits, with reset times
 - **Codex:** a live activity while Codex works, its 5-hour and weekly limits, and an alert when it finishes
 - **Pages:** when the island is expanded, scroll over it or click the dots to switch between music, Claude and the timer, which also has its own buttons there
-- **Timer, stopwatch and Pomodoro** (focus and break cycles): start one from the tray menu; it shows as a live activity and alerts you when the time is up
+- **Timer, stopwatch and Pomodoro** (focus and break cycles): start one from the island's Timer page; it shows as a live activity and alerts you when the time is up
 - **Microphone and camera dots:** orange while the microphone is in use, green for the camera, like on iPhone
 - **Battery** on laptops: shown as an activity while charging, plus alerts for charger connected or removed, low battery and fully charged
 - **App names on the dots:** see which app is using the microphone or camera
@@ -46,7 +46,7 @@ A Dynamic Island for Windows. Music, Claude Code, its usage limits and your noti
 - **More live activities:** OBS recording, Windows updates, browser downloads (with the extension) and the live score of your team (off by default), plus a richer thin line that shows a tiny icon of what matters most
 - **Discord muted or deafened (experimental, off by default):** a crossed microphone or crossed headphones beside the island while you are muted in Discord, however you muted. Needs a Discord app of your own, see [docs/DISCORD.md](docs/DISCORD.md)
 - **Light or dark Settings:** the Settings window can follow the Windows theme or be set to light or dark; the island itself is always black
-- **Your order and your times:** choose the order of the pages, which limit alerts to show (75%, 90%, 100%, renewed) and how long alerts, notifications and limit alerts stay
+- **Your order and your times:** drag the pages into the order you like, which limit alerts to show (75%, 90%, 100%, renewed) and how long alerts, notifications and limit alerts stay
 - **Volume and brightness** bar, **Bluetooth, USB and network** notes, and a moon for **Do not disturb**
 - **Clock and system page** with the time, date, processor and memory load
 - **System monitor** (off by default): keeps the processor and memory load on the island when nothing else is happening, as rings, bars or numbers
@@ -146,7 +146,7 @@ To try it without installing, run `WindowsIsland.exe --portable`.
 1. **Hover** over the island to expand it, or **click** it. Move the mouse away and it collapses.
 2. **Click** the progress bar to jump to that point of the song.
 3. **Click** an alert or notification to dismiss it.
-4. **Click** the tray icon, or open the Windows Island shortcut while it runs, to open **Settings**. Right-click the icon for quick actions and **Quit**. Click the tray icon again to close Settings.
+4. **Click** the tray icon, or open the Windows Island shortcut while it runs, to open **Settings**. Right-click the icon for a menu with the thin line, Do not disturb for the island (banners stay away; only what Claude asks still shows), the empty island, **Check for updates** and a red **Close**. Click the tray icon again to close Settings.
 
 <img src="docs/images/settings-en.png" alt="The settings window" width="900">
 
@@ -192,7 +192,7 @@ Details are in [SECURITY.md](SECURITY.md).
 
 The full history of changes is in [CHANGELOG.md](CHANGELOG.md) (English) and [CHANGELOG.pt-BR.md](CHANGELOG.pt-BR.md) (Portuguese).
 
-Every hour the island checks the latest GitHub release. It installs an update only if its digital signature matches the key built into the app and the file's hash matches the signed list, so a tampered file is rejected. It restarts into the new version when you are not using the island and shows a short notice. Turn this off with **Automatic updates** in the tray menu, where **Check for updates** runs a check on demand.
+Every hour the island checks the latest GitHub release. It installs an update only if its digital signature matches the key built into the app and the file's hash matches the signed list, so a tampered file is rejected. It restarts into the new version when you are not using the island and shows a short notice. Turn this off with **Automatic updates** in Settings. **Check for updates** in the tray menu looks in the background and, when there is a new version, the island asks you: tap it to download, verify and restart.
 
 ## Uninstall
 
