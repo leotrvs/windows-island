@@ -14,7 +14,7 @@ Forks must create their own key with `scripts/new-signing-key.ps1 -KeyPath <a pa
 
 ## Each release
 
-1. Update `<Version>` in `src\WindowsIsland.csproj` and add an entry to `CHANGELOG.md`.
+1. Update `<Version>` in `src\WindowsIsland.csproj` and add an entry to `CHANGELOG.md` (the release notes come from it) and the same entry, translated, to `CHANGELOG.pt-BR.md`.
 2. Commit and push.
 3. Build and sign without publishing, then test `bin\release\WindowsIsland.exe`:
 

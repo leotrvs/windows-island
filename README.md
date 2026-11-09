@@ -185,6 +185,8 @@ Details are in [SECURITY.md](SECURITY.md).
 
 ## Updates
 
+The full history of changes is in [CHANGELOG.md](CHANGELOG.md) (English) and [CHANGELOG.pt-BR.md](CHANGELOG.pt-BR.md) (Portuguese).
+
 Every hour the island checks the latest GitHub release. It installs an update only if its digital signature matches the key built into the app and the file's hash matches the signed list, so a tampered file is rejected. It restarts into the new version when you are not using the island and shows a short notice. Turn this off with **Automatic updates** in the tray menu, where **Check for updates** runs a check on demand.
 
 ## Uninstall

@@ -185,6 +185,8 @@ Detalhes em [SECURITY.md](docs/SECURITY.pt-BR.md).
 
 ## Atualizações
 
+O histórico completo de mudanças está em [CHANGELOG.pt-BR.md](CHANGELOG.pt-BR.md) (português) e [CHANGELOG.md](CHANGELOG.md) (inglês, o original).
+
 A cada hora a ilha confere a última release do GitHub. Ela só instala uma atualização se a assinatura digital bater com a chave embutida no app e o hash do arquivo bater com a lista assinada, então um arquivo adulterado é recusado. Ela reinicia na versão nova quando você não está usando a ilha e mostra um aviso rápido. Desligue em **Atualizações automáticas** no menu da bandeja, onde **Procurar atualizações** faz uma verificação na hora.
 
 ## Desinstalar

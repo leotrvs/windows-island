@@ -186,6 +186,8 @@ Los detalles están en [SECURITY.md](SECURITY.md).
 
 ## Actualizaciones
 
+El historial completo de cambios está en [CHANGELOG.md](CHANGELOG.md) (inglés) y [CHANGELOG.pt-BR.md](CHANGELOG.pt-BR.md) (portugués).
+
 Cada hora la isla revisa la última versión en GitHub. Solo instala una actualización si su firma digital coincide con la clave incluida en la app y el hash del archivo coincide con la lista firmada, así que un archivo manipulado se rechaza. Se reinicia en la versión nueva cuando no estás usando la isla y muestra un aviso breve. Desactívalo con **Automatic updates** en el menú de la bandeja, donde **Check for updates** busca una actualización al momento.
 
 ## Desinstalar
