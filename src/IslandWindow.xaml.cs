@@ -200,6 +200,7 @@ namespace WindowsIsland
             revealTimer.Tick += (s, e) => CheckReveal();
 
             media.Changed += OnMediaChanged;
+            media.WatchMediaKeys();
             claude.Changed += OnClaudeChanged;
             claude.Alert += ShowBanner;
             codex.Changed += OnCodexChanged;
@@ -240,7 +241,8 @@ namespace WindowsIsland
         // While the island is a thin line, a change in the music (pause, play, next, previous) makes it grow for a moment,
         // with the cover, a symbol for what happened and the song's name.
         bool musicPrimed, musicWasPlaying;
-        string musicTitle = "", musicBefore = "";
+        string musicTitle = "";
+        readonly List<string> musicHistory = new List<string>(); // The songs heard just before this one, newest last
         DateTime musicPeekUntil = DateTime.MinValue;
         DispatcherTimer peekTimer;
         bool ThinActive { get { return settings.AlwaysThin || (settings.MaximizedActivitiesThin && maximized && !IsBottom && settings.MaximizedMode == "Thin"); } }
@@ -259,8 +261,12 @@ namespace WindowsIsland
             string glyph = null;
             if (title.Length > 0 && title != musicTitle)
             {
-                glyph = title == musicBefore ? "\uE892" : "\uE893"; // Back to the song before, or onwards
-                musicBefore = musicTitle;
+                // The command that was just given says which way; without one, a song heard a moment ago means back
+                bool recent = DateTime.Now - media.LastWayAt < TimeSpan.FromSeconds(4);
+                bool back = recent ? media.LastWay == MediaService.Way.Previous : musicHistory.Contains(title);
+                glyph = back ? "\uE892" : "\uE893";
+                if (musicTitle.Length > 0) musicHistory.Add(musicTitle);
+                if (musicHistory.Count > 8) musicHistory.RemoveAt(0);
                 musicTitle = title;
             }
             else if (playing != musicWasPlaying) glyph = playing ? "\uE768" : "\uE769";
@@ -1146,7 +1152,7 @@ namespace WindowsIsland
         static readonly Color ThinGreen = Color.FromRgb(0x30, 0xD1, 0x58);
         static readonly Color ThinRed = Color.FromRgb(0xFF, 0x45, 0x3A);
         static readonly Brush ThinMoon = Freeze(new SolidColorBrush(Color.FromRgb(0xB4, 0xB4, 0xFF)));
-        readonly LinearGradientBrush sweep = new LinearGradientBrush { StartPoint = new Point(0, 0.5), EndPoint = new Point(1, 0.5) };
+        readonly LinearGradientBrush sweep = new LinearGradientBrush { StartPoint = new Point(0, 0.5), EndPoint = new Point(1, 0.5), SpreadMethod = GradientSpreadMethod.Repeat };
         readonly System.Windows.Shapes.Rectangle[] thinBars = new System.Windows.Shapes.Rectangle[8];
 
         bool ClearMinimal()
@@ -1174,7 +1180,7 @@ namespace WindowsIsland
             else if (primary == Activity.Music)
             {
                 kind = Thin.Music;
-                color = ThinPink;
+                color = media.Accent; // The color of the cover
             }
             else if (primary == Activity.Timer)
             {
@@ -1238,11 +1244,19 @@ namespace WindowsIsland
                 case Thin.ClaudeWorking:
                 case Thin.Busy:
                 {
-                    double p = (clock % 1.8) / 1.8 * 1.6 - 0.3; // The glow travels from before the left edge to past the right
-                    sweep.GradientStops.Clear();
-                    sweep.GradientStops.Add(new GradientStop(Colors.Black, Math.Clamp(p - 0.3, 0, 1)));
-                    sweep.GradientStops.Add(new GradientStop(minimalColor, Math.Clamp(p, 0, 1)));
-                    sweep.GradientStops.Add(new GradientStop(Colors.Black, Math.Clamp(p + 0.3, 0, 1)));
+                    // Glows repeat along the line (a wide one every 0.9 of its length) and travel to the right, quickly,
+                    // so most of the line is lit instead of dark
+                    double p = (clock % 1.0) * 0.9;
+                    sweep.StartPoint = new Point(p, 0.5);
+                    sweep.EndPoint = new Point(p + 0.9, 0.5);
+                    if (sweep.GradientStops.Count != 3)
+                    {
+                        sweep.GradientStops.Clear();
+                        sweep.GradientStops.Add(new GradientStop(Colors.Black, 0));
+                        sweep.GradientStops.Add(new GradientStop(minimalColor, 0.5));
+                        sweep.GradientStops.Add(new GradientStop(Colors.Black, 1));
+                    }
+                    sweep.GradientStops[1].Color = minimalColor;
                     MinimalBase.Background = sweep;
                     return true;
                 }
@@ -1270,10 +1284,13 @@ namespace WindowsIsland
                 {
                     bool playing = media.IsPlaying;
                     for (int i = 0; i < thinBars.Length; i++)
+                    {
                         thinBars[i].Height = playing ? 1.5 + 3.5 * Math.Abs(Math.Sin(clock * (4.5 + i * 1.1) + i * 0.9)) : 1.5;
+                        ((SolidColorBrush)thinBars[i].Fill).Color = media.Accent;
+                    }
                     if (settings.MinimalMusicPosition && media.Duration > TimeSpan.Zero)
                     {
-                        MinimalFill.Background = new SolidColorBrush(Color.FromArgb(0x70, ThinPink.R, ThinPink.G, ThinPink.B));
+                        MinimalFill.Background = new SolidColorBrush(Color.FromArgb(0x70, media.Accent.R, media.Accent.G, media.Accent.B));
                         MinimalFill.Width = 76 * Math.Clamp(media.Position.TotalSeconds / media.Duration.TotalSeconds, 0, 1);
                     }
                     return playing;
@@ -1297,6 +1314,8 @@ namespace WindowsIsland
         void ApplyTargets()
         {
             UpdateDots();
+            double dot = view == View.Minimal ? 4.5 : 6; // Smaller beside the thin line
+            MicDot.Width = MicDot.Height = CamDot.Width = CamDot.Height = ScreenDot.Width = ScreenDot.Height = dot;
             Bubble.IsHitTestVisible = bubble != Activity.None && view != View.Hidden; // The small second activity can be pointed at
             Size size = SizeOf(view);
             width.Target = size.Width;
@@ -2120,8 +2139,7 @@ namespace WindowsIsland
             // (they must never hide), and keep the idle island's spot instead of sliding with its shrinking width.
             bool away = view == View.Hidden && !(fullscreen && settings.HideInFullscreen);
             double dotsBase = away ? SizeOf(View.Idle).Width : w;
-            privacyShift.Target = -(dotsBase / 2 + BubbleGap + PrivacyDots.Width / 2) * s;
-            PrivacyShift.X = privacyShift.Value;
+            PrivacyShift.X = -(dotsBase / 2 + BubbleGap + PrivacyDots.Width / 2) * s; // Straight to its place: it follows the island's own spring
             PrivacyShift.Y = (bottom ? -1 : 1) * (Math.Min(h, 34) * s - PrivacyDots.Height) / 2; // Level with a compact island
             PrivacyDots.Opacity = Math.Clamp(privacyOpacity.Value, 0, 1) * (away ? 1 : visible);
 

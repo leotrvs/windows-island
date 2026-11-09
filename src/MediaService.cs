@@ -176,8 +176,34 @@ namespace WindowsIsland
             Run(() => session.TryTogglePlayPauseAsync());
         }
 
-        public void Next() { Run(() => session.TrySkipNextAsync()); }
-        public void Previous() { Run(() => session.TrySkipPreviousAsync()); }
+        // Which way the song last moved on a command (the island's buttons or the keyboard's media keys), so a change of song
+        // can be told as "next" or "previous". Only whether those two keys are down is looked at, 8 times a second; nothing is kept.
+        public enum Way { None, Next, Previous }
+        public Way LastWay { get; private set; }
+        public DateTime LastWayAt { get; private set; } = DateTime.MinValue;
+        void NoteWay(Way way) { LastWay = way; LastWayAt = DateTime.Now; }
+
+        [System.Runtime.InteropServices.DllImport("user32.dll")] static extern short GetAsyncKeyState(int key);
+        DispatcherTimer keyTimer;
+        bool nextKeyDown, previousKeyDown;
+
+        public void WatchMediaKeys()
+        {
+            if (keyTimer != null) return;
+            keyTimer = new DispatcherTimer(DispatcherPriority.Background, dispatcher) { Interval = TimeSpan.FromMilliseconds(120) };
+            keyTimer.Tick += (s, e) =>
+            {
+                bool next = (GetAsyncKeyState(0xB0) & 0x8000) != 0, previous = (GetAsyncKeyState(0xB1) & 0x8000) != 0; // Media next / previous track
+                if (next && !nextKeyDown) NoteWay(Way.Next);
+                if (previous && !previousKeyDown) NoteWay(Way.Previous);
+                nextKeyDown = next;
+                previousKeyDown = previous;
+            };
+            keyTimer.Start();
+        }
+
+        public void Next() { NoteWay(Way.Next); Run(() => session.TrySkipNextAsync()); }
+        public void Previous() { NoteWay(Way.Previous); Run(() => session.TrySkipPreviousAsync()); }
 
         public void Seek(TimeSpan target)
         {

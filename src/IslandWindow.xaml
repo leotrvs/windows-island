@@ -138,10 +138,10 @@
                 <Grid x:Name="MusicPeek" Width="236" Height="36">
                     <Border x:Name="PeekArt" Width="24" Height="24" CornerRadius="6" HorizontalAlignment="Left" Margin="8,0,0,0"
                             Background="{StaticResource ArtPlaceholder}"/>
-                    <TextBlock x:Name="PeekGlyph" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14" Foreground="White"
-                               HorizontalAlignment="Left" VerticalAlignment="Center" Margin="42,0,0,0"/>
                     <TextBlock x:Name="PeekTitle" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
-                               Margin="66,0,14,0"/>
+                               Margin="42,0,40,0"/>
+                    <TextBlock x:Name="PeekGlyph" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14" Foreground="White"
+                               HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,14,0"/>
                 </Grid>
 
                 <!-- Music, compact -->

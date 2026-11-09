@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.0.2
+
+- **Thin line:** the glow while Claude works is wider, repeats along the line and moves faster, so most of the line is lit; the music equalizer takes the color of the cover; the privacy dots are smaller beside the thin line and go back to their place at once when the name or the dot goes away
+- **Music notice:** the symbol (pause, play, next, previous) sits at the right end, apart from the cover and the name; "previous" is told right every time: the island's buttons and the keyboard's media keys say which way the song went (only whether those two keys are down is looked at, 8 times a second; nothing is kept)
+
 ## 3.0.1
 
 - **The thin line is the default look** ("Thin line always" in Settings, Behavior): the collapsed island is a thin line, and hovering opens it
