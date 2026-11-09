@@ -131,6 +131,7 @@
                         <Border x:Name="MinimalFill" HorizontalAlignment="Left" CornerRadius="3" Width="0" Background="White"/>
                     </Border>
                     <StackPanel x:Name="MinimalBars" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Top" Height="6" Visibility="Collapsed"/>
+                    <Border x:Name="MinimalOutline" Height="6" VerticalAlignment="Top" CornerRadius="3" BorderThickness="1" IsHitTestVisible="False" Visibility="Collapsed"/>
                     <TextBlock x:Name="MinimalGlyph" FontSize="9" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,2,0,0" Visibility="Collapsed"/>
                 </Grid>
 
