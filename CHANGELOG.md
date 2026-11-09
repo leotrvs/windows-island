@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.6.7
+
+- **Song change without the blink:** the cover, the title and the artist no longer fade out to nothing and fade back in. A picture of the old one leaves (up, or down when the song went back) while the new one arrives from the other side, both at once and one piece after the other, and the new one waits out of sight until its turn instead of showing the finished thing for a moment first. The name that opens beside the cover on the normal island comes in the same way
+
 ## 4.6.6
 
 - **The island and Settings now share the update:** before, the tray menu's look for an update did not tell Settings, so clicking "Download" in Settings while the island was still looking could start a second download over the first, hang for a long time and fail. Now there is one look at a time that both wait for (Settings shows "Searching" and then the Download button too), and one download at a time; a download you ask for in Settings is announced on the island and restarts at once

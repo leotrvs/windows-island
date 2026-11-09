@@ -2760,24 +2760,69 @@ namespace WindowsIsland
             return move;
         }
 
-        // The old content goes up (down when the song went back) and fades, the new comes in from the other side, one piece after the other
+        // The old content goes up (down when the song went back) while the new comes in from the other side, both at once and one piece after
+        // the other: a copy of the old one (a picture of it) leaves while the real one arrives, so there is never a moment with nothing there.
+        static ImageSource Snapshot(FrameworkElement element)
+        {
+            const double scale = 2;
+            RenderTargetBitmap bitmap = new RenderTargetBitmap((int)Math.Ceiling(element.ActualWidth * scale), (int)Math.Ceiling(element.ActualHeight * scale), 96 * scale, 96 * scale, PixelFormats.Pbgra32);
+            DrawingVisual visual = new DrawingVisual();
+            using (DrawingContext context = visual.RenderOpen())
+                context.DrawRectangle(new VisualBrush(element), null, new Rect(0, 0, element.ActualWidth, element.ActualHeight));
+            bitmap.Render(visual);
+            bitmap.Freeze();
+            return bitmap;
+        }
+
         void SlideSwap(FrameworkElement element, int direction, Action apply, int delayMs = 0)
         {
             TranslateTransform move = MoveOf(element);
-            if (move == null) { apply(); return; }
-            int token = swapToken.TryGetValue(element, out int last) ? last + 1 : 1;
-            swapToken[element] = token;
-            CubicEase easeIn = new CubicEase { EasingMode = EasingMode.EaseIn };
-            TimeSpan delay = TimeSpan.FromMilliseconds(delayMs);
-            DoubleAnimation away = new DoubleAnimation(0, -16 * direction, TimeSpan.FromMilliseconds(140)) { BeginTime = delay, EasingFunction = easeIn, FillBehavior = FillBehavior.HoldEnd };
-            away.Completed += (s, e) =>
+            double distance = element.ActualHeight > 30 ? 18 : 12;
+            Rect where = Rect.Empty;
+            try
             {
-                if (swapToken[element] != token) return; // Another change took over
-                apply();
-                SlideIn(element, direction);
+                if (element.IsVisible && element.ActualWidth > 1 && element.ActualHeight > 1)
+                    where = new Rect(element.TransformToAncestor(Stage).Transform(new Point(0, 0)), new Size(element.ActualWidth, element.ActualHeight));
+            }
+            catch (InvalidOperationException) { }
+            if (move == null || where.IsEmpty || where.Width > 400) { apply(); return; }
+
+            // The old content stays where it was, as a picture
+            System.Windows.Shapes.Rectangle ghost = new System.Windows.Shapes.Rectangle
+            {
+                Width = where.Width, Height = where.Height, IsHitTestVisible = false,
+                Fill = new ImageBrush(Snapshot(element)) { Stretch = Stretch.Fill },
+                RenderTransform = new TranslateTransform(),
+                RadiusX = (element as Border)?.CornerRadius.TopLeft ?? 0, RadiusY = (element as Border)?.CornerRadius.TopLeft ?? 0,
             };
-            move.BeginAnimation(TranslateTransform.YProperty, away);
-            element.BeginAnimation(OpacityProperty, new DoubleAnimation(1, 0, TimeSpan.FromMilliseconds(140)) { BeginTime = delay, FillBehavior = FillBehavior.HoldEnd });
+            Canvas.SetLeft(ghost, where.X);
+            Canvas.SetTop(ghost, where.Y);
+            Stage.Children.Add(ghost);
+
+            apply(); // The real one now has the new content and arrives from the other side
+            TimeSpan delay = TimeSpan.FromMilliseconds(delayMs);
+            CubicEase inOut = new CubicEase { EasingMode = EasingMode.EaseInOut }, fast = new CubicEase { EasingMode = EasingMode.EaseOut }, slow = new CubicEase { EasingMode = EasingMode.EaseIn };
+
+            DoubleAnimation up = new DoubleAnimation(0, -distance * direction, TimeSpan.FromMilliseconds(300)) { BeginTime = delay, EasingFunction = inOut, FillBehavior = FillBehavior.HoldEnd };
+            DoubleAnimation fade = new DoubleAnimation(1, 0, TimeSpan.FromMilliseconds(220)) { BeginTime = delay, EasingFunction = slow, FillBehavior = FillBehavior.HoldEnd };
+            fade.Completed += (s, e) => Stage.Children.Remove(ghost);
+            ((TranslateTransform)ghost.RenderTransform).BeginAnimation(TranslateTransform.YProperty, up);
+            ghost.BeginAnimation(OpacityProperty, fade);
+
+            // Until its turn comes the real one waits out of sight, so the old and the new never show together in the same place
+            element.Opacity = 0;
+            move.Y = distance * direction;
+            DoubleAnimation arrive = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(220)) { BeginTime = delay, EasingFunction = fast, FillBehavior = FillBehavior.HoldEnd };
+            DoubleAnimation settle = new DoubleAnimation(distance * direction, 0, TimeSpan.FromMilliseconds(300)) { BeginTime = delay, EasingFunction = inOut, FillBehavior = FillBehavior.HoldEnd };
+            settle.Completed += (s, e) =>
+            {
+                element.BeginAnimation(OpacityProperty, null);
+                element.Opacity = 1;
+                move.BeginAnimation(TranslateTransform.YProperty, null);
+                move.Y = 0;
+            };
+            move.BeginAnimation(TranslateTransform.YProperty, settle);
+            element.BeginAnimation(OpacityProperty, arrive);
         }
 
         // Comes in from below when the song moves on, from above when it went back
@@ -2785,10 +2830,20 @@ namespace WindowsIsland
         {
             TranslateTransform move = MoveOf(element);
             if (move == null) return;
-            CubicEase easeOut = new CubicEase { EasingMode = EasingMode.EaseOut };
             TimeSpan delay = TimeSpan.FromMilliseconds(delayMs);
-            move.BeginAnimation(TranslateTransform.YProperty, new DoubleAnimation(16 * direction, 0, TimeSpan.FromMilliseconds(260)) { BeginTime = delay, EasingFunction = easeOut, FillBehavior = FillBehavior.Stop });
-            element.BeginAnimation(OpacityProperty, new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(260)) { BeginTime = delay, FillBehavior = FillBehavior.Stop });
+            element.Opacity = 0; // Out of sight until its turn: no flash of the finished thing before it comes in
+            move.Y = 12 * direction;
+            DoubleAnimation arrive = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(220)) { BeginTime = delay, EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }, FillBehavior = FillBehavior.HoldEnd };
+            DoubleAnimation settle = new DoubleAnimation(12 * direction, 0, TimeSpan.FromMilliseconds(300)) { BeginTime = delay, EasingFunction = new CubicEase { EasingMode = EasingMode.EaseInOut }, FillBehavior = FillBehavior.HoldEnd };
+            settle.Completed += (s, e) =>
+            {
+                element.BeginAnimation(OpacityProperty, null);
+                element.Opacity = 1;
+                move.BeginAnimation(TranslateTransform.YProperty, null);
+                move.Y = 0;
+            };
+            move.BeginAnimation(TranslateTransform.YProperty, settle);
+            element.BeginAnimation(OpacityProperty, arrive);
         }
 
         // After a moment the name goes away and the island is as small as before

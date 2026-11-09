@@ -2,6 +2,10 @@
 
 > Tradução de [CHANGELOG.md](CHANGELOG.md), que é o original em inglês.
 
+## 4.6.7
+
+- **Troca de música sem piscar:** a capa, o título e o artista não somem mais por completo para depois voltar. Uma imagem do antigo sai (para cima, ou para baixo quando a música voltou) enquanto o novo chega do outro lado, os dois ao mesmo tempo e um depois do outro, e o novo espera fora de vista até a vez dele, em vez de aparecer pronto por um instante antes. O nome que abre ao lado da capa na ilha normal entra do mesmo jeito
+
 ## 4.6.6
 
 - **A ilha e os Ajustes agora dividem a atualização:** antes, a procura feita pelo menu da bandeja não avisava os Ajustes, e clicar em "Baixar" nos Ajustes enquanto a ilha ainda procurava podia iniciar um segundo download por cima do primeiro, travar por um tempão e falhar. Agora há uma procura de cada vez que os dois esperam (os Ajustes mostram "Procurando" e depois o botão Baixar também), e um download de cada vez; um download que você pede nos Ajustes é anunciado na ilha e reinicia na hora
