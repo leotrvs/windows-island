@@ -2,6 +2,12 @@
 
 > Tradução de [CHANGELOG.md](CHANGELOG.md), que é o original em inglês.
 
+## 4.2.3
+
+- **Atualizações:** "Procurar atualizações" falhava em algumas conexões porque o endereço de download das versões no GitHub demorava demais; quando ele não responde, o app agora pede o mesmo arquivo à API do GitHub (a assinatura e o hash são conferidos do mesmo jeito)
+- **Ajustes, cartão de novidades:** o título mostra a versão completa, cada mudança tem um título e uma frase, o botão de dispensar é um xis no canto, e o link tem o símbolo do GitHub e uma seta. Todo link que abre uma página da internet agora termina com essa seta. A linha "Histórico de mudanças" tinha sumido e voltou
+- **Linha fina:** o brilho do Claude é sempre o laranja do Claude; ele não fica mais amarelo nem vermelho conforme o limite de 5 horas enche (o limite já tem seus avisos)
+
 ## 4.2.2
 
 - **Atualizações:** quando a verificação automática (a cada hora enquanto o app roda, a primeira 30 segundos depois de abrir) encontra uma versão nova, a ilha agora avisa "Atualização X disponível · baixando" antes de baixar e reiniciar nela

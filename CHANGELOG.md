@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.2.3
+
+- **Updates:** "Check for updates" failed on some connections because GitHub's release download address timed out; when it does not answer, the app now asks GitHub's API for the same file (the signature and the hash are checked just the same)
+- **Settings, the news card:** the title shows the full version, each change has a title and a sentence, the dismiss button is a cross in the corner, and the link has the GitHub mark and an arrow. Every link that opens a web page now ends with that arrow. The "Change history" row was missing and is back
+- **Thin line:** Claude's glow is always Claude's orange; it no longer turns yellow or red as the 5-hour limit fills (the limit already has its alerts)
+
 ## 4.2.2
 
 - **Updates:** when the automatic check (every hour while the app runs, the first one 30 seconds after it opens) finds a new version, the island now says "Update X available · downloading" before it downloads and restarts into it

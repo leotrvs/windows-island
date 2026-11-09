@@ -359,17 +359,7 @@ namespace WindowsIsland
             footer.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
             footer.Children.Add(new TextBlock { Text = Installer.Name + " v" + Installer.Version, Foreground = (Brush)FindResource("Secondary"), FontSize = 12, VerticalAlignment = VerticalAlignment.Center });
             Button repo = new Button { Style = (Style)FindResource("LinkButton"), FontSize = 12, HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Center };
-            // The GitHub mark (an Octicon path) in the link's own color, then the account and project
-            System.Windows.Shapes.Path mark = new System.Windows.Shapes.Path
-            {
-                Data = Geometry.Parse("M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"),
-                Width = 14, Height = 14, Stretch = Stretch.Uniform, Margin = new Thickness(0, 0, 7, 0), VerticalAlignment = VerticalAlignment.Center,
-            };
-            mark.SetBinding(System.Windows.Shapes.Shape.FillProperty, new System.Windows.Data.Binding("Foreground") { Source = repo });
-            StackPanel repoContent = new StackPanel { Orientation = Orientation.Horizontal };
-            repoContent.Children.Add(mark);
-            repoContent.Children.Add(new TextBlock { Text = "@leotrvs/windows-island", VerticalAlignment = VerticalAlignment.Center });
-            repo.Content = repoContent;
+            repo.Content = GitHubLabel(repo, "@leotrvs/windows-island");
             repo.Click += (s, e) => { try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("https://github.com/leotrvs/windows-island") { UseShellExecute = true }); } catch (Exception) { } };
             Grid.SetColumn(repo, 1);
             footer.Children.Add(repo);
@@ -484,40 +474,43 @@ namespace WindowsIsland
             if (all || only == 3) BuildSystem();
         }
 
-        // The news of the latest release, on top of Settings until it is dismissed
+        // The news of the latest release, on top of Settings until it is dismissed (the cross)
         void AddWhatsNew()
         {
             if (string.Equals(settings.WhatsNewSeen, WhatsNew.Key, StringComparison.Ordinal)) return;
-            StackPanel body = new StackPanel { Margin = new Thickness(16, 12, 14, 10) };
-            body.Children.Add(new TextBlock { Text = WhatsNew.Title, FontWeight = FontWeights.SemiBold, FontSize = 15, Margin = new Thickness(0, 0, 0, 6) });
-            foreach (string item in WhatsNew.Items)
+            Grid head = new Grid { Margin = new Thickness(0, 0, 0, 8) };
+            head.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            head.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            head.Children.Add(new TextBlock { Text = WhatsNew.Title, FontWeight = FontWeights.SemiBold, FontSize = 15, VerticalAlignment = VerticalAlignment.Center });
+            TextBlock close = new TextBlock
             {
-                Grid line = new Grid { Margin = new Thickness(0, 2, 0, 2) };
-                line.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(14) });
-                line.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-                line.Children.Add(new TextBlock { Text = "\u2022", Foreground = new SolidColorBrush(SettingsTheme.Accent), FontSize = 13 });
-                TextBlock text = new TextBlock { Text = item, FontSize = 13, TextWrapping = TextWrapping.Wrap, Foreground = (Brush)FindResource("Secondary") };
-                Grid.SetColumn(text, 1);
-                line.Children.Add(text);
-                body.Children.Add(line);
-            }
-            StackPanel buttons = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 8, 0, 0) };
-            Button all = new Button { Content = Strings.WhatsNewAll, Style = (Style)FindResource("LinkButton"), Margin = new Thickness(0, 0, 18, 0) };
-            all.Click += (s, e) =>
-            {
-                try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(WhatsNew.ChangelogUrl(settings.Language)) { UseShellExecute = true })?.Dispose(); }
-                catch (Exception) { }
+                Text = "\uE711", FontFamily = IconFont, FontSize = 11, Padding = new Thickness(8, 4, 2, 4), Cursor = System.Windows.Input.Cursors.Hand,
+                Background = Brushes.Transparent, ToolTip = Strings.WhatsNewGotIt, VerticalAlignment = VerticalAlignment.Center,
             };
-            Button got = new Button { Content = Strings.WhatsNewGotIt, Style = (Style)FindResource("LinkButton") };
-            got.Click += (s, e) =>
+            close.MouseLeftButtonUp += (s, e) =>
             {
                 settings.WhatsNewSeen = WhatsNew.Key;
                 Apply();
                 Rebuild();
             };
-            buttons.Children.Add(all);
-            buttons.Children.Add(got);
-            body.Children.Add(buttons);
+            Grid.SetColumn(close, 1);
+            head.Children.Add(close);
+
+            StackPanel body = new StackPanel { Margin = new Thickness(16, 12, 12, 14) };
+            body.Children.Add(head);
+            foreach (string[] item in WhatsNew.Items)
+            {
+                body.Children.Add(new TextBlock { Text = item[0], FontWeight = FontWeights.SemiBold, FontSize = 13, Margin = new Thickness(0, 6, 0, 0) });
+                body.Children.Add(new TextBlock { Text = item[1], FontSize = 12.5, TextWrapping = TextWrapping.Wrap, Foreground = (Brush)FindResource("Secondary"), Margin = new Thickness(0, 1, 18, 0) });
+            }
+            Button all = new Button { Style = (Style)FindResource("LinkButton"), HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 12, 0, 0) };
+            all.Content = GitHubLabel(all, Strings.WhatsNewAll);
+            all.Click += (s, e) =>
+            {
+                try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(WhatsNew.ChangelogUrl(settings.Language)) { UseShellExecute = true })?.Dispose(); }
+                catch (Exception) { }
+            };
+            body.Children.Add(all);
             Content.Children.Add(new Border
             {
                 Child = body,
@@ -527,6 +520,30 @@ namespace WindowsIsland
                 BorderThickness = new Thickness(1),
                 Margin = new Thickness(0, 0, 0, 14),
             });
+        }
+
+        // A link that leaves the app: the text and a small arrow pointing up and to the right
+        FrameworkElement ExternalLabel(string text)
+        {
+            StackPanel panel = new StackPanel { Orientation = Orientation.Horizontal };
+            panel.Children.Add(new TextBlock { Text = text, VerticalAlignment = VerticalAlignment.Center });
+            panel.Children.Add(new TextBlock { Text = "\u2197", FontFamily = new FontFamily("Segoe UI Symbol"), FontSize = 12, Margin = new Thickness(4, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center });
+            return panel;
+        }
+
+        // The same, with the GitHub mark in front, in the color of its button
+        FrameworkElement GitHubLabel(Button owner, string text)
+        {
+            StackPanel panel = new StackPanel { Orientation = Orientation.Horizontal };
+            System.Windows.Shapes.Path mark = new System.Windows.Shapes.Path
+            {
+                Data = Geometry.Parse("M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"),
+                Width = 14, Height = 14, Stretch = Stretch.Uniform, Margin = new Thickness(0, 0, 7, 0), VerticalAlignment = VerticalAlignment.Center,
+            };
+            mark.SetBinding(System.Windows.Shapes.Shape.FillProperty, new System.Windows.Data.Binding("Foreground") { Source = owner });
+            panel.Children.Add(mark);
+            panel.Children.Add(ExternalLabel(text));
+            return panel;
         }
 
         // A few switches, for someone who just wants it to work; "More settings" opens all of them.
@@ -1014,24 +1031,30 @@ namespace WindowsIsland
             UpdateRow();
             LanguageRow();
             // Help: one button copies a short report (nothing is sent) and opens the page to report the problem
-            Button report = new Button { Content = Strings.DiagReport, Style = (Style)FindResource("LinkButton"), HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Center };
+            Button report = new Button { Style = (Style)FindResource("LinkButton"), HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Center };
+            report.Content = GitHubLabel(report, Strings.DiagReport);
             report.Click += (s, e) =>
             {
                 try
                 {
                     Clipboard.SetText(Diagnostics.Report(settings));
-                    report.Content = Strings.DiagCopied;
+                    report.Content = new TextBlock { Text = Strings.DiagCopied };
                     System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("https://github.com/leotrvs/windows-island/issues/new") { UseShellExecute = true })?.Dispose();
                 }
                 catch (Exception)
                 {
-                    report.Content = Strings.DiagReport;
+                    report.Content = GitHubLabel(report, Strings.DiagReport);
                 }
                 DispatcherTimer back = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
-                back.Tick += (a2, b2) => { back.Stop(); report.Content = Strings.DiagReport; };
+                back.Tick += (a2, b2) => { back.Stop(); report.Content = GitHubLabel(report, Strings.DiagReport); };
                 back.Start();
             };
             Row("\uE897", null, null, null, null, report);
+            ActionRow("\uE81C", Strings.MenuChangelog, () =>
+            {
+                try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(WhatsNew.ChangelogUrl(settings.Language)) { UseShellExecute = true })?.Dispose(); }
+                catch (Exception) { }
+            }, false, true);
             ActionRow("\uE8A5", Strings.MenuOpenSettings, () =>
             {
                 settings.Save();
@@ -1525,7 +1548,7 @@ namespace WindowsIsland
                 note.Visibility = Visibility.Visible;
             };
             Row("\uE72C", null, null, null, null, renew);
-            Button guide = new Button { Content = Strings.ApiGuide, Style = (Style)FindResource("LinkButton"), HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Center };
+            Button guide = new Button { Content = ExternalLabel(Strings.ApiGuide), Style = (Style)FindResource("LinkButton"), HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Center };
             guide.Click += (s, e) => { try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("https://github.com/leotrvs/windows-island/blob/main/docs/API.md") { UseShellExecute = true }); } catch (Exception) { } };
             Row("\uE897", null, null, null, null, guide);
 
@@ -1609,9 +1632,9 @@ namespace WindowsIsland
 
         static readonly Brush DangerBrush = new SolidColorBrush(Color.FromRgb(0xFF, 0x45, 0x3A));
 
-        void ActionRow(string icon, string label, Action action, bool danger = false)
+        void ActionRow(string icon, string label, Action action, bool danger = false, bool external = false)
         {
-            Button button = new Button { Content = label, Style = (Style)FindResource("LinkButton"), HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Center };
+            Button button = new Button { Content = external ? ExternalLabel(label) : (object)label, Style = (Style)FindResource("LinkButton"), HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Center };
             if (danger) button.Foreground = DangerBrush;
             button.Click += (s, e) => action();
             Row(icon, null, null, null, null, button);

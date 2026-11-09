@@ -171,9 +171,63 @@ namespace WindowsIsland
             }
         }
 
+        // The release address first; when it does not answer (it times out for some connections), the same file through GitHub's API.
+        // Either way the signature and the hash are checked afterwards, so where the bytes came from does not matter.
         static async Task<byte[]> DownloadAsync(string fileName, int maxBytes)
         {
-            using (HttpResponseMessage response = await Http.GetAsync(BaseUrl + fileName, HttpCompletionOption.ResponseHeadersRead))
+#if UPDATE_TEST
+            return await DownloadFromAsync(BaseUrl + fileName, maxBytes);
+#else
+            try
+            {
+                return await DownloadFromAsync(BaseUrl + fileName, maxBytes);
+            }
+            catch (Exception)
+            {
+                return await DownloadThroughApiAsync(fileName, maxBytes);
+            }
+#endif
+        }
+
+        const string ApiLatest = "https://api.github.com/repos/leotrvs/windows-island/releases/latest";
+
+        static async Task<byte[]> DownloadThroughApiAsync(string fileName, int maxBytes)
+        {
+            string assetUrl = null;
+            using (HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, ApiLatest))
+            using (HttpResponseMessage response = await Http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead))
+            {
+                response.EnsureSuccessStatusCode();
+                if (response.Content.Headers.ContentLength > 512 * 1024) throw new InvalidDataException();
+                using (JsonDocument release = JsonDocument.Parse(await response.Content.ReadAsStringAsync()))
+                {
+                    JsonElement assets;
+                    if (!release.RootElement.TryGetProperty("assets", out assets)) throw new InvalidDataException();
+                    foreach (JsonElement asset in assets.EnumerateArray())
+                    {
+                        JsonElement name, url;
+                        if (asset.TryGetProperty("name", out name) && name.GetString() == fileName && asset.TryGetProperty("url", out url))
+                            assetUrl = url.GetString();
+                    }
+                }
+            }
+            if (assetUrl == null || !assetUrl.StartsWith("https://api.github.com/repos/leotrvs/windows-island/releases/assets/", StringComparison.Ordinal)) throw new InvalidDataException();
+            using (HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, assetUrl))
+            {
+                request.Headers.Accept.ParseAdd("application/octet-stream");
+                using (HttpResponseMessage response = await Http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead))
+                    return await ReadLimitedAsync(response, maxBytes);
+            }
+        }
+
+        static async Task<byte[]> DownloadFromAsync(string address, int maxBytes)
+        {
+            using (HttpResponseMessage response = await Http.GetAsync(address, HttpCompletionOption.ResponseHeadersRead))
+                return await ReadLimitedAsync(response, maxBytes);
+        }
+
+        static async Task<byte[]> ReadLimitedAsync(HttpResponseMessage response, int maxBytes)
+        {
             {
                 response.EnsureSuccessStatusCode();
 #if !UPDATE_TEST

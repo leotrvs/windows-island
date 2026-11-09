@@ -1604,8 +1604,7 @@ namespace WindowsIsland
             if (primary == Activity.Claude)
             {
                 kind = ClaudeWaitingNow ? Thin.ClaudeWaiting : Thin.ClaudeWorking;
-                int percent = claude.Session != null && claude.Session.Percent.HasValue ? claude.Session.EffectivePercent : 0;
-                color = percent >= 90 ? ThinRed : percent >= 75 ? ThinYellow : ThinClay; // The limit tints it
+                color = ThinClay; // Always Claude's own color: the limit has its alerts, the line does not change with it
             }
             else if (primary == Activity.Music)
             {

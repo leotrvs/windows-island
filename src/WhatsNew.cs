@@ -4,40 +4,39 @@ using System.Globalization;
 namespace WindowsIsland
 {
     // What is new in the latest release, in a few lines, for the card at the top of Settings. The full history is the changelog.
-    // On each release that has something worth telling: change Key and the text below (and CHANGELOG.md and CHANGELOG.pt-BR.md).
+    // On each release that has something worth telling: change Key and Version and the text below (and CHANGELOG.md and CHANGELOG.pt-BR.md).
     static class WhatsNew
     {
-        public const string Key = "4.2";
+        public const string Key = "4.2";       // The release the card is about: dismissed once per Key
+        public const string Version = "4.2.0"; // Shown in the title
 
-        public static string Title { get { return Strings.T("What's new in " + Key, "Novidades da " + Key, "Novedades de la " + Key, "Что нового в " + Key); } }
+        public static string Title { get { return Strings.T("What's new in version " + Version, "Novidades da versão " + Version, "Novedades de la versión " + Version, "Что нового в версии " + Version); } }
 
-        public static string[] Items
+        public static string[][] Items
         {
             get
             {
                 return new[]
                 {
-                    Strings.T("Pomodoro in the timer: focus and break cycles, with an alert at each change",
-                              "Pomodoro no timer: ciclos de foco e pausa, com um aviso a cada mudança",
-                              "Pomodoro en el temporizador: ciclos de enfoque y pausa, con un aviso en cada cambio",
-                              "Помодоро в таймере: циклы фокуса и перерыва с оповещением при смене"),
-                    Strings.T("Smoother transitions: the thin line grows into a pill and content slides in",
-                              "Transições mais fluidas: a linha fina cresce até virar pílula e o conteúdo desliza para dentro",
-                              "Transiciones más fluidas: la línea fina crece hasta ser píldora y el contenido se desliza",
-                              "Более плавные переходы: тонкая линия растёт в капсулу, содержимое выезжает"),
-                    Strings.T("Brightness is a sun that lights up; volume has waves that grow, and a cross when muted",
-                              "O brilho é um sol que acende; o volume tem ondas que crescem, e um xis quando está mudo",
-                              "El brillo es un sol que se enciende; el volumen tiene ondas que crecen, y una cruz si está en silencio",
-                              "Яркость — солнце, которое разгорается; у громкости растут волны, а при отключении звука — крестик"),
-                    Strings.T("Settings, System: copy a report to paste into a GitHub issue",
-                              "Ajustes, Sistema: copie um relatório para colar numa issue do GitHub",
-                              "Ajustes, Sistema: copia un informe para pegarlo en un issue de GitHub",
-                              "Настройки, Система: скопируйте отчёт для issue на GitHub"),
+                    new[] { Strings.T("Pomodoro in the timer", "Pomodoro no timer", "Pomodoro en el temporizador", "Помодоро в таймере"),
+                            Strings.T("Focus and break cycles on the timer page, with an alert at each change. The lengths are in Behavior.",
+                                      "Ciclos de foco e pausa na página do timer, com um aviso a cada mudança. Os tempos ficam em Comportamento.",
+                                      "Ciclos de enfoque y pausa en la página del temporizador, con un aviso en cada cambio. Los tiempos están en Comportamiento.",
+                                      "Циклы фокуса и перерыва на странице таймера с оповещением при смене. Длительность — в разделе «Поведение».") },
+                    new[] { Strings.T("Smoother transitions", "Transições mais fluidas", "Transiciones más fluidas", "Более плавные переходы"),
+                            Strings.T("The thin line grows into a pill before its content appears, and what leaves slides up.",
+                                      "A linha fina cresce até virar pílula antes de o conteúdo aparecer, e o que sai desliza para cima.",
+                                      "La línea fina crece hasta ser píldora antes de que aparezca el contenido, y lo que sale se desliza hacia arriba.",
+                                      "Тонкая линия вырастает в капсулу до появления содержимого, а уходящее съезжает вверх.") },
+                    new[] { Strings.T("Brightness and volume", "Brilho e volume", "Brillo y volumen", "Яркость и громкость"),
+                            Strings.T("Brightness is a sun that lights up; volume gains waves, and a cross when muted.",
+                                      "O brilho é um sol que acende; o volume ganha ondas e um xis quando está mudo.",
+                                      "El brillo es un sol que se enciende; el volumen gana ondas, y una cruz si está en silencio.",
+                                      "Яркость — солнце, которое разгорается; у громкости появляются волны, а при отключении звука — крестик.") },
                 };
             }
         }
 
-        // Portuguese readers go to the Portuguese changelog, everyone else to the English one
         public static string ChangelogUrl(string language)
         {
             bool portuguese = string.Equals(language, "pt", StringComparison.OrdinalIgnoreCase) ||
