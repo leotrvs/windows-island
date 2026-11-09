@@ -2724,7 +2724,7 @@ namespace WindowsIsland
             return move;
         }
 
-        // The old content slides out to one side and fades, the new slides in from the other
+        // The old content goes up (down when the song went back) and fades, the new comes in from the other side, one piece after the other
         void SlideSwap(FrameworkElement element, int direction, Action apply, int delayMs = 0)
         {
             TranslateTransform move = MoveOf(element);
@@ -2733,25 +2733,25 @@ namespace WindowsIsland
             swapToken[element] = token;
             CubicEase easeIn = new CubicEase { EasingMode = EasingMode.EaseIn };
             TimeSpan delay = TimeSpan.FromMilliseconds(delayMs);
-            DoubleAnimation away = new DoubleAnimation(0, -22 * direction, TimeSpan.FromMilliseconds(140)) { BeginTime = delay, EasingFunction = easeIn, FillBehavior = FillBehavior.HoldEnd };
+            DoubleAnimation away = new DoubleAnimation(0, -16 * direction, TimeSpan.FromMilliseconds(140)) { BeginTime = delay, EasingFunction = easeIn, FillBehavior = FillBehavior.HoldEnd };
             away.Completed += (s, e) =>
             {
                 if (swapToken[element] != token) return; // Another change took over
                 apply();
                 SlideIn(element, direction);
             };
-            move.BeginAnimation(TranslateTransform.XProperty, away);
+            move.BeginAnimation(TranslateTransform.YProperty, away);
             element.BeginAnimation(OpacityProperty, new DoubleAnimation(1, 0, TimeSpan.FromMilliseconds(140)) { BeginTime = delay, FillBehavior = FillBehavior.HoldEnd });
         }
 
-        // Comes in from the side it is going to
+        // Comes in from below when the song moves on, from above when it went back
         void SlideIn(FrameworkElement element, int direction, int delayMs = 0)
         {
             TranslateTransform move = MoveOf(element);
             if (move == null) return;
             CubicEase easeOut = new CubicEase { EasingMode = EasingMode.EaseOut };
             TimeSpan delay = TimeSpan.FromMilliseconds(delayMs);
-            move.BeginAnimation(TranslateTransform.XProperty, new DoubleAnimation(22 * direction, 0, TimeSpan.FromMilliseconds(260)) { BeginTime = delay, EasingFunction = easeOut, FillBehavior = FillBehavior.Stop });
+            move.BeginAnimation(TranslateTransform.YProperty, new DoubleAnimation(16 * direction, 0, TimeSpan.FromMilliseconds(260)) { BeginTime = delay, EasingFunction = easeOut, FillBehavior = FillBehavior.Stop });
             element.BeginAnimation(OpacityProperty, new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(260)) { BeginTime = delay, FillBehavior = FillBehavior.Stop });
         }
 

@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.6.4
+
+- **Song change, up and down:** the cover, the title and the artist now move vertically, one after the other like a cascade: the old ones go up and the new ones come in from below (the other way round when the song went back), instead of sliding sideways
+- **The notice after an update now shows:** the island's window was already loaded when the notice waited for it to load, so it never fired. After an update (or a failure) the island shows the green check, "Updated to version X", six seconds after it starts
+
 ## 4.6.3
 
 - **The song's name opens and closes smoothly:** the cover and the equalizer now stay at the island's edges all along, so everything grows and shrinks together (before, the content squeezed first and the island followed). The content no longer fades and blurs while the island widens, and the name no longer flashes back at full strength before it goes away

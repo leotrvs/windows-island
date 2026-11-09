@@ -2,6 +2,11 @@
 
 > Tradução de [CHANGELOG.md](CHANGELOG.md), que é o original em inglês.
 
+## 4.6.4
+
+- **Troca de música, para cima e para baixo:** a capa, o título e o artista agora se movem na vertical, um depois do outro como uma cascata: os antigos sobem e os novos entram por baixo (ao contrário quando a música voltou), em vez de deslizar para o lado
+- **O aviso depois de atualizar agora aparece:** a janela da ilha já estava carregada quando o aviso esperava por esse carregamento, então ele nunca disparava. Depois de uma atualização (ou de uma falha) a ilha mostra o visto verde, "Atualizado para a versão X", logo que abre
+
 ## 4.6.3
 
 - **O nome da música abre e fecha com fluidez:** a capa e o equalizador agora ficam nas bordas da ilha o tempo todo, então tudo cresce e encolhe junto (antes o conteúdo se comprimia primeiro e a ilha vinha atrás). O conteúdo não some nem fica borrado enquanto a ilha alarga, e o nome não volta com força total antes de sumir

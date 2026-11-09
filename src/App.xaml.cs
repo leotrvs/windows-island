@@ -468,10 +468,11 @@ namespace WindowsIsland
 
             Updater.CleanUp();
             // The notice waits a moment after the island is up (it was lost when the app was still starting), then stays for a few seconds
+            // (The island's window is usually loaded already by now, so "Loaded" alone would never fire: this is why the notice never showed)
             if (afterUpdate)
-                MainIsland.Loaded += (s, a) => AfterStart(() => MainIsland.ShowStatus("uptodate", Strings.UpdatedTo(Installer.Version), settings.WhatsNewSeen != WhatsNew.Key ? Strings.WhatsNewHint : null, 6)); // The green check, as when the update is looked for
+                AfterStart(() => MainIsland.ShowStatus("uptodate", Strings.UpdatedTo(Installer.Version), settings.WhatsNewSeen != WhatsNew.Key ? Strings.WhatsNewHint : null, 6)); // The green check, as when the update is looked for
             if (afterCrash)
-                MainIsland.Loaded += (s, a) => AfterStart(() => MainIsland.ShowStatus("failed", Strings.ReopenedAfterFailure, null, 6));
+                AfterStart(() => MainIsland.ShowStatus("failed", Strings.ReopenedAfterFailure, null, 6));
             updateTimer = new DispatcherTimer { Interval = FirstUpdateCheck };
             updateTimer.Tick += (s, a) =>
             {
