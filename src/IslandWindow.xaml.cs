@@ -18,13 +18,14 @@ namespace WindowsIsland
 {
     public partial class IslandWindow : Window
     {
-        enum View { Hidden, Minimal, Idle, MusicCompact, ClaudeCompact, CodexCompact, TimerCompact, BatteryCompact, ExternalCompact, SystemCompact, MusicExpanded, ClaudeExpanded, TimerExpanded, SystemExpanded, ExternalExpanded, Banner, Toast, Level, Permission }
+        enum View { Hidden, Minimal, MusicPeek, Idle, MusicCompact, ClaudeCompact, CodexCompact, TimerCompact, BatteryCompact, ExternalCompact, SystemCompact, MusicExpanded, ClaudeExpanded, TimerExpanded, SystemExpanded, ExternalExpanded, Banner, Toast, Level, Permission }
         enum Activity { None, Music, Claude, Codex, Timer, Battery, System, External }
 
         static readonly Dictionary<View, Size> Sizes = new Dictionary<View, Size>
         {
             [View.Hidden] = new Size(90, 24),
             [View.Minimal] = new Size(76, 6),
+            [View.MusicPeek] = new Size(236, 36),
             [View.Idle] = new Size(112, 30),
             [View.MusicCompact] = new Size(176, 34),
             [View.SystemCompact] = new Size(140, 34),
@@ -117,6 +118,8 @@ namespace WindowsIsland
             InitializeComponent();
 
             panels[View.Idle] = IdlePanel;
+            panels[View.Minimal] = MinimalPanel;
+            panels[View.MusicPeek] = MusicPeek;
             panels[View.MusicCompact] = MusicCompact;
             panels[View.ClaudeCompact] = ClaudeCompact;
             panels[View.CodexCompact] = CodexCompact;
@@ -232,7 +235,48 @@ namespace WindowsIsland
             };
         }
 
-        void OnMediaChanged() { UpdateMusic(); Recompute(); }
+        void OnMediaChanged() { UpdateMusic(); MusicPeekCheck(); Recompute(); }
+
+        // While the island is a thin line, a change in the music (pause, play, next, previous) makes it grow for a moment,
+        // with the cover, a symbol for what happened and the song's name.
+        bool musicPrimed, musicWasPlaying;
+        string musicTitle = "", musicBefore = "";
+        DateTime musicPeekUntil = DateTime.MinValue;
+        DispatcherTimer peekTimer;
+        bool ThinActive { get { return settings.MaximizedActivitiesThin && maximized && !IsBottom && settings.MaximizedMode == "Thin"; } }
+
+        void MusicPeekCheck()
+        {
+            string title = media.Title ?? "";
+            bool playing = media.IsPlaying;
+            if (!musicPrimed)
+            {
+                musicPrimed = true;
+                musicTitle = title;
+                musicWasPlaying = playing;
+                return;
+            }
+            string glyph = null;
+            if (title.Length > 0 && title != musicTitle)
+            {
+                glyph = title == musicBefore ? "\uE892" : "\uE893"; // Back to the song before, or onwards
+                musicBefore = musicTitle;
+                musicTitle = title;
+            }
+            else if (playing != musicWasPlaying) glyph = playing ? "\uE768" : "\uE769";
+            musicWasPlaying = playing;
+            if (glyph == null || !settings.ShowMusic || !ThinActive) return;
+            PeekGlyph.Text = glyph;
+            PeekTitle.Text = string.IsNullOrEmpty(title) ? Strings.UnknownTrack : title;
+            musicPeekUntil = DateTime.Now.AddSeconds(2.6);
+            if (peekTimer == null)
+            {
+                peekTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2.7) };
+                peekTimer.Tick += (s, e) => { peekTimer.Stop(); Recompute(); };
+            }
+            peekTimer.Stop();
+            peekTimer.Start();
+        }
         void OnClaudeChanged() { UpdateClaude(); Recompute(); }
 
         void OnTimerChanged() { UpdateTimerPage(); Recompute(); }
@@ -571,6 +615,7 @@ namespace WindowsIsland
             if (value == View.Banner) return new Size(Banner.Width, Banner.Height);
             if (value == View.Permission) return new Size(372, permissionHeight);
             if (value == View.SystemCompact) return new Size(monitorWidth, 34);
+            if (value == View.Minimal && minimalHasContent) return new Size(76, 16);
             return Sizes[value];
         }
 
@@ -1033,7 +1078,8 @@ namespace WindowsIsland
             else if (DateTime.Now < toastUntil) next = View.Toast;
             else if (DateTime.Now < levelUntil) next = View.Level;
             // The same thin line for the activities too, when asked: hover to see them
-            else if (settings.MaximizedActivitiesThin && maximized && !IsBottom && settings.MaximizedMode == "Thin") next = View.Minimal;
+            else if (DateTime.Now < musicPeekUntil && ThinActive) next = View.MusicPeek;
+            else if (ThinActive) next = View.Minimal;
             // With the system monitor on, it stays and the activity is the small bubble beside it
             else if (KeepsMonitor(primary)) next = View.SystemCompact;
             // Empty island: the collapsed island stays a plain pill. Activities only show when it expands.
@@ -1071,13 +1117,140 @@ namespace WindowsIsland
             Activity other = primary == shownActivity ? second : primary;
             Activity nextBubble = shownActivity != Activity.None && other != shownActivity ? other : Activity.None;
             if (next == View.SystemCompact && KeepsMonitor(primary)) nextBubble = primary; // The monitor keeps its place, the activity is the bubble
-            if (next != view || nextBubble != bubble)
+            bool minimalChanged = next == View.Minimal ? UpdateMinimal(primary) : ClearMinimal();
+            if (next != view || nextBubble != bubble || minimalChanged)
             {
                 view = next;
                 bubble = nextBubble;
                 ApplyTargets();
             }
             StartLoop();
+        }
+
+        // ---------- The thin line's content: the state that matters most, as one tiny icon and a rail ----------
+
+        enum Thin { None, Music, Claude, ClaudeWaiting, Timer, External, Battery, Focus }
+        Thin minimalKind = Thin.None;
+        bool minimalHasContent;
+        string minimalSig = "";
+        static readonly FontFamily FluentIcons = new FontFamily("Segoe Fluent Icons, Segoe MDL2 Assets");
+        static readonly FontFamily SymbolFont = new FontFamily("Segoe UI Symbol");
+        static readonly Brush ThinPink = Freeze(new SolidColorBrush(Color.FromRgb(0xFF, 0x37, 0x5F)));
+        static readonly Brush ThinClay = Freeze(new SolidColorBrush(Color.FromRgb(0xD9, 0x77, 0x57)));
+        static readonly Brush ThinYellow = Freeze(new SolidColorBrush(Color.FromRgb(0xFF, 0xD6, 0x0A)));
+        static readonly Brush ThinMoon = Freeze(new SolidColorBrush(Color.FromRgb(0xB4, 0xB4, 0xFF)));
+
+        bool ClearMinimal()
+        {
+            bool changed = minimalHasContent;
+            minimalHasContent = false;
+            minimalKind = Thin.None;
+            minimalSig = "";
+            return changed;
+        }
+
+        // Returns true when the line has to change size because content came or went.
+        bool UpdateMinimal(Activity primary)
+        {
+            Thin kind = Thin.None;
+            string glyph = null;
+            FontFamily font = FluentIcons;
+            Brush brush = White;
+            bool track = false;
+            double fill = 0;
+
+            if (primary == Activity.Claude)
+            {
+                kind = claude.Waiting > 0 ? Thin.ClaudeWaiting : Thin.Claude;
+                glyph = "\u2731";
+                font = SymbolFont;
+                int percent = claude.Session != null && claude.Session.Percent.HasValue ? claude.Session.EffectivePercent : 0;
+                brush = percent >= 90 ? ApiRed : percent >= 75 ? ThinYellow : ThinClay; // The limit tints the spark
+            }
+            else if (primary == Activity.Music)
+            {
+                kind = Thin.Music;
+                glyph = "\u266B";
+                font = SymbolFont;
+                brush = ThinPink;
+                track = settings.MinimalMusicPosition;
+            }
+            else if (primary == Activity.Timer)
+            {
+                kind = Thin.Timer;
+                glyph = "\uE916";
+                brush = ThinYellow;
+                track = timer.Mode == TimerService.Kind.Countdown;
+            }
+            else if (primary == Activity.External && api != null && api.Activities.Count > 0)
+            {
+                ApiActivity first = api.Activities.OrderByDescending(a => a.Updated).First();
+                kind = Thin.External;
+                glyph = first.State == "done" ? "\uE73E" : first.IconGlyph;
+                brush = StateBrush(first.State);
+                track = first.State == "running" && first.Progress >= 0;
+                fill = first.Progress / 100.0;
+            }
+            else if (primary == Activity.Battery && battery != null)
+            {
+                kind = Thin.Battery;
+                glyph = "\uE83E";
+                brush = ApiGreen;
+                track = true;
+                fill = battery.Percent / 100.0;
+            }
+            else if (settings.ShowFocus && focusState != null && focusState.On)
+            {
+                kind = Thin.Focus;
+                glyph = "\uE708";
+                brush = ThinMoon;
+            }
+
+            minimalKind = kind;
+            MinimalGlyph.Visibility = glyph != null ? Visibility.Visible : Visibility.Collapsed;
+            if (glyph != null)
+            {
+                MinimalGlyph.Text = glyph;
+                MinimalGlyph.FontFamily = font;
+                MinimalGlyph.Foreground = brush;
+            }
+            MinimalTrack.Visibility = track ? Visibility.Visible : Visibility.Collapsed;
+            MinimalFill.Background = brush;
+            MinimalFill.Width = 60 * Math.Clamp(fill, 0, 1);
+
+            bool has = glyph != null;
+            string sig = kind + "|" + (glyph ?? "") + "|" + track;
+            bool changed = has != minimalHasContent || sig != minimalSig;
+            minimalHasContent = has;
+            minimalSig = sig;
+            return changed;
+        }
+
+        // The parts of the line that move: the rail of the timer, the song and the breathing of the spark. True while they must.
+        bool AnimateMinimal()
+        {
+            if (!minimalHasContent) return false;
+            switch (minimalKind)
+            {
+                case Thin.Claude:
+                    MinimalGlyph.Opacity = 0.7 + 0.3 * (0.5 + 0.5 * Math.Cos(clock * 2.4));
+                    return true;
+                case Thin.ClaudeWaiting:
+                    MinimalGlyph.Opacity = 0.3 + 0.7 * (0.5 + 0.5 * Math.Cos(clock * 4.5));
+                    return true;
+                case Thin.Timer:
+                    MinimalGlyph.Opacity = 1;
+                    MinimalFill.Width = 60 * timer.Fraction;
+                    return timer.Running && !timer.Paused;
+                case Thin.Music:
+                    MinimalGlyph.Opacity = media.IsPlaying ? 1 : 0.5;
+                    if (settings.MinimalMusicPosition && media.Duration > TimeSpan.Zero)
+                        MinimalFill.Width = 60 * Math.Clamp(media.Position.TotalSeconds / media.Duration.TotalSeconds, 0, 1);
+                    return media.IsPlaying && settings.MinimalMusicPosition;
+                default:
+                    MinimalGlyph.Opacity = 1;
+                    return false;
+            }
         }
 
         // The monitor is not covered by an activity while "keep the monitor" is on (and the island is not an empty pill).
@@ -1677,6 +1850,7 @@ namespace WindowsIsland
             CompactArt.Background = art;
             ExpandedArt.Background = art;
             BubbleArt.Fill = art;
+            PeekArt.Background = art;
 
             Brush accent = Freeze(new SolidColorBrush(media.Accent));
             foreach (Rectangle bar in compactBars) bar.Fill = accent;
@@ -1939,6 +2113,8 @@ namespace WindowsIsland
         bool AnimateLive(double dt)
         {
             bool keepGoing = false;
+
+            if (presence[MinimalPanel].Value > 0.01) keepGoing |= AnimateMinimal();
 
             bool musicVisible = presence[MusicCompact].Value > 0.01 || presence[MusicExpanded].Value > 0.01;
             if (musicVisible) keepGoing |= AnimateEqualizer(dt);

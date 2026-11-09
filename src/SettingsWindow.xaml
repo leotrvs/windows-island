@@ -181,6 +181,14 @@
                 </Border>
             </Grid>
             <ContentControl x:Name="TabBar"/>
+            <Border Margin="0,10,0,0" CornerRadius="9" Background="{DynamicResource Card}" Padding="12,0" Height="32">
+                <Grid>
+                    <TextBlock x:Name="SearchHint" Foreground="{DynamicResource Secondary}" FontSize="13" VerticalAlignment="Center" IsHitTestVisible="False"/>
+                    <TextBox x:Name="SearchBox" BorderThickness="0" Background="Transparent" FontSize="13" VerticalAlignment="Center"
+                             Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Window}}"
+                             CaretBrush="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Window}}"/>
+                </Grid>
+            </Border>
         </StackPanel>
         <ScrollViewer x:Name="Scroller" Grid.Row="1" VerticalScrollBarVisibility="Auto" Focusable="False">
             <StackPanel x:Name="Content" Margin="20,0,16,22"/>

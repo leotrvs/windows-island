@@ -21,6 +21,8 @@
     <Compile Include="..\src\LimitMath.cs" Link="App\LimitMath.cs" />
     <Compile Include="..\src\DiscordRpc.cs" Link="App\DiscordRpc.cs" />
     <Compile Include="..\src\SteamManifest.cs" Link="App\SteamManifest.cs" />
+    <Compile Include="..\src\ObsLog.cs" Link="App\ObsLog.cs" />
+    <Compile Include="..\src\FootballFeed.cs" Link="App\FootballFeed.cs" />
   </ItemGroup>
 
 </Project>

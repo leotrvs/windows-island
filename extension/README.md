@@ -2,6 +2,8 @@
 
 A small Chrome and Edge extension. While a tab plays sound, it tells Windows Island the tab's title, site name and small icon, so web audio without artwork (a WhatsApp voice message, for example) shows that site's icon instead of a letter.
 
+It also shows the progress of your downloads: the island gets each download's file name and percent, and nothing else.
+
 It only talks to the island on this same computer (`127.0.0.1`), only while a tab is playing, and sends nothing anywhere else.
 
 ## Set up
@@ -12,4 +14,4 @@ It only talks to the island on this same computer (`127.0.0.1`), only while a ta
 
 By hand instead: load this `extension` folder, run `island token` (see [docs/API.md](../docs/API.md)) and paste the token in the extension's options. The default port is 47613.
 
-Permissions: `tabs` (to read the playing tab's title and address), `favicon` (the browser's own copy of the site icon), `storage` (the token and port), and access to `127.0.0.1` only.
+Permissions: `tabs` (to read the playing tab's title and address), `favicon` (the browser's own copy of the site icon), `downloads` (the file name and progress of your downloads), `storage` (the token and port), and access to `127.0.0.1` only.

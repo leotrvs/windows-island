@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.0.0
+
+- **The thin line grows up:** with a maximized window (and "Activities become the line too"), the line shows a tiny icon of what matters most, in its own color: music (pink note), Claude (clay spark, yellow from 75% of the limit and red from 90%, breathing while it works, pulsing while it waits for you), timer (clock, the line empties as time runs out), an app's activity (its icon, the line fills with its progress), charging (green, the line fills with the charge) and focus (a crescent moon). Only the most important state shows, never a mix
+- **Music on the line:** pause, play, next and previous make the line grow for a moment with the cover, a symbol and the song's name. Optional: the line fills along the song (Settings, Behavior)
+- **New live activities:** OBS recording or streaming with its time (read from OBS's own log); Windows installing updates and "Restart to finish"; browser downloads with their percent (the browser extension now has the `downloads` permission: reload it); and the live score of your team (off by default: type your team and the ESPN league codes, such as `bra.1`)
+- **Progress bars:** thinner, under the name of the main activity
+- **Settings:** a search box; what is inside a group is set apart (darker, indented, blue edge); "Hidden apps" replaces one row per app with chips (+ to hide, x to bring back); games, OBS and the like sit in one group
+
 ## 2.10.0
 
 - **`island run`:** `island run --title Tests -- npm test` runs the command and shows it in the island until it ends (done, or error with the exit code, which `island run` returns as its own)

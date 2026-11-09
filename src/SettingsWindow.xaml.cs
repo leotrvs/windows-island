@@ -36,6 +36,11 @@ namespace WindowsIsland
             InitializeComponent();
             SettingsTheme.Choose(settings.Theme);
             ApplyTheme();
+            SearchBox.TextChanged += (sender, args) =>
+            {
+                SearchHint.Visibility = SearchBox.Text.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
+                Rebuild();
+            };
 
             // The scroll bar inside the ScrollViewer ignores implicit styles, so it gets its thin one by hand.
             Scroller.ApplyTemplate();
@@ -164,6 +169,7 @@ namespace WindowsIsland
         {
             Title = Installer.Name + " – " + Strings.SettingsTitle;
             Heading.Text = Strings.SettingsTitle;
+            SearchHint.Text = Strings.SettingsSearch;
             BuildTabs();
             Rebuild();
         }
@@ -350,7 +356,7 @@ namespace WindowsIsland
         {
             bool all = only == AllTabs;
             showTitles = all;
-            if (all)
+            if (all && filter.Length == 0)
                 Content.Children.Add(new TextBlock { Text = Strings.SettingsTitle, FontSize = 30, FontWeight = FontWeights.Bold, Margin = new Thickness(4, 0, 0, 14) });
             if (all || only == 0) BuildActivities();
             if (all || only == 1) BuildBehavior();
@@ -380,25 +386,24 @@ namespace WindowsIsland
                 Toggle("\uE720", Strings.MenuPrivacyDots, Strings.HintPrivacyDots, () => settings.ShowPrivacyDots, v => settings.ShowPrivacyDots = v);
                 Toggle("\uE7F4", Strings.MenuScreenShare, Strings.HintScreenShare, () => settings.ShowScreenShare, v => settings.ShowScreenShare = v);
                 // Apps seen using the microphone, camera or screen: one can be turned off here, like a call app that keeps the microphone busy
-                bool firstApp = true;
-                foreach (string app in settings.PrivacySeen.ToArray())
-                {
-                    string name = app;
-                    Toggle("\uE77B", Strings.MenuIgnoreApp(name), firstApp ? Strings.HintIgnoreApps : null,
-                        () => settings.PrivacyIgnored.Contains(name, StringComparer.OrdinalIgnoreCase),
-                        on =>
-                        {
-                            settings.PrivacyIgnored.RemoveAll(n => string.Equals(n, name, StringComparison.OrdinalIgnoreCase));
-                            if (on) settings.PrivacyIgnored.Add(name);
-                        });
-                    firstApp = false;
-                }
+                if (settings.PrivacySeen.Count > 0 || settings.PrivacyIgnored.Count > 0) HiddenAppsRow();
                 int[] nameSeconds = { 0, 1, 2, 3 };
                 string[] nameLabels = { Strings.Off, Strings.Duration(1, false), Strings.Duration(2, false), Strings.Duration(3, false) };
                 Row("\uE77B", Strings.MenuPrivacyNames, Strings.HintPrivacyNames, null,
                     SegmentBar(nameLabels, Math.Max(0, Array.IndexOf(nameSeconds, settings.PrivacyNameSeconds)), i => settings.PrivacyNameSeconds = nameSeconds[i]));
             });
+            Group("\uE8F1", Strings.GroupMore, () =>
+            {
+            Toggle("\uE9D9", Strings.MenuFootball, Strings.HintFootball, () => settings.ShowFootball, v => { settings.ShowFootball = v; Dispatcher.BeginInvoke(new Action(Rebuild), DispatcherPriority.Background); });
+            if (settings.ShowFootball)
+            {
+                InputRow(Strings.FootballTeamLabel, () => settings.FootballTeam, v => settings.FootballTeam = (v ?? "").Trim(), false);
+                InputRow(Strings.FootballLeaguesLabel, () => settings.FootballLeagues, v => settings.FootballLeagues = (v ?? "").Trim(), false);
+            }
+            Toggle("\uE7C8", Strings.MenuObs, Strings.HintObs, () => settings.ShowObs, v => settings.ShowObs = v);
+            Toggle("\uE895", Strings.MenuWindowsUpdate, Strings.HintWindowsUpdate, () => settings.ShowWindowsUpdate, v => settings.ShowWindowsUpdate = v);
             Toggle("\uE896", Strings.MenuSteam, Strings.HintSteam, () => settings.ShowSteamDownloads, v => settings.ShowSteamDownloads = v);
+            });
             Group("\uE720", Strings.GroupDiscord, DiscordRows);
             Group("\uE83E", Strings.GroupBattery, () =>
             {
@@ -418,6 +423,39 @@ namespace WindowsIsland
                 Toggle("\uE767", Strings.MenuLevels, Strings.HintLevels, () => settings.ShowLevels, v => settings.ShowLevels = v);
                 Toggle("\uE74F", Strings.MenuHideOsd, Strings.HintHideOsd, () => settings.HideWindowsOsd, v => settings.HideWindowsOsd = v);
             });
+        }
+
+        // One row for every app whose dot is hidden: hidden ones are chips with an x, apps seen lately are chips with a +.
+        void HiddenAppsRow()
+        {
+            WrapPanel chips = new WrapPanel { Margin = new Thickness(44, 0, 14, 10) };
+            foreach (string name in settings.PrivacyIgnored.ToArray())
+            {
+                string app = name;
+                chips.Children.Add(Chip(app + "  \u2715", true, () => { settings.PrivacyIgnored.RemoveAll(n => string.Equals(n, app, StringComparison.OrdinalIgnoreCase)); Apply(); Dispatcher.BeginInvoke(new Action(Rebuild), DispatcherPriority.Background); }));
+            }
+            foreach (string name in settings.PrivacySeen.ToArray())
+            {
+                string app = name;
+                if (settings.PrivacyIgnored.Contains(app, StringComparer.OrdinalIgnoreCase)) continue;
+                chips.Children.Add(Chip("+  " + app, false, () => { settings.PrivacyIgnored.Add(app); Apply(); Dispatcher.BeginInvoke(new Action(Rebuild), DispatcherPriority.Background); }));
+            }
+            Row("\uE77B", Strings.MenuHiddenApps, Strings.HintHiddenApps, null, chips);
+        }
+
+        Border Chip(string text, bool solid, Action click)
+        {
+            Border chip = new Border
+            {
+                CornerRadius = new CornerRadius(12),
+                Padding = new Thickness(10, 3, 10, 4),
+                Margin = new Thickness(0, 0, 6, 6),
+                Cursor = System.Windows.Input.Cursors.Hand,
+                Background = new SolidColorBrush(solid ? Color.FromArgb(0x40, 0x0A, 0x84, 0xFF) : Color.FromArgb(0x22, 0x80, 0x80, 0x80)),
+                Child = new TextBlock { Text = text, FontSize = 12.5, Foreground = solid ? (Brush)IconBrush : (Brush)FindResource("Secondary") },
+            };
+            chip.MouseLeftButtonUp += (s, e) => { e.Handled = true; click(); };
+            return chip;
         }
 
         // The Discord rows: the switch, the app's id and secret, the state of the connection and a guide.
@@ -531,6 +569,7 @@ namespace WindowsIsland
                 SegmentBar(new[] { Strings.MaxThin, Strings.MaxNormal, Strings.MaxHidden },
                     Math.Max(0, Array.FindIndex(maxValues, v => string.Equals(v, settings.MaximizedMode, StringComparison.OrdinalIgnoreCase))),
                     i => settings.MaximizedMode = maxValues[i]));
+            Toggle("\uE8D6", Strings.MenuMinimalPosition, null, () => settings.MinimalMusicPosition, v => settings.MinimalMusicPosition = v);
             Toggle("\uE740", Strings.MenuMaxActivities, Strings.HintMaxActivities, () => settings.MaximizedActivitiesThin, v => settings.MaximizedActivitiesThin = v);
             Toggle("\uE765", Strings.MenuHotkey, Strings.HintHotkey, () => settings.HotkeyEnabled, v => { settings.HotkeyEnabled = v; Dispatcher.BeginInvoke(new Action(Rebuild), DispatcherPriority.Background); });
             if (settings.HotkeyEnabled) HotkeyRow();
@@ -649,11 +688,24 @@ namespace WindowsIsland
             Content.Children.Add(footer);
         }
 
+        string filter = "";       // What the search box holds; the rows that do not match are left out
+        Border sectionBorder;     // The card and title of the section being built, shown only when a row is added while searching
+        TextBlock sectionTitle;
+
         void Rebuild()
         {
             Content.Children.Clear();
-            Build(tab);
+            filter = (SearchBox.Text ?? "").Trim();
+            Build(filter.Length > 0 ? AllTabs : tab);
             FitSoon();
+        }
+
+        bool Matches(string label, string hint)
+        {
+            if (filter.Length == 0) return true;
+            CompareInfo compare = CultureInfo.CurrentCulture.CompareInfo;
+            const CompareOptions options = CompareOptions.IgnoreCase | CompareOptions.IgnoreNonSpace;
+            return (label != null && compare.IndexOf(label, filter, options) >= 0) || (hint != null && compare.IndexOf(hint, filter, options) >= 0);
         }
 
         // The window grows or shrinks to the height its content needs, so nothing has to be scrolled
@@ -727,13 +779,21 @@ namespace WindowsIsland
                     Margin = new Thickness(16, 18, 0, 6),
                 });
             card = new StackPanel();
-            Content.Children.Add(new Border
+            Border border = new Border
             {
                 Background = (Brush)FindResource("Card"),
                 CornerRadius = new CornerRadius(12),
                 Margin = new Thickness(0, !showTitles && Content.Children.Count > 0 ? 14 : 0, 0, 0), // Cards stacked without a title keep a gap
                 Child = card,
-            });
+            };
+            sectionTitle = showTitles && Content.Children.Count > 0 ? Content.Children[Content.Children.Count - 1] as TextBlock : null;
+            Content.Children.Add(border);
+            sectionBorder = border;
+            if (filter.Length > 0)
+            {
+                border.Visibility = Visibility.Collapsed; // Shown by its first matching row
+                if (sectionTitle != null) sectionTitle.Visibility = Visibility.Collapsed;
+            }
         }
 
         static readonly System.Collections.Generic.HashSet<string> openGroups = new System.Collections.Generic.HashSet<string>(); // Remembered while the app runs
@@ -741,6 +801,7 @@ namespace WindowsIsland
         // A row with an arrow that folds away the rows inside it, so a tab shows the main choices first.
         void Group(string icon, string title, Action build)
         {
+            if (filter.Length > 0) { build(); return; } // Searching: the rows that match, without the folds
             bool open = openGroups.Contains(title);
             TextBlock arrow = new TextBlock
             {
@@ -757,12 +818,23 @@ namespace WindowsIsland
             header.Background = Brushes.Transparent;
             header.Cursor = System.Windows.Input.Cursors.Hand;
 
-            StackPanel body = new StackPanel { Visibility = open ? Visibility.Visible : Visibility.Collapsed };
-            card.Children.Add(body);
+            // What is inside is set apart: darker, indented and with a blue edge, so it never reads as more of the same list
+            StackPanel body = new StackPanel();
+            Border inset = new Border
+            {
+                Child = body,
+                Visibility = open ? Visibility.Visible : Visibility.Collapsed,
+                Background = new SolidColorBrush(Color.FromArgb(0x26, 0, 0, 0)),
+                BorderBrush = new SolidColorBrush(Color.FromRgb(0x0A, 0x84, 0xFF)),
+                BorderThickness = new Thickness(2, 0, 0, 0),
+                CornerRadius = new CornerRadius(0, 9, 9, 0),
+                Margin = new Thickness(18, 0, 10, 10),
+            };
+            card.Children.Add(inset);
             header.MouseLeftButtonUp += (s, e) =>
             {
-                bool now = body.Visibility != Visibility.Visible;
-                body.Visibility = now ? Visibility.Visible : Visibility.Collapsed;
+                bool now = inset.Visibility != Visibility.Visible;
+                inset.Visibility = now ? Visibility.Visible : Visibility.Collapsed;
                 if (now) openGroups.Add(title); else openGroups.Remove(title);
                 ((RotateTransform)arrow.RenderTransform).BeginAnimation(RotateTransform.AngleProperty,
                     new System.Windows.Media.Animation.DoubleAnimation(now ? 180 : 0, TimeSpan.FromMilliseconds(180)));
@@ -771,7 +843,6 @@ namespace WindowsIsland
 
             StackPanel outer = card;
             card = body;
-            body.Children.Add(new Border { Height = 1, Background = (Brush)FindResource("Separator"), Margin = new Thickness(16, 0, 0, 0), SnapsToDevicePixels = true });
             try { build(); }
             finally { card = outer; }
         }
@@ -779,6 +850,12 @@ namespace WindowsIsland
         // One row: label (and hint) on the left, a control on the right, a hairline above all but the first.
         void Row(string icon, string label, string hint, UIElement control, UIElement below = null, UIElement left = null)
         {
+            if (filter.Length > 0)
+            {
+                if (!Matches(label, hint)) return;
+                if (sectionBorder != null) sectionBorder.Visibility = Visibility.Visible;
+                if (sectionTitle != null) sectionTitle.Visibility = Visibility.Visible;
+            }
             Grid grid = new Grid { Margin = new Thickness(14, 10, 14, 10), MinHeight = 30 };
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });

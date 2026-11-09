@@ -44,6 +44,12 @@ namespace WindowsIsland
 
         public bool Running { get { return Mode != Kind.None; } }
 
+        // How much of a countdown is left, 0-1 (0 for a stopwatch)
+        public double Fraction
+        {
+            get { return Mode == Kind.Countdown && length > TimeSpan.Zero ? Math.Clamp(Shown.TotalSeconds / length.TotalSeconds, 0, 1) : 0; }
+        }
+
         TimeSpan Elapsed { get { return before + (Paused ? TimeSpan.Zero : DateTime.UtcNow - started); } }
 
         // Time left on a countdown, or time elapsed on a stopwatch.

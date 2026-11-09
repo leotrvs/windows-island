@@ -40,6 +40,20 @@ namespace WindowsIsland
         LocalApi api;
         internal LocalApi Api { get { return api; } } // Activities and alerts from scripts and apps
         SteamService steam;
+        ObsService obs;
+        FootballService football;
+        string footballKey = "";
+
+        // Starts, restarts (the team or the leagues changed) or stops the football score
+        void ApplyFootball(bool sample)
+        {
+            string key = settings.ShowFootball && !sample ? settings.FootballTeam + "|" + settings.FootballLeagues : "";
+            if (key == footballKey) return;
+            footballKey = key;
+            if (key.Length > 0) football.Start(settings.FootballTeam, settings.FootballLeagues);
+            else football.Stop();
+        }
+        WindowsUpdateService windowsUpdate;
         DiscordService discord;
         internal DiscordService Discord { get { return discord; } } // Muted or deafened in Discord
         ScreenshotService screenshots;
@@ -139,6 +153,29 @@ namespace WindowsIsland
             claude = new ClaudeService(Dispatcher);
             codex = new CodexService(Dispatcher);
             timer = new TimerService(Dispatcher);
+            Action<WatchedActivity> watched = w =>
+            {
+                if (api == null) return;
+                if (w.Gone) { api.End(w.Id); return; }
+                api.Post(new ApiActivity
+                {
+                    Id = w.Id,
+                    App = w.App,
+                    Title = w.Title,
+                    Text = w.Text,
+                    Progress = w.Progress,
+                    IconGlyph = w.Glyph,
+                    State = w.Done ? "done" : "running",
+                    Updated = DateTime.UtcNow,
+                });
+            };
+            football = new FootballService(Dispatcher);
+            football.Updated += watched;
+            football.Goal += (title, text) => MainIsland?.ShowApiAlert(new ApiAlert { App = Strings.MenuFootball, Title = title, Text = text, IconGlyph = LocalApi.Glyph("star"), Seconds = 6 });
+            obs = new ObsService(Dispatcher);
+            obs.Updated += watched;
+            windowsUpdate = new WindowsUpdateService(Dispatcher);
+            windowsUpdate.Updated += watched;
             steam = new SteamService(Dispatcher);
             steam.Progress += (appId, name, percent, finished) =>
             {
@@ -280,6 +317,11 @@ namespace WindowsIsland
                 else discord.Stop();
                 if (settings.ShowSteamDownloads && !sample) steam.Start();
                 else steam.Stop();
+                ApplyFootball(sample);
+                if (settings.ShowObs && !sample) obs.Start();
+                else obs.Stop();
+                if (settings.ShowWindowsUpdate && !sample) windowsUpdate.Start();
+                else windowsUpdate.Stop();
                 if (!sample) ReconcileIslands();
                 foreach (IslandWindow island in islands) island.SettingsChanged();
                 if (settings.ShowNotifications && !sample) notifications.Start();
@@ -327,6 +369,9 @@ namespace WindowsIsland
             if (settings.ApiEnabled) api.Start(settings.ApiPort);
             if (settings.DiscordEnabled) discord.Start(settings.DiscordClientId);
             if (settings.ShowSteamDownloads) steam.Start();
+            ApplyFootball(false);
+            if (settings.ShowObs) obs.Start();
+            if (settings.ShowWindowsUpdate) windowsUpdate.Start();
             if (Installer.IsInstalledCopy) { Installer.EnsureCommandShim(); Installer.RefreshAppsEntry(); }
             if (settings.PermissionPrompts && !dev) { string hookError; ClaudeHook.Apply(true, out hookError); } // Keeps the hook pointing at this exe // Copies updated from before 2.0 get island.cmd too
 
@@ -433,6 +478,9 @@ namespace WindowsIsland
             api?.Stop();
             discord?.Stop();
             steam?.Stop();
+            obs?.Stop();
+            football?.Stop();
+            windowsUpdate?.Stop();
             osd?.Apply(false); // Gives Windows its volume popup back
             if (ownsMutex)
             {

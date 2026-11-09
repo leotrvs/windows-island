@@ -208,6 +208,12 @@ namespace WindowsIsland
         public static string ThemeAuto => T("Auto", "Auto", "Auto", "Авто");
         public static string ThemeDark => T("Dark", "Escuro", "Oscuro", "Тёмная");
         public static string ThemeLight => T("Light", "Claro", "Claro", "Светлая");
+        public static string MenuHiddenApps => T("Hidden apps", "Apps escondidos", "Apps ocultas", "Скрытые приложения");
+        public static string HintHiddenApps => T("These apps show no microphone, camera or screen dot. Tap + to hide one, ✕ to bring it back",
+                                    "Esses apps não mostram ponto de microfone, câmera ou tela. Toque em + para esconder, ✕ para voltar",
+                                    "Estas apps no muestran punto de micrófono, cámara o pantalla. Toca + para ocultar, ✕ para volver",
+                                    "Для этих приложений нет точки микрофона, камеры или экрана. + скрыть, ✕ вернуть");
+        public static string SettingsSearch => T("Search settings", "Buscar ajuste", "Buscar ajuste", "Поиск настроек");
         public static string MenuIgnoreApp(string app) => T("No dot for " + app, "Sem ponto para " + app, "Sin punto para " + app, "Без точки для " + app);
         public static string HintIgnoreApps => T("Apps that used the microphone, camera or screen. Turn one on to hide its dot",
                                     "Apps que usaram microfone, câmera ou tela. Ligue um para esconder o ponto dele",
@@ -245,6 +251,25 @@ namespace WindowsIsland
                                     "Música, Claude e outros viram uma bolinha ao lado do monitor",
                                     "La música, Claude y otros pasan a ser una burbuja junto al monitor",
                                     "Музыка, Claude и другое становятся пузырём рядом с монитором");
+        public static string GroupMore => T("Games, OBS and more", "Jogos, OBS e mais", "Juegos, OBS y más", "Игры, OBS и другое");
+        public static string MenuFootball => T("Football score", "Placar de futebol", "Marcador de fútbol", "Счёт матча");
+        public static string HintFootball => T("Live score of your team, from ESPN's public scoreboard. Asks the internet; your team's name is not sent",
+                                    "Placar ao vivo do seu time, do placar público da ESPN. Consulta a internet; o nome do time não é enviado",
+                                    "Marcador en vivo de tu equipo, del marcador público de ESPN. Consulta internet; el nombre del equipo no se envía",
+                                    "Счёт вашей команды из публичного табло ESPN. Обращается к интернету; название команды не отправляется");
+        public static string FootballTeamLabel => T("Team (name or abbreviation)", "Time (nome ou sigla)", "Equipo (nombre o sigla)", "Команда (название или код)");
+        public static string FootballLeaguesLabel => T("Leagues (ESPN codes, e.g. bra.1, eng.1)", "Campeonatos (códigos da ESPN, ex.: bra.1, eng.1)", "Ligas (códigos de ESPN, p. ej. bra.1, eng.1)", "Лиги (коды ESPN, напр. bra.1, eng.1)");
+        public static string FootballGoal => T("GOAL!", "GOL!", "¡GOL!", "ГОЛ!");
+        public static string FootballFinal => T("Full time", "Fim de jogo", "Final", "Матч окончен");
+        public static string MenuObs => T("OBS recording", "Gravação do OBS", "Grabación de OBS", "Запись OBS");
+        public static string HintObs => T("Shows OBS recording or streaming and for how long", "Mostra o OBS gravando ou transmitindo e há quanto tempo", "Muestra OBS grabando o transmitiendo y desde cuándo", "Показывает запись или трансляцию OBS и сколько она идёт");
+        public static string ObsRecording => T("Recording", "Gravando", "Grabando", "Запись");
+        public static string ObsStreaming => T("Live", "Ao vivo", "En directo", "Эфир");
+        public static string MenuWindowsUpdate => T("Windows Update", "Windows Update", "Windows Update", "Windows Update");
+        public static string HintWindowsUpdate => T("Shows when Windows installs updates and when a restart is needed", "Mostra quando o Windows instala atualizações e quando precisa reiniciar", "Muestra cuándo Windows instala actualizaciones y cuándo hay que reiniciar", "Показывает установку обновлений Windows и необходимость перезагрузки");
+        public static string WuInstalling => T("Installing updates", "Instalando atualizações", "Instalando actualizaciones", "Установка обновлений");
+        public static string WuReboot => T("Restart to finish", "Reiniciar para concluir", "Reiniciar para terminar", "Перезагрузите для завершения");
+        public static string MenuMinimalPosition => T("Song position on the line", "Posição da música na linha", "Posición de la canción en la línea", "Позиция трека на линии");
         public static string MenuMaxActivities => T("Activities become the line too", "Atividades também viram a linha", "Las actividades también son la línea", "Активности тоже становятся линией");
         public static string HintMaxActivities => T("With a maximized window, music and others stay a thin line; hover to see them",
                                     "Com janela maximizada, música e outras ficam numa linha fina; passe o mouse para ver",

@@ -124,6 +124,24 @@
                                HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"/>
                 </Grid>
 
+                <!-- The thin line: a tiny icon of what is happening and a rail that fills -->
+                <Grid x:Name="MinimalPanel" Width="76" Height="16">
+                    <TextBlock x:Name="MinimalGlyph" FontSize="9" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,1,0,0" Visibility="Collapsed"/>
+                    <Border x:Name="MinimalTrack" Height="2" CornerRadius="1" VerticalAlignment="Bottom" Margin="8,0,8,2.5" Background="#26FFFFFF" Visibility="Collapsed">
+                        <Border x:Name="MinimalFill" HorizontalAlignment="Left" CornerRadius="1" Width="0" Background="White"/>
+                    </Border>
+                </Grid>
+
+                <!-- A change in the music (pause, play, next, previous) while the island is a thin line -->
+                <Grid x:Name="MusicPeek" Width="236" Height="36">
+                    <Border x:Name="PeekArt" Width="24" Height="24" CornerRadius="6" HorizontalAlignment="Left" Margin="8,0,0,0"
+                            Background="{StaticResource ArtPlaceholder}"/>
+                    <TextBlock x:Name="PeekGlyph" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14" Foreground="White"
+                               HorizontalAlignment="Left" VerticalAlignment="Center" Margin="42,0,0,0"/>
+                    <TextBlock x:Name="PeekTitle" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                               Margin="66,0,14,0"/>
+                </Grid>
+
                 <!-- Music, compact -->
                 <Grid x:Name="MusicCompact" Width="176" Height="34">
                     <Border x:Name="CompactArt" Width="22" Height="22" CornerRadius="6" HorizontalAlignment="Left"
@@ -195,9 +213,9 @@
                                TextTrimming="CharacterEllipsis" Margin="38,0,52,0"/>
                     <TextBlock x:Name="ExternalSide" FontSize="12.5" FontWeight="SemiBold" HorizontalAlignment="Right" VerticalAlignment="Center"
                                Margin="0,0,13,0" Typography.NumeralAlignment="Tabular"/>
-                    <Border x:Name="ExternalBarTrack" Height="2.5" CornerRadius="1.25" VerticalAlignment="Bottom" Margin="16,0,16,2.5"
+                    <Border x:Name="ExternalBarTrack" Height="2" CornerRadius="1" VerticalAlignment="Bottom" Margin="16,0,16,3"
                             Background="#33FFFFFF" Visibility="Collapsed">
-                        <Border x:Name="ExternalBar" HorizontalAlignment="Left" CornerRadius="1.25" Background="#0A84FF" Width="0"/>
+                        <Border x:Name="ExternalBar" HorizontalAlignment="Left" CornerRadius="1" Background="#0A84FF" Width="0"/>
                     </Border>
                 </Grid>
 
