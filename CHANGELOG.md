@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.0.7
+
+- **Settings:** the search box looks like one: a magnifier, the words "Search settings", a thin outline and an x to clear it
+
 ## 3.0.6
 
 - **Thin line, system monitor:** the two rings now read fresh numbers every second (they used to update only when the island was opened); the part that is not filled is black; with "keep the monitor in sight" the rings stay beside the line while another activity runs, and that activity's bubble moves out beyond them

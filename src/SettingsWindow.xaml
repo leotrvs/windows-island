@@ -181,12 +181,23 @@
                 </Border>
             </Grid>
             <ContentControl x:Name="TabBar"/>
-            <Border Margin="0,10,0,0" CornerRadius="9" Background="{DynamicResource Card}" Padding="12,0" Height="32">
+            <Border Margin="0,10,0,0" CornerRadius="10" Height="34" Padding="11,0" Background="{DynamicResource Card}"
+                    BorderBrush="{DynamicResource Separator}" BorderThickness="1">
                 <Grid>
-                    <TextBlock x:Name="SearchHint" Foreground="{DynamicResource Secondary}" FontSize="13" VerticalAlignment="Center" IsHitTestVisible="False"/>
-                    <TextBox x:Name="SearchBox" BorderThickness="0" Background="Transparent" FontSize="13" VerticalAlignment="Center"
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="&#xE721;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
+                               Foreground="{DynamicResource Secondary}" VerticalAlignment="Center" Margin="0,0,9,0"/>
+                    <TextBlock x:Name="SearchHint" Grid.Column="1" Foreground="{DynamicResource Secondary}" FontSize="13.5"
+                               VerticalAlignment="Center" IsHitTestVisible="False"/>
+                    <TextBox x:Name="SearchBox" Grid.Column="1" BorderThickness="0" Background="Transparent" FontSize="13.5" VerticalAlignment="Center"
                              Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Window}}"
                              CaretBrush="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Window}}"/>
+                    <TextBlock x:Name="SearchClear" Grid.Column="2" Text="&#xE711;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="11"
+                               Foreground="{DynamicResource Secondary}" VerticalAlignment="Center" Margin="8,0,0,0" Cursor="Hand" Visibility="Collapsed"/>
                 </Grid>
             </Border>
         </StackPanel>

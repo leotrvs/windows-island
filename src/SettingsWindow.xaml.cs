@@ -36,11 +36,14 @@ namespace WindowsIsland
             InitializeComponent();
             SettingsTheme.Choose(settings.Theme);
             ApplyTheme();
+            SearchHint.Text = Strings.SettingsSearch;
             SearchBox.TextChanged += (sender, args) =>
             {
                 SearchHint.Visibility = SearchBox.Text.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
+                SearchClear.Visibility = SearchBox.Text.Length == 0 ? Visibility.Collapsed : Visibility.Visible;
                 Rebuild();
             };
+            SearchClear.MouseLeftButtonUp += (sender, args) => { SearchBox.Clear(); SearchBox.Focus(); };
 
             // The scroll bar inside the ScrollViewer ignores implicit styles, so it gets its thin one by hand.
             Scroller.ApplyTemplate();
