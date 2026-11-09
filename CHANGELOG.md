@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.3.2
+
+- **Settings:** when a new version is found, the update button ("Download version X") and its arrow are green (so is "Up to date"), and in Essentials it has more room from the edges
+
 ## 4.3.1
 
 - **Windows Update:** "Installing updates" showed up when nothing was installing (Windows runs its servicing process, TiWorker, for maintenance and when the Update page looks for updates). It now needs the update client's own log to say an installation started and not yet finished, as well as TiWorker working

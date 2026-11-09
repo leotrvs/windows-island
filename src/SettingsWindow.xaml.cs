@@ -292,9 +292,9 @@ namespace WindowsIsland
             switch (phase)
             {
                 case UpdateFlow.Phase.Checking: glyph = "\uE895"; text = Strings.UpdateChecking; color = (Brush)FindResource("Secondary"); spinning = true; break;
-                case UpdateFlow.Phase.Available: glyph = "\uE896"; text = Strings.UpdateDownload(updates.Version); break;
+                case UpdateFlow.Phase.Available: glyph = "\uE896"; text = Strings.UpdateDownload(updates.Version); color = new SolidColorBrush(Color.FromRgb(0x30, 0xD1, 0x58)); break; // A new version: green
                 case UpdateFlow.Phase.Downloading: glyph = "\uE895"; text = Strings.UpdateDownloading; color = (Brush)FindResource("Secondary"); spinning = true; break;
-                case UpdateFlow.Phase.UpToDate: glyph = "\uE73E"; text = Strings.UpToDate; color = (Brush)FindResource("On"); break;
+                case UpdateFlow.Phase.UpToDate: glyph = "\uE73E"; text = Strings.UpToDate; color = new SolidColorBrush(Color.FromRgb(0x30, 0xD1, 0x58)); break;
                 case UpdateFlow.Phase.Failed: glyph = "\uE7BA"; text = Strings.UpdateFailed; color = new SolidColorBrush(Color.FromRgb(0xFF, 0x9F, 0x0A)); break;
             }
             updateGlyph.Text = glyph;
@@ -579,7 +579,7 @@ namespace WindowsIsland
             FrameworkElement update = MakeUpdateLine();
             update.HorizontalAlignment = HorizontalAlignment.Center;
             update.VerticalAlignment = VerticalAlignment.Center;
-            update.Margin = new Thickness(0, 14, 0, 14);
+            update.Margin = new Thickness(16, 14, 16, 14); // Room on both sides: the text does not touch the edge
             Grid.SetColumn(update, 2);
             split.Children.Add(update);
             Content.Children.Add(new Border { Child = split, Background = (Brush)FindResource("Card"), CornerRadius = new CornerRadius(12), Margin = new Thickness(0, 12, 0, 0) });

@@ -2,6 +2,10 @@
 
 > Tradução de [CHANGELOG.md](CHANGELOG.md), que é o original em inglês.
 
+## 4.3.2
+
+- **Ajustes:** quando uma versão nova é encontrada, o botão de atualização ("Baixar a atualização X") e a seta ficam verdes (assim como "Atualizado"), e em Essenciais ele tem mais espaço das bordas
+
 ## 4.3.1
 
 - **Windows Update:** "Instalando atualizações" aparecia quando nada estava sendo instalado (o Windows usa o processo de manutenção, o TiWorker, para limpeza e quando a página do Update procura atualizações). Agora é preciso que o próprio registro do cliente de atualização diga que uma instalação começou e ainda não terminou, além do TiWorker trabalhando
