@@ -1,5 +1,12 @@
 # Changelog
 
+## 4.2.0
+
+- **Pomodoro:** a third button on the timer page starts focus and break cycles (25, 5 and a long 15 after four, adjustable in Settings, Behavior, Pomodoro), with an alert at each change; the "+" button skips to the next phase. A break is green, focus is orange (also on the thin line)
+- **Smoother transitions:** the content of a new view waits until the shape is a third of the way there, so the thin line grows into a pill before its content appears; the old content slides up as it leaves and the new one comes from below; alerts arrive with a little more spring
+- **Volume and brightness:** brightness is a sun that lights up (its rays grow with the level) and the volume speaker gains waves, with a cross when muted
+- **News in the app:** after an update, a card on top of Settings lists the main changes (with a link to the changelog in your language) until you dismiss it, and the update note on the island says so; Settings, System has a change history link
+
 ## 4.1.0
 
 - **Problems:** the app keeps a record of its own failures in `crash.log` (in the settings folder, only on this PC, sent nowhere) and, after a failure, reopens itself (at most 3 times in 5 minutes) with a note. Settings, System has **Copy report for a problem** (version, system, the settings that differ from the defaults and the last failures, without names or keys) and **Report a problem on GitHub**, which opens the issues page to paste it into

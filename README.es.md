@@ -37,7 +37,7 @@ Una Dynamic Island para Windows. La música, Claude Code, sus límites de uso y 
 - **Uso de Claude:** anillos para los límites de **5 horas** y **semanal**, con la hora en que se renuevan
 - **Codex:** una actividad en vivo mientras Codex trabaja, sus límites de 5 horas y semanal, y un aviso cuando termina
 - **Páginas:** con la isla expandida, desplaza la rueda sobre ella o haz clic en los puntos para cambiar entre música, Claude y temporizador, que también tiene sus botones allí
-- **Temporizador y cronómetro:** inícialos desde el menú de la bandeja; aparecen como actividad en vivo y avisan cuando se acaba el tiempo
+- **Temporizador, cronómetro y Pomodoro** (ciclos de enfoque y pausa): inícialos desde el menú de la bandeja; aparecen como actividad en vivo y avisan cuando se acaba el tiempo
 - **Puntos de micrófono y cámara:** naranja con el micrófono en uso, verde con la cámara, como en el iPhone
 - **Batería** en portátiles: aparece como actividad al cargar, además de avisos de cargador conectado o retirado, batería baja y carga completa
 - **Nombres de las apps en los puntos:** mira qué app usa el micrófono o la cámara al pasar el ratón por la isla
@@ -96,7 +96,10 @@ Una Dynamic Island para Windows. La música, Claude Code, sus límites de uso y 
 | Monitor del sistema: anillos, barras o números | <img src="docs/images/systemcompact-en.gif" alt="Monitor del sistema: anillos, barras o números" width="260"> |
 |  | <img src="docs/images/systemcompact-bars-en.gif" alt="Monitor del sistema: anillos, barras o números" width="260"> |
 |  | <img src="docs/images/systemcompact-numbers-en.gif" alt="Monitor del sistema: anillos, barras o números" width="260"> |
-| Volumen o brillo cambiando | <img src="docs/images/level-en.gif" alt="Volume bar" width="260"> |
+| Volumen: las ondas del altavoz crecen con el nivel, y se tacha cuando está en silencio | <img src="docs/images/level-volume-en.gif" alt="Volumen: las ondas del altavoz crecen con el nivel, y se tacha cuando está en silencio" width="300"> |
+| Brillo: un sol que se enciende, con rayos que crecen con el nivel | <img src="docs/images/level-brightness-en.gif" alt="Brillo: un sol que se enciende, con rayos que crecen con el nivel" width="300"> |
+| Pomodoro: ciclos de enfoque y pausa, con la cuenta atrás | <img src="docs/images/pomodoro-en.gif" alt="Pomodoro: ciclos de enfoque y pausa, con la cuenta atrás" width="300"> |
+| Pomodoro en la isla compacta | <img src="docs/images/pomodoro-compact-en.gif" alt="Pomodoro en la isla compacta" width="300"> |
 
 ### La línea fina
 
@@ -110,17 +113,18 @@ La isla recogida es una línea fina por defecto (Ajustes, Comportamiento, "Líne
 | Música: un ecualizador pequeño del color de la portada | <img src="docs/images/thin-music-en.gif" alt="Música: un ecualizador pequeño del color de la portada" width="300"> |
 | Temporizador: la línea se vacía al acabarse el tiempo | <img src="docs/images/thin-timer-en.gif" alt="Temporizador: la línea se vacía al acabarse el tiempo" width="300"> |
 | Una descarga, una compilación o un juego de Steam: la línea se llena con el progreso | <img src="docs/images/thin-progress-en.gif" alt="Una descarga, una compilación o un juego de Steam: la línea se llena con el progreso" width="300"> |
+| Terminado: la línea se vuelve verde | <img src="docs/images/thin-done-en.gif" alt="Terminado: la línea se vuelve verde" width="300"> |
 | Cargando: la línea se llena con la carga | <img src="docs/images/thin-charging-en.gif" alt="Cargando: la línea se llena con la carga" width="300"> |
 | Grabación de pantalla (OBS o Game Bar): una línea roja tenue con un punto parpadeante | <img src="docs/images/thin-recording-en.gif" alt="Grabación de pantalla (OBS o Game Bar): una línea roja tenue con un punto parpadeante" width="300"> |
 | Batería baja o un error: la línea pulsa en rojo | <img src="docs/images/thin-alert-en.gif" alt="Batería baja o un error: la línea pulsa en rojo" width="300"> |
 | Sin internet: una línea roja discontinua que parpadea | <img src="docs/images/thin-offline-en.gif" alt="Sin internet: una línea roja discontinua que parpadea" width="300"> |
-| Terminado: la línea se vuelve verde | <img src="docs/images/thin-done-en.gif" alt="Terminado: la línea se vuelve verde" width="300"> |
 | Enfoque: una lunita | <img src="docs/images/thin-focus-en.gif" alt="Enfoque: una lunita" width="300"> |
 | Monitor del sistema: dos anillos pequeños, procesador y memoria | <img src="docs/images/thin-gauges-en.gif" alt="Monitor del sistema: dos anillos pequeños, procesador y memoria" width="300"> |
 | Micrófono y cámara: puntos dentro de la línea | <img src="docs/images/thin-privacy-en.png" alt="Micrófono y cámara: puntos dentro de la línea" width="300"> |
 | Una segunda actividad: una burbuja pequeña junto a la línea | <img src="docs/images/thin-bubble-en.gif" alt="Una segunda actividad: una burbuja pequeña junto a la línea" width="300"> |
 | Cambio de canción: la portada, el nombre y un símbolo | <img src="docs/images/thin-peek-en.gif" alt="Cambio de canción: la portada, el nombre y un símbolo" width="300"> |
-| Volumen o brillo: una barrita | <img src="docs/images/thin-level-en.gif" alt="Volumen o brillo: una barrita" width="300"> |
+| Volumen en la línea fina | <img src="docs/images/thin-level-volume-en.gif" alt="Volumen en la línea fina" width="300"> |
+| Brillo en la línea fina | <img src="docs/images/thin-level-brightness-en.gif" alt="Brillo en la línea fina" width="300"> |
 
 ### Primer uso y Ajustes
 

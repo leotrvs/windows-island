@@ -383,6 +383,7 @@ namespace WindowsIsland
             bool all = only == AllTabs;
             showTitles = all;
             if (welcome) { BuildWelcome(); return; }
+            if (filter.Length == 0 && !all) AddWhatsNew();
             if (!all && !string.Equals(settings.SettingsMode, "Advanced", StringComparison.OrdinalIgnoreCase)) { BuildEssentials(); return; }
             if (all && filter.Length == 0)
                 Content.Children.Add(new TextBlock { Text = Strings.SettingsTitle, FontSize = 30, FontWeight = FontWeights.Bold, Margin = new Thickness(4, 0, 0, 14) });
@@ -390,6 +391,51 @@ namespace WindowsIsland
             if (all || only == 1) BuildBehavior();
             if (all || only == 2) BuildAppearance();
             if (all || only == 3) BuildSystem();
+        }
+
+        // The news of the latest release, on top of Settings until it is dismissed
+        void AddWhatsNew()
+        {
+            if (string.Equals(settings.WhatsNewSeen, WhatsNew.Key, StringComparison.Ordinal)) return;
+            StackPanel body = new StackPanel { Margin = new Thickness(16, 12, 14, 10) };
+            body.Children.Add(new TextBlock { Text = WhatsNew.Title, FontWeight = FontWeights.SemiBold, FontSize = 15, Margin = new Thickness(0, 0, 0, 6) });
+            foreach (string item in WhatsNew.Items)
+            {
+                Grid line = new Grid { Margin = new Thickness(0, 2, 0, 2) };
+                line.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(14) });
+                line.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                line.Children.Add(new TextBlock { Text = "\u2022", Foreground = new SolidColorBrush(SettingsTheme.Accent), FontSize = 13 });
+                TextBlock text = new TextBlock { Text = item, FontSize = 13, TextWrapping = TextWrapping.Wrap, Foreground = (Brush)FindResource("Secondary") };
+                Grid.SetColumn(text, 1);
+                line.Children.Add(text);
+                body.Children.Add(line);
+            }
+            StackPanel buttons = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 8, 0, 0) };
+            Button all = new Button { Content = Strings.WhatsNewAll, Style = (Style)FindResource("LinkButton"), Margin = new Thickness(0, 0, 18, 0) };
+            all.Click += (s, e) =>
+            {
+                try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(WhatsNew.ChangelogUrl(settings.Language)) { UseShellExecute = true })?.Dispose(); }
+                catch (Exception) { }
+            };
+            Button got = new Button { Content = Strings.WhatsNewGotIt, Style = (Style)FindResource("LinkButton") };
+            got.Click += (s, e) =>
+            {
+                settings.WhatsNewSeen = WhatsNew.Key;
+                Apply();
+                Rebuild();
+            };
+            buttons.Children.Add(all);
+            buttons.Children.Add(got);
+            body.Children.Add(buttons);
+            Content.Children.Add(new Border
+            {
+                Child = body,
+                Background = (Brush)FindResource("Card"),
+                CornerRadius = new CornerRadius(12),
+                BorderBrush = new SolidColorBrush(SettingsTheme.Accent),
+                BorderThickness = new Thickness(1),
+                Margin = new Thickness(0, 0, 0, 14),
+            });
         }
 
         // A few switches, for someone who just wants it to work; "More settings" opens all of them.
@@ -726,6 +772,13 @@ namespace WindowsIsland
                 Choice("\uE769", Strings.MenuPausedMusic, null, new[] { 0, 2, 5, 15, 30, 60 }, false, () => settings.PausedMusicSeconds, v => settings.PausedMusicSeconds = v);
             });
 
+            Group("\uE916", Strings.GroupPomodoro, () =>
+            {
+                MinutesRow("\uE916", Strings.PomodoroFocusLabel, new[] { 15, 20, 25, 30, 45, 50 }, () => settings.PomodoroFocus, v => settings.PomodoroFocus = v);
+                MinutesRow("\uE916", Strings.PomodoroBreakLabel, new[] { 3, 5, 10 }, () => settings.PomodoroBreak, v => settings.PomodoroBreak = v);
+                MinutesRow("\uE916", Strings.PomodoroLongLabel, new[] { 10, 15, 20, 30 }, () => settings.PomodoroLong, v => settings.PomodoroLong = v);
+            });
+
             Section(Strings.SectionPages);
             System.Collections.Generic.List<string> pageOrder = settings.PageOrderList();
             for (int i = 0; i < pageOrder.Count; i++)
@@ -738,6 +791,12 @@ namespace WindowsIsland
                 else if (name == "System") Toggle("\uE9D9", Strings.PageSystemLabel, hint, () => settings.PageSystem, v => settings.PageSystem = v, arrows);
                 else Toggle("\uE916", Strings.PageTimerLabel, hint, () => settings.PageTimer, v => settings.PageTimer = v, arrows);
             }
+        }
+
+        void MinutesRow(string icon, string label, int[] values, Func<int> get, Action<int> set)
+        {
+            string[] names = values.Select(v => v + " min").ToArray();
+            Row(icon, label, null, null, SegmentBar(names, Math.Max(0, Array.IndexOf(values, get())), i => set(values[i])));
         }
 
         // How the island looks: the theme, where it sits, the thin line when it is collapsed, the system monitor and the sizes.
@@ -839,6 +898,11 @@ namespace WindowsIsland
             ActionRow("\uE897", Strings.DiagReport, () =>
             {
                 try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("https://github.com/leotrvs/windows-island/issues/new") { UseShellExecute = true })?.Dispose(); }
+                catch (Exception) { }
+            });
+            ActionRow("\uE81C", Strings.MenuChangelog, () =>
+            {
+                try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(WhatsNew.ChangelogUrl(settings.Language)) { UseShellExecute = true })?.Dispose(); }
                 catch (Exception) { }
             });
             ActionRow("\uE8A5", Strings.MenuOpenSettings, () =>

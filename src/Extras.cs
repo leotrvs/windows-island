@@ -18,6 +18,15 @@ namespace WindowsIsland
         // The lengths offered by the - and + buttons in the island, in minutes.
         public static readonly int[] Steps = { 1, 2, 3, 5, 10, 15, 20, 25, 30, 45, 60, 90, 120 };
 
+        // Pomodoro: focus, a short break, focus again... and a long break after every few focuses
+        public enum Phase { Focus, Break, LongBreak }
+        public bool Pomodoro { get; private set; }
+        public Phase Current { get; private set; } = Phase.Focus;
+        public int Cycle { get; private set; } = 1;
+        public int CyclesBeforeLong = 4;
+        public int FocusMinutes = 25, BreakMinutes = 5, LongBreakMinutes = 15;
+        public event Action<Phase> PhaseChanged;
+
         public Kind Mode { get; private set; }
         public bool Paused { get; private set; }
         public int ChosenMinutes { get; set; } = 5; // What Start uses
@@ -36,6 +45,7 @@ namespace WindowsIsland
             {
                 if (Mode == Kind.Countdown && !Paused && length - Elapsed <= TimeSpan.Zero)
                 {
+                    if (Pomodoro) { NextPhase(); return; }
                     Stop();
                     Finished?.Invoke();
                 }
@@ -50,7 +60,7 @@ namespace WindowsIsland
             get { return Mode == Kind.Countdown && length > TimeSpan.Zero ? Math.Clamp(Shown.TotalSeconds / length.TotalSeconds, 0, 1) : 0; }
         }
 
-        TimeSpan Elapsed { get { return before + (Paused ? TimeSpan.Zero : DateTime.UtcNow - started); } }
+        TimeSpan Elapsed { get { return before + (Paused ? TimeSpan.Zero : SampleClock.UtcNow - started); } }
 
         // Time left on a countdown, or time elapsed on a stopwatch.
         public TimeSpan Shown
@@ -65,6 +75,7 @@ namespace WindowsIsland
 
         public void StartCountdown(int minutes)
         {
+            Pomodoro = false;
             Mode = Kind.Countdown;
             length = TimeSpan.FromMinutes(Math.Clamp(minutes, 1, 600));
             Begin();
@@ -72,15 +83,47 @@ namespace WindowsIsland
 
         public void StartStopwatch()
         {
+            Pomodoro = false;
             Mode = Kind.Stopwatch;
             Begin();
+        }
+
+        public void StartPomodoro()
+        {
+            Pomodoro = true;
+            Cycle = 1;
+            Current = Phase.Focus;
+            Mode = Kind.Countdown;
+            length = TimeSpan.FromMinutes(Math.Clamp(FocusMinutes, 1, 600));
+            Begin();
+        }
+
+        // To the next phase, now (when the time ran out, or when it is skipped)
+        public void Skip()
+        {
+            if (Pomodoro && Mode != Kind.None) NextPhase();
+        }
+
+        void NextPhase()
+        {
+            if (Current == Phase.Focus) Current = Cycle % Math.Max(1, CyclesBeforeLong) == 0 ? Phase.LongBreak : Phase.Break;
+            else
+            {
+                Cycle = Current == Phase.LongBreak ? 1 : Cycle + 1;
+                Current = Phase.Focus;
+            }
+            int minutes = Current == Phase.Focus ? FocusMinutes : Current == Phase.Break ? BreakMinutes : LongBreakMinutes;
+            Mode = Kind.Countdown;
+            length = TimeSpan.FromMinutes(Math.Clamp(minutes, 1, 600));
+            Begin();
+            PhaseChanged?.Invoke(Current);
         }
 
         void Begin()
         {
             before = TimeSpan.Zero;
             Paused = false;
-            started = DateTime.UtcNow;
+            started = SampleClock.UtcNow;
             tick.Start();
             Changed?.Invoke();
         }
@@ -88,7 +131,7 @@ namespace WindowsIsland
         public void PauseOrResume()
         {
             if (Mode == Kind.None) return;
-            if (Paused) { started = DateTime.UtcNow; Paused = false; }
+            if (Paused) { started = SampleClock.UtcNow; Paused = false; }
             else { before = Elapsed; Paused = true; }
             Changed?.Invoke();
         }
@@ -97,6 +140,7 @@ namespace WindowsIsland
         {
             if (Mode == Kind.None) return;
             Mode = Kind.None;
+            Pomodoro = false;
             Paused = false;
             tick.Stop();
             Changed?.Invoke();

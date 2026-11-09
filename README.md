@@ -37,7 +37,7 @@ A Dynamic Island for Windows. Music, Claude Code, its usage limits and your noti
 - **Claude usage:** rings for the **5-hour** and **weekly** limits, with reset times
 - **Codex:** a live activity while Codex works, its 5-hour and weekly limits, and an alert when it finishes
 - **Pages:** when the island is expanded, scroll over it or click the dots to switch between music, Claude and the timer, which also has its own buttons there
-- **Timer and stopwatch:** start one from the tray menu; it shows as a live activity and alerts you when the time is up
+- **Timer, stopwatch and Pomodoro** (focus and break cycles): start one from the tray menu; it shows as a live activity and alerts you when the time is up
 - **Microphone and camera dots:** orange while the microphone is in use, green for the camera, like on iPhone
 - **Battery** on laptops: shown as an activity while charging, plus alerts for charger connected or removed, low battery and fully charged
 - **App names on the dots:** see which app is using the microphone or camera
@@ -96,7 +96,10 @@ A Dynamic Island for Windows. Music, Claude Code, its usage limits and your noti
 | System monitor: rings, bars or numbers | <img src="docs/images/systemcompact-en.gif" alt="System monitor: rings, bars or numbers" width="260"> |
 |  | <img src="docs/images/systemcompact-bars-en.gif" alt="System monitor: rings, bars or numbers" width="260"> |
 |  | <img src="docs/images/systemcompact-numbers-en.gif" alt="System monitor: rings, bars or numbers" width="260"> |
-| Volume or brightness changing | <img src="docs/images/level-en.gif" alt="Volume bar" width="260"> |
+| Volume: the speaker's waves grow with the level, and it is crossed out when muted | <img src="docs/images/level-volume-en.gif" alt="Volume: the speaker's waves grow with the level, and it is crossed out when muted" width="300"> |
+| Brightness: a sun that lights up, its rays growing with the level | <img src="docs/images/level-brightness-en.gif" alt="Brightness: a sun that lights up, its rays growing with the level" width="300"> |
+| Pomodoro: focus and break cycles, with the time counting down | <img src="docs/images/pomodoro-en.gif" alt="Pomodoro: focus and break cycles, with the time counting down" width="300"> |
+| Pomodoro on the compact island | <img src="docs/images/pomodoro-compact-en.gif" alt="Pomodoro on the compact island" width="300"> |
 
 ### The thin line
 
@@ -110,17 +113,18 @@ The collapsed island is a thin line by default (Settings, Behavior, "Thin line a
 | Music: a tiny equalizer in the color of the cover | <img src="docs/images/thin-music-en.gif" alt="Music: a tiny equalizer in the color of the cover" width="300"> |
 | Timer: the line empties as the time runs out | <img src="docs/images/thin-timer-en.gif" alt="Timer: the line empties as the time runs out" width="300"> |
 | A download, a build or a Steam game: the line fills with the progress | <img src="docs/images/thin-progress-en.gif" alt="A download, a build or a Steam game: the line fills with the progress" width="300"> |
+| Done: the line turns green | <img src="docs/images/thin-done-en.gif" alt="Done: the line turns green" width="300"> |
 | Charging: the line fills with the charge | <img src="docs/images/thin-charging-en.gif" alt="Charging: the line fills with the charge" width="300"> |
 | Screen recording (OBS or Game Bar): a dim red line with a blinking dot | <img src="docs/images/thin-recording-en.gif" alt="Screen recording (OBS or Game Bar): a dim red line with a blinking dot" width="300"> |
 | Low battery or an error: the line pulses red | <img src="docs/images/thin-alert-en.gif" alt="Low battery or an error: the line pulses red" width="300"> |
 | No internet: a dashed red line that blinks | <img src="docs/images/thin-offline-en.gif" alt="No internet: a dashed red line that blinks" width="300"> |
-| Done: the line turns green | <img src="docs/images/thin-done-en.gif" alt="Done: the line turns green" width="300"> |
 | Focus: a small moon | <img src="docs/images/thin-focus-en.gif" alt="Focus: a small moon" width="300"> |
 | System monitor: two tiny rings, processor and memory | <img src="docs/images/thin-gauges-en.gif" alt="System monitor: two tiny rings, processor and memory" width="300"> |
 | Microphone and camera: dots inside the line | <img src="docs/images/thin-privacy-en.png" alt="Microphone and camera: dots inside the line" width="300"> |
 | A second activity: a tiny bubble beside the line | <img src="docs/images/thin-bubble-en.gif" alt="A second activity: a tiny bubble beside the line" width="300"> |
 | A change of song: the cover, the name and a symbol | <img src="docs/images/thin-peek-en.gif" alt="A change of song: the cover, the name and a symbol" width="300"> |
-| Volume or brightness: a small bar | <img src="docs/images/thin-level-en.gif" alt="Volume or brightness: a small bar" width="300"> |
+| Volume on the thin line | <img src="docs/images/thin-level-volume-en.gif" alt="Volume on the thin line" width="300"> |
+| Brightness on the thin line | <img src="docs/images/thin-level-brightness-en.gif" alt="Brightness on the thin line" width="300"> |
 
 ### First run and settings
 

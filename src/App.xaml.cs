@@ -312,6 +312,10 @@ namespace WindowsIsland
 
             NotificationService notifications = new NotificationService(Dispatcher);
             notifications.Arrived += n => { foreach (IslandWindow island in islands) island.ShowNotification(n); };
+            timer.PhaseChanged += phase =>
+            {
+                foreach (IslandWindow island in islands) island.ShowSystemBanner(phase == TimerService.Phase.Focus ? Strings.PomodoroFocusBanner : Strings.PomodoroBreakBanner, Strings.PhaseName(phase));
+            };
             timer.Finished += () =>
             {
                 foreach (IslandWindow island in islands) island.ShowSystemBanner(Strings.TimerFinished, "");
@@ -445,7 +449,8 @@ namespace WindowsIsland
 
             Updater.CleanUp();
             if (afterUpdate)
-                MainIsland.Loaded += (s, a) => MainIsland.ShowSystemBanner(Installer.Name, Strings.UpdatedTo(Installer.Version));
+                MainIsland.Loaded += (s, a) => MainIsland.ShowSystemBanner(Installer.Name, Strings.UpdatedTo(Installer.Version) +
+                    (settings.WhatsNewSeen != WhatsNew.Key ? " · " + Strings.WhatsNewHint : ""));
             if (afterCrash)
                 MainIsland.Loaded += (s, a) => MainIsland.ShowSystemBanner(Installer.Name, Strings.ReopenedAfterFailure);
             updateTimer = new DispatcherTimer { Interval = FirstUpdateCheck };

@@ -37,7 +37,7 @@ namespace WindowsIsland
             }
         }
 
-        static string T(string en, string pt, string es, string ru)
+        internal static string T(string en, string pt, string es, string ru)
         {
             switch (lang)
             {
@@ -187,6 +187,10 @@ namespace WindowsIsland
         public static string UpToDate => T("You have the latest version", "Você está na versão mais recente", "Tienes la versión más reciente", "У вас последняя версия");
         public static string UpdateFailed => T("Could not check for updates", "Não foi possível procurar atualizações", "No se pudo buscar actualizaciones", "Не удалось проверить обновления");
         public static string UpdatesNeedInstall => T("Updates work in the installed copy", "As atualizações funcionam na cópia instalada", "Las actualizaciones funcionan en la copia instalada", "Обновления работают в установленной копии");
+        public static string WhatsNewAll => T("See all changes", "Ver todas as mudanças", "Ver todos los cambios", "Все изменения");
+        public static string WhatsNewGotIt => T("Got it", "Entendi", "Entendido", "Понятно");
+        public static string WhatsNewHint => T("news in Settings", "novidades em Ajustes", "novedades en Ajustes", "новое в настройках");
+        public static string MenuChangelog => T("Change history", "Histórico de mudanças", "Historial de cambios", "История изменений");
         public static string UpdatedTo(string version) => T("Updated to version ", "Atualizado para a versão ", "Actualizado a la versión ", "Обновлено до версии ") + version;
         public static string PermissionAsks => T("Claude asks for permission", "Claude pede permissão", "Claude pide permiso", "Claude просит разрешение");
         public static string Allow => T("Allow", "Permitir", "Permitir", "Разрешить");
@@ -347,6 +351,16 @@ namespace WindowsIsland
         public static string TimerPaused => T("Paused", "Pausado", "En pausa", "На паузе");
         public static string TimerPickLength => T("Set a length", "Escolha a duração", "Elige la duración", "Выберите время");
         public static string TimerFinished => T("Timer finished", "Timer terminou", "El temporizador terminó", "Таймер завершён");
+        public static string MenuPomodoro => T("Pomodoro", "Pomodoro", "Pomodoro", "Помодоро");
+        public static string PhaseName(TimerService.Phase phase) => phase == TimerService.Phase.Focus ? T("Focus", "Foco", "Enfoque", "Фокус")
+            : phase == TimerService.Phase.Break ? T("Break", "Pausa", "Pausa", "Перерыв") : T("Long break", "Pausa longa", "Pausa larga", "Долгий перерыв");
+        public static string PomodoroCycle(int cycle, int of) => T("cycle " + cycle + " of " + of, "ciclo " + cycle + " de " + of, "ciclo " + cycle + " de " + of, "цикл " + cycle + " из " + of);
+        public static string PomodoroBreakBanner => T("Time for a break", "Hora da pausa", "Hora de descansar", "Пора отдохнуть");
+        public static string PomodoroFocusBanner => T("Back to focus", "De volta ao foco", "De vuelta al enfoque", "Снова за работу");
+        public static string GroupPomodoro => T("Pomodoro", "Pomodoro", "Pomodoro", "Помодоро");
+        public static string PomodoroFocusLabel => T("Focus", "Foco", "Enfoque", "Фокус");
+        public static string PomodoroBreakLabel => T("Short break", "Pausa curta", "Pausa corta", "Короткий перерыв");
+        public static string PomodoroLongLabel => T("Long break", "Pausa longa", "Pausa larga", "Долгий перерыв");
         public static string TimerLabel => T("Timer", "Timer", "Temporizador", "Таймер");
         public static string StopwatchLabel => T("Stopwatch", "Cronômetro", "Cronómetro", "Секундомер");
         public static string MenuPrivacyDots => T("Microphone and camera dots", "Pontos de microfone e câmera", "Puntos de micrófono y cámara", "Точки микрофона и камеры");

@@ -145,6 +145,7 @@ namespace WindowsIsland
                 panel.Visibility = Visibility.Hidden;
                 panel.RenderTransform = new ScaleTransform(1, 1);
             }
+            plusFont = BtnPlusText.FontFamily;
             presence[IdlePanel].Snap(1);
             Stage.Clip = stageClip;
 
@@ -154,9 +155,10 @@ namespace WindowsIsland
             SetupButton(PlayButton, media.TogglePlayPause);
             SetupButton(NextButton, media.Next);
             SetupButton(BtnMinus, () => timer.Nudge(-1));
-            SetupButton(BtnPlus, () => timer.Nudge(1));
+            SetupButton(BtnPlus, () => { if (timer.Pomodoro && timer.Running) timer.Skip(); else timer.Nudge(1); }); // While a pomodoro runs it skips to the next phase
             SetupButton(BtnStart, () => timer.StartCountdown(timer.ChosenMinutes));
             SetupButton(BtnWatch, timer.StartStopwatch);
+            SetupButton(BtnPomodoro, () => { SyncPomodoro(); timer.StartPomodoro(); });
             SetupButton(BtnPause, timer.PauseOrResume);
             SetupButton(BtnStop, timer.Stop);
             Pill.MouseWheel += OnPillWheel;
@@ -603,17 +605,39 @@ namespace WindowsIsland
                 TimerBig.Text = text;
             }
             TimerCompactText.Opacity = timer.Paused ? 0.5 : 1;
+            Brush phase = OnBreak ? PomodoroGreen : TimerOrange; // Focus is orange, a break is green
+            TimerCompactText.Foreground = phase;
+            TimerBig.Foreground = OnBreak ? PomodoroGreen : Brushes.White;
         }
 
         // What the timer page offers: choose a length and start, or pause and stop what is running.
+        // The lengths chosen in Settings go to the timer
+        void SyncPomodoro()
+        {
+            timer.FocusMinutes = settings.PomodoroFocus;
+            timer.BreakMinutes = settings.PomodoroBreak;
+            timer.LongBreakMinutes = settings.PomodoroLong;
+        }
+
+        FontFamily plusFont; // The "+" button's own font, back when it is not the skip button
+        static readonly Brush PomodoroGreen = Freeze(new SolidColorBrush(Color.FromRgb(0x30, 0xD1, 0x58)));
+        static readonly Brush TimerOrange = Freeze(new SolidColorBrush(Color.FromRgb(0xFF, 0x9F, 0x0A)));
+        bool OnBreak { get { return timer.Pomodoro && timer.Current != TimerService.Phase.Focus; } }
+
         void UpdateTimerPage()
         {
             bool running = timer.Running;
+            bool pomodoro = running && timer.Pomodoro;
             TimerHeader.Text = !running ? Strings.TimerPickLength
+                             : pomodoro ? Strings.PhaseName(timer.Current) + " · " + Strings.PomodoroCycle(timer.Cycle, timer.CyclesBeforeLong) + (timer.Paused ? " · " + Strings.TimerPaused : "")
                              : (timer.Mode == TimerService.Kind.Countdown ? Strings.TimerLabel : Strings.StopwatchLabel)
                                + (timer.Paused ? " · " + Strings.TimerPaused : "");
-            BtnMinus.Visibility = BtnPlus.Visibility = running ? Visibility.Hidden : Visibility.Visible;
-            BtnStart.Visibility = BtnWatch.Visibility = running ? Visibility.Collapsed : Visibility.Visible;
+            BtnMinus.Visibility = running ? Visibility.Hidden : Visibility.Visible;
+            BtnPlus.Visibility = !running || pomodoro ? Visibility.Visible : Visibility.Hidden; // A running pomodoro skips with it
+            BtnPlusText.Text = pomodoro ? "\uE893" : "+";
+            BtnPlusText.FontFamily = pomodoro ? FluentIcons : plusFont;
+            BtnPlusText.FontSize = pomodoro ? 14 : 20;
+            BtnStart.Visibility = BtnWatch.Visibility = BtnPomodoro.Visibility = running ? Visibility.Collapsed : Visibility.Visible;
             BtnPause.Visibility = BtnStop.Visibility = running ? Visibility.Visible : Visibility.Collapsed;
             BtnPauseText.Text = timer.Paused ? Strings.TimerResume : Strings.TimerPause;
             TimerBig.Opacity = timer.Paused ? 0.5 : 1;
@@ -683,7 +707,7 @@ namespace WindowsIsland
         // The parts that change every second while Codex works.
         void UpdateCodexLive()
         {
-            string elapsed = codex.WorkingSince.HasValue ? FormatTime(DateTime.Now - codex.WorkingSince.Value) : "";
+            string elapsed = codex.WorkingSince.HasValue ? FormatTime(SampleClock.Now - codex.WorkingSince.Value) : "";
             if (CodexCompactText.Text != elapsed) CodexCompactText.Text = elapsed;
             string status = codex.Working ? (Strings.Working + " " + elapsed).Trim()
                           : codex.Session?.Percent != null ? Strings.CodexIdle
@@ -1103,10 +1127,29 @@ namespace WindowsIsland
             LayoutBars(expandedBars, ExpandedEq.Height);
 
             List<(string name, View rest, Action apply, double seconds)> clips = new List<(string, View, Action, double)>();
+            Dictionary<string, Action<double>> steps = new Dictionary<string, Action<double>>(); // What changes on every frame of a clip, by the time held (0 to 1)
             Action<View> viewClip = v => clips.Add((v.ToString().ToLowerInvariant(), View.Idle, () => { forced = v; Recompute(); }, 3.0));
             foreach (View v in new[] { View.MusicCompact, View.ClaudeCompact, View.CodexCompact, View.BatteryCompact, View.ExternalCompact, View.SystemCompact,
-                                       View.ExternalExpanded, View.MusicExpanded, View.ClaudeExpanded, View.TimerExpanded, View.SystemExpanded, View.Level })
+                                       View.ExternalExpanded, View.MusicExpanded, View.ClaudeExpanded, View.TimerExpanded, View.SystemExpanded })
                 viewClip(v);
+
+            // Volume and brightness, each going up and down (the volume ends muted), in the island and on the thin line
+            Func<double, double> ease = t => t * t * (3 - 2 * t);
+            Func<double, double> volumeAt = t => t < 0.4 ? 15 + 70 * ease(t / 0.4) : t < 0.7 ? 85 - 40 * ((t - 0.4) / 0.3) : 45;
+            Func<double, double> brightAt = t => t < 0.5 ? 5 + 90 * ease(t / 0.5) : 95 - 55 * ((t - 0.5) / 0.5);
+            Action<string, View, View, LevelService.Kind> levelClip = (name, rest, view, kind) =>
+            {
+                clips.Add((name, rest, () => { forced = view; Recompute(); }, 3.6));
+                steps[name] = t => ShowLevel(kind, (int)Math.Round(kind == LevelService.Kind.Volume ? volumeAt(t) : brightAt(t)), kind == LevelService.Kind.Volume && t > 0.82);
+            };
+            levelClip("level-volume", View.Idle, View.Level, LevelService.Kind.Volume);
+            levelClip("level-brightness", View.Idle, View.Level, LevelService.Kind.Brightness);
+            levelClip("thin-level-volume", View.Minimal, View.LevelMini, LevelService.Kind.Volume);
+            levelClip("thin-level-brightness", View.Minimal, View.LevelMini, LevelService.Kind.Brightness);
+
+            // A pomodoro: the time counts down, the phase shows
+            clips.Add(("pomodoro", View.Idle, () => { timer.FocusMinutes = 25; timer.BreakMinutes = 5; timer.LongBreakMinutes = 15; timer.StartPomodoro(); UpdateTimerPage(); forced = View.TimerExpanded; Recompute(); }, 3.4));
+            clips.Add(("pomodoro-compact", View.Idle, () => { timer.StartPomodoro(); UpdateTimerPage(); forced = View.TimerCompact; Recompute(); }, 3.0));
 
             // Banners: a Claude alert, a Windows notification, Claude needing you, the battery and the limits
             Action<BannerItem> bannerClip = null;
@@ -1156,9 +1199,12 @@ namespace WindowsIsland
             thinClip("claude", Thin.ClaudeWorking, ThinClay, 0, false, Activity.None);
             thinClip("waiting", Thin.ClaudeWaiting, ThinClay, 0, false, Activity.None);
             thinClip("music", Thin.Music, media.Accent, 0, false, Activity.None);
-            thinClip("timer", Thin.Timer, ThinYellow, 0.58, false, Activity.None);
-            thinClip("progress", Thin.Progress, ThinBlue, 0.64, false, Activity.None);
-            thinClip("charging", Thin.Charging, ThinGreen, 0.54, false, Activity.None);
+            thinClip("timer", Thin.Timer, ThinYellow, 1.0, false, Activity.None);
+            thinClip("progress", Thin.Progress, ThinBlue, 0.0, false, Activity.None);
+            thinClip("charging", Thin.Charging, ThinGreen, 0.1, false, Activity.None);
+            steps["thin-timer"] = t => minimalFraction = 1.0 - 0.7 * t;     // The line empties
+            steps["thin-progress"] = t => minimalFraction = 0.02 + 0.95 * t; // The line fills
+            steps["thin-charging"] = t => minimalFraction = 0.1 + 0.6 * t;
             thinClip("alert", Thin.Alert, ThinRed, 0, false, Activity.None);
             thinClip("recording", Thin.Recording, ThinRed, 0, false, Activity.None);
             thinClip("offline", Thin.Offline, ThinRed, 0, false, Activity.None);
@@ -1220,12 +1266,15 @@ namespace WindowsIsland
 
                 // Pass two: rest, the state arriving, held, and back to rest
                 ClipRest(clip.rest);
+                SampleClock.Offset = TimeSpan.Zero;
                 int frame = 0;
-                Action<double> run = seconds =>
+                Action<double, Action<double>> run = (seconds, step) =>
                 {
                     int count = (int)Math.Round(seconds * fps);
                     for (int i = 0; i < count; i++)
                     {
+                        SampleClock.Offset += TimeSpan.FromSeconds(1.0 / fps); // The live times in the clip count up
+                        step?.Invoke(count > 1 ? (double)i / (count - 1) : 1);
                         for (int k = 0; k < substeps; k++)
                         {
                             bool moving, continuous;
@@ -1235,11 +1284,13 @@ namespace WindowsIsland
                         SaveClipFrame(System.IO.Path.Combine(dir, "frame" + frame++.ToString("0000") + ".png"), crop);
                     }
                 };
-                run(0.4);
+                Action<double> step;
+                steps.TryGetValue(clip.name, out step);
+                run(0.4, null);
                 clip.apply();
-                run(clip.seconds);
+                run(clip.seconds, step);
                 ClipRest(clip.rest, false); // Back to rest, animated
-                run(0.7);
+                run(0.7, null);
             }
             StopLoop();
         }
@@ -1247,6 +1298,7 @@ namespace WindowsIsland
         // The island at rest between clips: nothing queued, nothing forced but the resting view.
         void ClipRest(View rest, bool snap = true)
         {
+            if (timer.Running) timer.Stop();
             banners.Clear();
             bannerUntil = DateTime.MinValue;
             toastUntil = DateTime.MinValue;
@@ -1355,6 +1407,7 @@ namespace WindowsIsland
             CodexWeeklyLabel.Text = Strings.Weekly;
             BtnStartText.Text = Strings.TimerStart;
             BtnWatchText.Text = Strings.MenuStopwatch;
+            BtnPomodoroText.Text = Strings.MenuPomodoro;
             BtnStopText.Text = Strings.MenuStopTimer;
         }
 
@@ -1562,7 +1615,7 @@ namespace WindowsIsland
             else if (primary == Activity.Timer)
             {
                 kind = Thin.Timer;
-                color = ThinYellow;
+                color = OnBreak ? ThinGreen : ThinYellow;
             }
             else if (primary == Activity.External && api != null && api.Activities.Count > 0)
             {
@@ -1681,7 +1734,7 @@ namespace WindowsIsland
                 case Thin.Timer:
                 {
                     double left = minimalFixed ? minimalFraction : timer.Fraction;
-                    MinimalFill.Background = new SolidColorBrush(left < 0.1 ? ThinRed : ThinYellow);
+                    MinimalFill.Background = new SolidColorBrush(left < 0.1 ? ThinRed : OnBreak && !minimalFixed ? ThinGreen : ThinYellow);
                     MinimalFill.Width = 108 * left;
                     return timer.Running && !timer.Paused;
                 }
@@ -1729,6 +1782,15 @@ namespace WindowsIsland
             MicDot.Width = MicDot.Height = CamDot.Width = CamDot.Height = ScreenDot.Width = ScreenDot.Height = dot;
             Bubble.IsHitTestVisible = bubble != Activity.None && view != View.Hidden; // The small second activity can be pointed at
             Size size = SizeOf(view);
+            if (Math.Abs(size.Width - morphToW) > 0.5 || Math.Abs(size.Height - morphToH) > 0.5)
+            {
+                // A new size: the content of the incoming view waits until the shape has got most of the way
+                morphFromW = width.Value; morphFromH = height.Value;
+                morphToW = size.Width; morphToH = size.Height;
+            }
+            // Alerts arrive with a slightly bigger overshoot, everything else settles gently
+            if (view == View.Banner || view == View.Toast || view == View.Permission) { width.Tune(320, 0.66); height.Tune(320, 0.66); }
+            else { width.Tune(280, 0.74); height.Tune(280, 0.74); }
             width.Target = size.Width;
             height.Target = size.Height;
             shown.Target = view == View.Hidden ? 0 : 1;
@@ -1987,6 +2049,18 @@ namespace WindowsIsland
             if (fullscreen && settings.HideInFullscreen) return;
             percent = Math.Clamp(percent, 0, 100);
             LevelGlyph.Text = kind == LevelService.Kind.Brightness ? "\uE706" : muted || percent == 0 ? "\uE74F" : percent < 34 ? "\uE992" : percent < 67 ? "\uE993" : "\uE767";
+            // Brightness is a sun that lights up: its rays grow with the level. Volume is a speaker whose waves grow, with a cross when muted.
+            bool sun = kind == LevelService.Kind.Brightness;
+            LevelGlyph.Visibility = sun ? Visibility.Collapsed : Visibility.Visible;
+            LevelSun.Visibility = sun ? Visibility.Visible : Visibility.Collapsed;
+            LevelMiniSun.Visibility = sun ? Visibility.Visible : Visibility.Collapsed;
+            if (sun)
+            {
+                Geometry rays = SunGeometry(percent);
+                Brush body = SunBody(percent);
+                LevelSunPath.Data = LevelMiniSunPath.Data = rays;
+                LevelSunPath.Fill = LevelMiniSunPath.Fill = body;
+            }
             // The bar glides to each new level instead of jumping, so a held key looks smooth
             double fill = Math.Max(0, 130.0 * (muted ? 0 : percent) / 100);
             if (view == View.Level && !rendering)
@@ -1998,9 +2072,44 @@ namespace WindowsIsland
             }
             LevelText.Text = muted ? "" : percent + "%";
             LevelMiniGlyph.Text = LevelGlyph.Text;
+            LevelMiniGlyph.Visibility = sun ? Visibility.Collapsed : Visibility.Visible;
             LevelMiniFill.Width = 64.0 * (muted ? 0 : percent) / 100;
             levelUntil = DateTime.Now.AddSeconds(1.4);
             Recompute();
+        }
+
+        // A sun in a 16 x 16 box: a disc and eight rays that grow from nothing (switched off) to full length (brightest)
+        static Geometry SunGeometry(double percent)
+        {
+            double level = Math.Clamp(percent, 0, 100) / 100;
+            GeometryGroup group = new GeometryGroup();
+            group.Children.Add(new EllipseGeometry(new Point(8, 8), 3.3, 3.3));
+            double length = 3.1 * level;
+            if (length > 0.25)
+            {
+                StreamGeometry rays = new StreamGeometry();
+                using (StreamGeometryContext context = rays.Open())
+                {
+                    for (int i = 0; i < 8; i++)
+                    {
+                        double angle = i * Math.PI / 4;
+                        double dx = Math.Cos(angle), dy = Math.Sin(angle);
+                        context.BeginFigure(new Point(8 + dx * 5.1, 8 + dy * 5.1), false, false);
+                        context.LineTo(new Point(8 + dx * (5.1 + length), 8 + dy * (5.1 + length)), true, false);
+                    }
+                }
+                rays.Freeze();
+                group.Children.Add(rays);
+            }
+            group.Freeze();
+            return group;
+        }
+
+        // The disc is hollow when it is dim and fills in as it brightens
+        static Brush SunBody(double percent)
+        {
+            double level = Math.Clamp(percent, 0, 100) / 100;
+            return new SolidColorBrush(Color.FromArgb((byte)(255 * Math.Clamp((level - 0.15) / 0.6, 0, 1)), 255, 255, 255));
         }
 
         // A short note that never queues: a new one just restarts the time.
@@ -2409,7 +2518,7 @@ namespace WindowsIsland
         // The parts that change every second while Claude works.
         void UpdateClaudeLive()
         {
-            string elapsed = claude.BusySince.HasValue ? FormatTime(DateTime.Now - claude.BusySince.Value) : "";
+            string elapsed = claude.BusySince.HasValue ? FormatTime(SampleClock.Now - claude.BusySince.Value) : "";
             bool waiting = claude.Waiting > 0;
 
             // With several chats working, a count comes before the time so it is clear it is more than one
@@ -2435,7 +2544,7 @@ namespace WindowsIsland
                 for (int i = 0; i < Math.Min(3, many); i++)
                 {
                     ClaudeService.ActiveSession item = claude.Active[i];
-                    lines.Add(item.Waiting ? Join(Strings.WaitingForYou, string.IsNullOrWhiteSpace(item.Question) ? item.Name : item.Name + ": " + item.Question) : Join(Strings.Working + " " + FormatTime(DateTime.Now - item.Since), item.Name));
+                    lines.Add(item.Waiting ? Join(Strings.WaitingForYou, string.IsNullOrWhiteSpace(item.Question) ? item.Name : item.Name + ": " + item.Question) : Join(Strings.Working + " " + FormatTime(SampleClock.Now - item.Since), item.Name));
                 }
                 if (many > 3) lines.Add("+" + (many - 3));
                 status = string.Join(Environment.NewLine, lines);
@@ -2527,10 +2636,25 @@ namespace WindowsIsland
             continuous = AnimateLive(dt);
         }
 
+        // How far the shape is on its way to the new size (0 to 1), and, from that, how much of the incoming content shows:
+        // none until the shape is about a third of the way, all of it by the time it is four fifths there.
+        double morphFromW = 112, morphFromH = 30, morphToW = 112, morphToH = 30;
+
+        double MorphGate(double w, double h)
+        {
+            double dw = morphToW - morphFromW, dh = morphToH - morphFromH;
+            double progress = 1;
+            if (Math.Abs(dw) > 8 || Math.Abs(dh) > 8)
+                progress = Math.Max(Math.Abs(dw) > 8 ? (w - morphFromW) / dw : 0, Math.Abs(dh) > 8 ? (h - morphFromH) / dh : 0);
+            double t = Math.Clamp((progress - 0.33) / 0.47, 0, 1);
+            return t * t * (3 - 2 * t);
+        }
+
         void ApplyFrame()
         {
             double w = Math.Max(2, width.Value);
             double h = Math.Max(2, height.Value);
+            double gate = MorphGate(w, h);
             double radius = Math.Min(h / 2, MaxRadius);
             bool bottom = IsBottom;
 
@@ -2562,7 +2686,8 @@ namespace WindowsIsland
             {
                 FrameworkElement panel = pair.Value;
                 double p = presence[panel].Value;
-                double opacity = Math.Clamp(p, 0, 1);
+                bool incoming = presence[panel].Target > 0.5;
+                double opacity = Math.Clamp(p, 0, 1) * (incoming ? gate : 1);
                 if (opacity < 0.004)
                 {
                     if (panel.Visibility != Visibility.Hidden) panel.Visibility = Visibility.Hidden;
@@ -2577,8 +2702,10 @@ namespace WindowsIsland
                 scale.ScaleY = k;
                 scale.CenterX = panel.Width / 2;
                 scale.CenterY = bottom ? panel.Height : 0;
+                // The old content slides up as it leaves and the new one comes up from below, a little
+                double slide = (incoming ? 1 : -1) * (1 - Math.Clamp(p, 0, 1)) * 9 * (bottom ? -1 : 1);
                 Canvas.SetLeft(panel, (w - panel.Width) / 2);
-                Canvas.SetTop(panel, bottom ? h - panel.Height : 0);
+                Canvas.SetTop(panel, (bottom ? h - panel.Height : 0) + slide);
 
                 double blur = (1 - opacity) * 12;
                 BlurEffect effect = panel.Effect as BlurEffect;

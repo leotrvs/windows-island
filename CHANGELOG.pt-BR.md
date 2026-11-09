@@ -2,6 +2,13 @@
 
 > Tradução de [CHANGELOG.md](CHANGELOG.md), que é o original em inglês.
 
+## 4.2.0
+
+- **Pomodoro:** um terceiro botão na página do timer inicia ciclos de foco e pausa (25, 5 e uma pausa longa de 15 a cada quatro, ajustáveis em Ajustes, Comportamento, Pomodoro), com um aviso a cada mudança; o botão "+" pula para a próxima fase. A pausa é verde e o foco é laranja (também na linha fina)
+- **Transições mais fluidas:** o conteúdo de uma visão nova espera a forma andar um terço do caminho, então a linha fina cresce até virar pílula antes de o conteúdo aparecer; o conteúdo antigo sobe ao sair e o novo vem de baixo; os avisos chegam com um pouco mais de mola
+- **Volume e brilho:** o brilho é um sol que acende (os raios crescem com o nível) e o alto-falante do volume ganha ondas, com um xis quando está mudo
+- **Novidades no app:** depois de uma atualização, um cartão no topo dos Ajustes lista as principais mudanças (com link para o histórico no seu idioma) até você dispensar, e o aviso de atualização na ilha avisa; em Ajustes, Sistema, há um link para o histórico de mudanças
+
 ## 4.1.0
 
 - **Problemas:** o app guarda um registro das próprias falhas em `crash.log` (na pasta de configurações, só neste PC, sem enviar para lugar nenhum) e, depois de uma falha, reabre sozinho (no máximo 3 vezes em 5 minutos) com um aviso. Em Ajustes, Sistema, há **Copiar relatório de um problema** (versão, sistema, os ajustes diferentes do padrão e as últimas falhas, sem nomes nem chaves) e **Relatar um problema no GitHub**, que abre a página de issues para colar o relatório

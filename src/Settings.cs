@@ -42,6 +42,10 @@ namespace WindowsIsland
         public int SettingsVersion { get; set; } = 0;        // Settings from an older version are started again, with the welcome
         public bool OnboardingDone { get; set; } = true;     // False until the welcome steps were gone through or skipped
         public string SettingsMode { get; set; } = "Essentials"; // Essentials (a few switches) or Advanced (every setting)
+        public string WhatsNewSeen { get; set; } = "";       // The release whose news card was dismissed
+        public int PomodoroFocus { get; set; } = 25;   // Minutes
+        public int PomodoroBreak { get; set; } = 5;
+        public int PomodoroLong { get; set; } = 15;
         public bool MinimalMusicPosition { get; set; } = false; // The thin line fills along the song while music plays
         public bool MaximizedActivitiesThin { get; set; } = false; // With a maximized window and the thin line: activities too become the thin line (hover to see them)
         public bool ShowScreenShare { get; set; } = true; // A blue dot while the screen is shared or recorded (needs the privacy dots)
@@ -140,7 +144,7 @@ namespace WindowsIsland
         // hidden from the privacy dots and where the Settings window sits).
         static Settings Started(Settings old)
         {
-            Settings fresh = new Settings { SettingsVersion = CurrentVersion, OnboardingDone = false };
+            Settings fresh = new Settings { SettingsVersion = CurrentVersion, OnboardingDone = false, WhatsNewSeen = WhatsNew.Key }; // Someone starting out has the welcome, not the news
             if (old != null)
             {
                 fresh.Language = old.Language;
