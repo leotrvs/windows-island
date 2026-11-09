@@ -2,6 +2,12 @@
 
 > Tradução de [CHANGELOG.md](CHANGELOG.md), que é o original em inglês.
 
+## 4.0.6
+
+- **Pedidos de permissão na ilha:** um comando longo não é mais "longo demais para aprovar": ele aparece inteiro (até 1.800 caracteres) e rola dentro da ilha, e o Permitir continua disponível (só some quando os argumentos não dá para ler como comando, arquivo ou endereço)
+- **Abrir o Claude** agora vai direto ao chat que precisa de você (usa o link `claude://` do próprio app), em vez de só trazer o app para a frente
+- **Um pedido respondido no próprio Claude** agora sai da ilha na hora (antes ficava um ou dois minutos); a ilha percebe que apareceu um resultado de ferramenta no chat
+
 ## 4.0.5
 
 - **O Claude te pergunta algo que a ilha não percebeu:** além de mostrar o aviso do app do Claude, a linha fina agora pulsa em laranja (como em "Claude espera por você") até você olhar para a ilha, por no máximo três minutos, ou até o Claude terminar

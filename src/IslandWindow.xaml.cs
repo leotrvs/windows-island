@@ -182,9 +182,9 @@ namespace WindowsIsland
             PermDeny.MouseLeftButtonDown += (s, e) => { e.Handled = true; permissionPressed = PermDeny; PermDeny.CaptureMouse(); };
             PermAllow.MouseLeftButtonUp += (s, e) => AnswerPermission(PermAllow, "allow", e);
             PermDeny.MouseLeftButtonUp += (s, e) => AnswerPermission(PermDeny, "deny", e);
-            PermOpen.MouseLeftButtonUp += (s, e) => { e.Handled = true; ClaudeWindow.Focus(); };
+            PermOpen.MouseLeftButtonUp += (s, e) => { e.Handled = true; OpenClaudeNeedsInput(); };
             PermOpen.MouseLeftButtonDown += (s, e) => e.Handled = true;
-            OpenClaudeLink.MouseLeftButtonUp += (s, e) => { e.Handled = true; ClaudeWindow.Focus(); };
+            OpenClaudeLink.MouseLeftButtonUp += (s, e) => { e.Handled = true; OpenClaudeNeedsInput(); };
             OpenClaudeLink.MouseLeftButtonDown += (s, e) => e.Handled = true;
             // Resting the mouse on the small second activity opens the island straight on that activity's page
             bubbleTimer.Tick += (s, e) =>
@@ -2084,11 +2084,13 @@ namespace WindowsIsland
                 PermAllow.Visibility = permission.Partial ? Visibility.Collapsed : Visibility.Visible;
                 PermOpen.Visibility = permission.Partial ? Visibility.Visible : Visibility.Collapsed;
                 PermOpenText.Text = Strings.OpenClaude;
-                PermCheck.Text = permission.Partial ? Strings.PermissionPartial : Strings.PermissionCheck;
                 int lines = Math.Clamp((permission.Summary.Length + 51) / 52, 2, 6);
+                bool scrolls = permission.Summary.Length > 6 * 52;
+                PermCheck.Text = permission.Partial ? Strings.PermissionPartial : scrolls ? Strings.PermissionScroll : Strings.PermissionCheck;
                 permissionHeight = 138 + (lines - 2) * 15;
                 PermissionPanel.Height = permissionHeight;
-                PermSummary.MaxHeight = lines * 15 + 4;
+                PermScroll.MaxHeight = lines * 15 + 4;
+                PermScroll.ScrollToTop();
                 // The buttons wake up a moment after the prompt shows
                 permissionArmedAt = DateTime.Now.AddMilliseconds(650);
                 PermAllow.Opacity = PermDeny.Opacity = 0.45;
@@ -2105,6 +2107,22 @@ namespace WindowsIsland
                 lastActive = DateTime.Now;
             }
             Recompute();
+        }
+
+        // Claude's own link to the chat that needs you (the app registers claude:// and goes straight to it); when it cannot be
+        // opened, the app is only brought to the front
+        void OpenClaudeNeedsInput()
+        {
+            try
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("claude://code/needs-input?source=desktop_action") { UseShellExecute = true })?.Dispose();
+                return;
+            }
+            catch (Exception)
+            {
+                // Not registered: the old way
+            }
+            ClaudeWindow.Focus();
         }
 
         void OnPermissionClosed(ApiPermission request)

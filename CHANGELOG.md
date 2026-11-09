@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.0.6
+
+- **Permission prompts on the island:** a long command is no longer "too long to approve": it is shown whole (up to 1,800 characters) and scrolls inside the island, and Allow stays available (it is only left out when the arguments are not readable as a command, a file or an address)
+- **Open Claude** now goes to the chat that needs you (it uses the app's own `claude://` link), instead of only bringing the app to the front
+- **A prompt answered in Claude itself** now leaves the island at once (it used to stay for a minute or two); the island notices that a tool result appeared in the chat
+
 ## 4.0.5
 
 - **Claude asking you something the island did not notice:** besides showing the Claude app's notice, the thin line now pulses orange (as "Claude waits for you") until you look at the island, for at most three minutes, or until Claude finishes

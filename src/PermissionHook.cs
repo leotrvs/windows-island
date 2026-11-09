@@ -17,7 +17,7 @@ namespace WindowsIsland
         const int ConnectTimeoutMs = 1500;
         // Only the technical fields are shown as the summary: a description is text the model wrote for itself
         static readonly string[] SummaryKeys = { "command", "file_path", "path", "url", "query", "sql", "notebook_path", "pattern" };
-        const int ShownLength = 280;
+        const int ShownLength = 1800; // A long command is shown whole (it scrolls in the island) up to here
 
         public static int Run()
         {
@@ -25,11 +25,11 @@ namespace WindowsIsland
             {
                 byte[] input = ReadInput();
                 if (input == null) return 0;
-                string tool, session, summary, project;
+                string tool, session, summary, project, transcript;
                 bool partial;
-                if (!Parse(input, out tool, out session, out summary, out project, out partial)) return 0;
+                if (!Parse(input, out tool, out session, out summary, out project, out partial, out transcript)) return 0;
 
-                string decision = Ask(tool, session, summary, project, partial);
+                string decision = Ask(tool, session, summary, project, partial, transcript);
                 if (decision == "allow")
                     Console.Out.Write("{\"hookSpecificOutput\":{\"hookEventName\":\"PermissionRequest\",\"decision\":{\"behavior\":\"allow\"}}}");
                 else if (decision == "deny")
@@ -58,9 +58,17 @@ namespace WindowsIsland
             }
         }
 
-        static bool Parse(byte[] input, out string tool, out string session, out string summary, out string project, out bool partial)
+        // Claude Code's own folder for transcripts: the only place a transcript path is believed to be in
+        static string TranscriptRoot()
         {
-            tool = session = summary = project = null;
+            string configured = Environment.GetEnvironmentVariable("CLAUDE_CONFIG_DIR");
+            string root = !string.IsNullOrEmpty(configured) ? configured : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".claude");
+            return Path.GetFullPath(Path.Combine(root, "projects")) + Path.DirectorySeparatorChar;
+        }
+
+        static bool Parse(byte[] input, out string tool, out string session, out string summary, out string project, out bool partial, out string transcript)
+        {
+            tool = session = summary = project = transcript = null;
             partial = false;
             using (JsonDocument document = JsonDocument.Parse(input))
             {
@@ -69,6 +77,15 @@ namespace WindowsIsland
                 if (root.TryGetProperty("tool_name", out value) && value.ValueKind == JsonValueKind.String) tool = value.GetString();
                 if (root.TryGetProperty("session_id", out value) && value.ValueKind == JsonValueKind.String) session = value.GetString();
                 if (string.IsNullOrEmpty(tool)) return false;
+                if (root.TryGetProperty("transcript_path", out value) && value.ValueKind == JsonValueKind.String)
+                {
+                    try
+                    {
+                        string full = Path.GetFullPath(value.GetString());
+                        if (full.StartsWith(TranscriptRoot(), StringComparison.OrdinalIgnoreCase) && full.EndsWith(".jsonl", StringComparison.OrdinalIgnoreCase)) transcript = full;
+                    }
+                    catch (Exception) { }
+                }
                 if (root.TryGetProperty("cwd", out value) && value.ValueKind == JsonValueKind.String)
                 {
                     try { project = Path.GetFileName(value.GetString().TrimEnd('\\', '/')); } catch (Exception) { }
@@ -78,7 +95,7 @@ namespace WindowsIsland
                 string text = root.TryGetProperty("tool_input", out args) ? Summarize(args, out technical) : "";
                 // One line and short enough to read whole: line breaks are shown, runs of spaces are folded before anything is cut
                 text = System.Text.RegularExpressions.Regex.Replace(text.Replace("\r\n", "\n").Replace('\r', '\n').Replace("\n", " \u23CE "), @"[ \t]{2,}", " ").Trim();
-                partial = !technical || text.Length > ShownLength;
+                partial = !technical; // A long command is still allowed: it is shown whole and scrolls
                 summary = text.Length > ShownLength ? text.Substring(0, ShownLength - 1) + "\u2026" : text;
                 return true;
             }
@@ -99,7 +116,37 @@ namespace WindowsIsland
             return args.GetRawText();
         }
 
-        static string Ask(string tool, string session, string summary, string project, bool partial)
+        static long LengthOf(string path)
+        {
+            try { return path == null ? -1 : new FileInfo(path).Length; }
+            catch (Exception) { return -1; }
+        }
+
+        // True when something was added to the transcript with a tool result in it: the request was answered somewhere else
+        // (in Claude itself), so the prompt on the island is out of date.
+        static bool AnsweredElsewhere(string path, ref long seen)
+        {
+            try
+            {
+                long length = LengthOf(path);
+                if (length <= seen) return false;
+                using (FileStream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete))
+                {
+                    long from = Math.Max(seen, length - 256 * 1024);
+                    stream.Seek(from, SeekOrigin.Begin);
+                    byte[] chunk = new byte[length - from];
+                    int read = stream.Read(chunk, 0, chunk.Length);
+                    seen = length;
+                    return Encoding.UTF8.GetString(chunk, 0, read).Contains("\"tool_result\"", StringComparison.Ordinal);
+                }
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        static string Ask(string tool, string session, string summary, string project, bool partial, string transcript)
         {
             System.Diagnostics.Stopwatch total = System.Diagnostics.Stopwatch.StartNew();
             string token = LocalApi.ReadToken();
@@ -148,6 +195,30 @@ namespace WindowsIsland
                 stream.Write(headBytes, 0, headBytes.Length);
                 stream.Write(body, 0, body.Length);
 
+                // While it waits, the transcript is watched: a tool result that appears means it was answered in Claude, and the
+                // prompt is taken down (the connection closes, which the island sees) instead of waiting out its minute
+                bool elsewhere = false;
+                bool finished = false;
+                long seenLength = LengthOf(transcript);
+                if (transcript != null && seenLength >= 0)
+                {
+                    System.Threading.Thread watcher = new System.Threading.Thread(() =>
+                    {
+                        while (!finished)
+                        {
+                            System.Threading.Thread.Sleep(700);
+                            if (finished) return;
+                            if (AnsweredElsewhere(transcript, ref seenLength))
+                            {
+                                elsewhere = true;
+                                try { client.Close(); } catch (Exception) { }
+                                return;
+                            }
+                        }
+                    }) { IsBackground = true };
+                    watcher.Start();
+                }
+
                 byte[] reply = new byte[4096];
                 int filled = 0, n;
                 try
@@ -163,10 +234,12 @@ namespace WindowsIsland
                         filled += n;
                     }
                 }
-                catch (IOException)
+                catch (Exception)
                 {
-                    if (filled == 0) return "none";
+                    if (filled == 0 || elsewhere) { finished = true; return "none"; }
                 }
+                finished = true;
+                if (elsewhere) return "none";
                 string text = Encoding.UTF8.GetString(reply, 0, filled);
                 if (!text.StartsWith("HTTP/1.1 200", StringComparison.Ordinal)) return "none";
                 if (text.Contains("\"decision\":\"allow\"", StringComparison.Ordinal)) return "allow";

@@ -585,7 +585,9 @@
                             <TextBlock x:Name="PermQueue" Grid.Column="2" Style="{StaticResource Caption}" FontSize="12" VerticalAlignment="Center"/>
                         </Grid>
                         <Border Grid.Row="1" Margin="0,8,0,8" Padding="9,6" CornerRadius="9" Background="#1FFFFFFF">
-                            <TextBlock x:Name="PermSummary" FontSize="12" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" Foreground="#E6FFFFFF" MaxHeight="34"/>
+                            <ScrollViewer x:Name="PermScroll" VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Disabled" Focusable="False" MaxHeight="34">
+                                <TextBlock x:Name="PermSummary" FontSize="12" TextWrapping="Wrap" Foreground="#E6FFFFFF"/>
+                            </ScrollViewer>
                         </Border>
                         <Grid Grid.Row="2">
                             <Grid.ColumnDefinitions>
