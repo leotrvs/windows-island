@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.6.5
+
+- **Looking for an update is much faster:** the list of the release and its signature are now asked for at the same time, and each one goes both ways at once (the release address and, a second later, GitHub's API): the first good answer wins and the other is dropped. Before, it waited for the release address to give up (and for a slow answer to finish) before trying the other way, which could take about 30 seconds. A small file now has 15 seconds at most. After the release address fails once, the API goes first for the next 30 minutes. This is the same from the tray menu and from Settings
+
 ## 4.6.4
 
 - **Song change, up and down:** the cover, the title and the artist now move vertically, one after the other like a cascade: the old ones go up and the new ones come in from below (the other way round when the song went back), instead of sliding sideways

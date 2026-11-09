@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace WindowsIsland
@@ -112,8 +113,9 @@ namespace WindowsIsland
             if (!allowed) return Tuple.Create(UpdateResult.Failed, (UpdateInfo)null);
             try
             {
-                byte[] manifestBytes = await DownloadAsync("update.json", MaxManifestBytes);
-                byte[] signature = await DownloadAsync("update.json.sig", MaxSignatureBytes);
+                Task<byte[]> manifestTask = DownloadAsync("update.json", MaxManifestBytes), signatureTask = DownloadAsync("update.json.sig", MaxSignatureBytes);
+                byte[] manifestBytes = await manifestTask;
+                byte[] signature = await signatureTask;
                 if (!HasValidSignature(manifestBytes, signature)) return Tuple.Create(UpdateResult.Failed, (UpdateInfo)null);
 
                 using (JsonDocument manifest = JsonDocument.Parse(Encoding.UTF8.GetString(manifestBytes)))
@@ -187,27 +189,72 @@ namespace WindowsIsland
             }
         }
 
-        // The release address first; when it does not answer (it times out for some connections), the same file through GitHub's API.
-        // Either way the signature and the hash are checked afterwards, so where the bytes came from does not matter.
+        // Looking for an update asks for two small files (the list and its signature) and must be quick: both are asked for at once, and each
+        // goes both ways at once, the release address and, a second later, GitHub's API; the first good answer wins. The app itself is a big
+        // file: the release address first and, if it does not answer, the API. Either way the signature and the hash are checked
+        // afterwards, so where the bytes came from does not matter.
         static async Task<byte[]> DownloadAsync(string fileName, int maxBytes)
         {
 #if UPDATE_TEST
-            return await DownloadFromAsync(BaseUrl + fileName, maxBytes);
+            return await DownloadFromAsync(BaseUrl + fileName, maxBytes, TimeSpan.FromSeconds(20), CancellationToken.None, true);
 #else
-            // When the release address did not answer a moment ago, the API goes first: waiting for it again for every file is what made updates slow
-            if (DateTime.UtcNow - primaryFailedAt > TimeSpan.FromMinutes(30))
+            bool small = fileName != ExeName;
+            if (DateTime.UtcNow - primaryFailedAt < TimeSpan.FromMinutes(30))
             {
-                try
-                {
-                    return await DownloadFromAsync(BaseUrl + fileName, maxBytes, TimeSpan.FromSeconds(8));
-                }
-                catch (Exception)
-                {
-                    primaryFailedAt = DateTime.UtcNow;
-                }
+                // The release address did not answer a moment ago: the API goes first, and the release address is the second chance
+                try { return await WithinAsync(small, token => DownloadThroughApiAsync(fileName, maxBytes, token)); }
+                catch (Exception) { return await WithinAsync(small, token => DownloadFromAsync(BaseUrl + fileName, maxBytes, TimeSpan.FromSeconds(10), token, small)); }
             }
-            return await DownloadThroughApiAsync(fileName, maxBytes);
+            if (small) return await RaceAsync(fileName, maxBytes);
+            try
+            {
+                return await DownloadFromAsync(BaseUrl + fileName, maxBytes, TimeSpan.FromSeconds(8), CancellationToken.None, false);
+            }
+            catch (Exception)
+            {
+                primaryFailedAt = DateTime.UtcNow;
+                return await DownloadThroughApiAsync(fileName, maxBytes, CancellationToken.None);
+            }
 #endif
+        }
+
+        // A small file must come in within 15 seconds; the big one takes as long as it needs
+        static async Task<byte[]> WithinAsync(bool small, Func<CancellationToken, Task<byte[]>> start)
+        {
+            using (CancellationTokenSource limit = new CancellationTokenSource())
+            {
+                if (small) limit.CancelAfter(TimeSpan.FromSeconds(15));
+                return await start(limit.Token);
+            }
+        }
+
+        static async Task<byte[]> RaceAsync(string fileName, int maxBytes)
+        {
+            using (CancellationTokenSource stop = new CancellationTokenSource(TimeSpan.FromSeconds(15)))
+            {
+                Task<byte[]> primary = DownloadFromAsync(BaseUrl + fileName, maxBytes, TimeSpan.FromSeconds(10), stop.Token, true);
+                Task<byte[]> api = Task.Run(async () =>
+                {
+                    await Task.Delay(1000, stop.Token);
+                    return await DownloadThroughApiAsync(fileName, maxBytes, stop.Token);
+                });
+                System.Collections.Generic.List<Task<byte[]>> running = new System.Collections.Generic.List<Task<byte[]>> { primary, api };
+                Exception last = null;
+                while (running.Count > 0)
+                {
+                    Task<byte[]> done = await Task.WhenAny(running);
+                    running.Remove(done);
+                    if (done.Status == TaskStatus.RanToCompletion)
+                    {
+                        stop.Cancel(); // The other way is not needed any more
+                        if (done == api) primaryFailedAt = DateTime.UtcNow; // The release address was the slower one
+                        return done.Result;
+                    }
+                    if (done == primary) primaryFailedAt = DateTime.UtcNow;
+                    last = done.Exception?.GetBaseException();
+                }
+                throw last ?? new InvalidDataException();
+            }
         }
 
         static DateTime primaryFailedAt = DateTime.MinValue;
@@ -216,7 +263,7 @@ namespace WindowsIsland
 
         const string ApiLatest = "https://api.github.com/repos/leotrvs/windows-island/releases/latest";
 
-        static async Task<byte[]> DownloadThroughApiAsync(string fileName, int maxBytes)
+        static async Task<byte[]> DownloadThroughApiAsync(string fileName, int maxBytes, CancellationToken token)
         {
             string assetUrl = null;
             // The list of the release's files is asked for once and kept for a minute: the manifest, its signature and the app all come from it
@@ -224,11 +271,11 @@ namespace WindowsIsland
             {
                 System.Collections.Generic.Dictionary<string, string> found = new System.Collections.Generic.Dictionary<string, string>();
                 using (HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, ApiLatest))
-                using (HttpResponseMessage response = await Http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead))
+                using (HttpResponseMessage response = await Http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, token))
                 {
                     response.EnsureSuccessStatusCode();
                     if (response.Content.Headers.ContentLength > 512 * 1024) throw new InvalidDataException();
-                    using (JsonDocument release = JsonDocument.Parse(await response.Content.ReadAsStringAsync()))
+                    using (JsonDocument release = JsonDocument.Parse(await response.Content.ReadAsStringAsync(token)))
                     {
                         JsonElement assets;
                         if (!release.RootElement.TryGetProperty("assets", out assets)) throw new InvalidDataException();
@@ -248,40 +295,44 @@ namespace WindowsIsland
             using (HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, assetUrl))
             {
                 request.Headers.Accept.ParseAdd("application/octet-stream");
-                using (HttpResponseMessage response = await Http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead))
-                    return await ReadLimitedAsync(response, maxBytes);
+                using (HttpResponseMessage response = await Http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, token))
+                    return await ReadLimitedAsync(response, maxBytes, token);
             }
         }
 
-        static async Task<byte[]> DownloadFromAsync(string address, int maxBytes, TimeSpan? waitForAnswer = null)
+        // wholeFile: the wait covers the whole file (the small ones); otherwise only the answer's start, and the file takes as long as it needs
+        static async Task<byte[]> DownloadFromAsync(string address, int maxBytes, TimeSpan wait, CancellationToken token, bool wholeFile)
         {
-            // The wait covers only the answer's start (the headers); the file itself may take as long as it needs
-            using (System.Threading.CancellationTokenSource limit = new System.Threading.CancellationTokenSource(waitForAnswer ?? System.Threading.Timeout.InfiniteTimeSpan))
-            using (HttpResponseMessage response = await Http.GetAsync(address, HttpCompletionOption.ResponseHeadersRead, limit.Token))
-                return await ReadLimitedAsync(response, maxBytes);
+            using (CancellationTokenSource limit = CancellationTokenSource.CreateLinkedTokenSource(token))
+            {
+                limit.CancelAfter(wait);
+                using (HttpResponseMessage response = await Http.GetAsync(address, HttpCompletionOption.ResponseHeadersRead, limit.Token))
+                {
+                    if (!wholeFile) limit.CancelAfter(System.Threading.Timeout.InfiniteTimeSpan);
+                    return await ReadLimitedAsync(response, maxBytes, wholeFile ? limit.Token : token);
+                }
+            }
         }
 
-        static async Task<byte[]> ReadLimitedAsync(HttpResponseMessage response, int maxBytes)
+        static async Task<byte[]> ReadLimitedAsync(HttpResponseMessage response, int maxBytes, CancellationToken token)
         {
-            {
-                response.EnsureSuccessStatusCode();
+            response.EnsureSuccessStatusCode();
 #if !UPDATE_TEST
-                if (response.RequestMessage?.RequestUri?.Scheme != Uri.UriSchemeHttps) throw new InvalidDataException();
+            if (response.RequestMessage?.RequestUri?.Scheme != Uri.UriSchemeHttps) throw new InvalidDataException();
 #endif
-                if (response.Content.Headers.ContentLength > maxBytes) throw new InvalidDataException();
+            if (response.Content.Headers.ContentLength > maxBytes) throw new InvalidDataException();
 
-                using (Stream stream = await response.Content.ReadAsStreamAsync())
-                using (MemoryStream buffer = new MemoryStream())
+            using (Stream stream = await response.Content.ReadAsStreamAsync(token))
+            using (MemoryStream buffer = new MemoryStream())
+            {
+                byte[] chunk = new byte[81920];
+                int read;
+                while ((read = await stream.ReadAsync(chunk, 0, chunk.Length, token)) > 0)
                 {
-                    byte[] chunk = new byte[81920];
-                    int read;
-                    while ((read = await stream.ReadAsync(chunk, 0, chunk.Length)) > 0)
-                    {
-                        buffer.Write(chunk, 0, read);
-                        if (buffer.Length > maxBytes) throw new InvalidDataException();
-                    }
-                    return buffer.ToArray();
+                    buffer.Write(chunk, 0, read);
+                    if (buffer.Length > maxBytes) throw new InvalidDataException();
                 }
+                return buffer.ToArray();
             }
         }
     }

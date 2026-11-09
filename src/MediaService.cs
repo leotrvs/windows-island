@@ -80,12 +80,24 @@ namespace WindowsIsland
             Accent = AccentOf(Art);
         }
 
-        static BitmapSource SampleArt()
+        // The next made-up track, for the README animation of a song change
+        public void UseSampleNext()
+        {
+            Title = "Heat Waves";
+            Artist = "Glass Animals";
+            position = TimeSpan.FromSeconds(12);
+            positionStamp = DateTimeOffset.Now;
+            Art = SampleArt(true);
+            Accent = AccentOf(Art);
+        }
+
+        static BitmapSource SampleArt(bool second = false)
         {
             DrawingVisual visual = new DrawingVisual();
             using (DrawingContext context = visual.RenderOpen())
             {
-                LinearGradientBrush sky = new LinearGradientBrush(Color.FromRgb(0xFF, 0x6A, 0x3D), Color.FromRgb(0x6B, 0x2F, 0xD9), 90);
+                LinearGradientBrush sky = second ? new LinearGradientBrush(Color.FromRgb(0x2D, 0xD4, 0xBF), Color.FromRgb(0x1D, 0x4E, 0xD8), 90)
+                                                 : new LinearGradientBrush(Color.FromRgb(0xFF, 0x6A, 0x3D), Color.FromRgb(0x6B, 0x2F, 0xD9), 90);
                 context.DrawRectangle(sky, null, new System.Windows.Rect(0, 0, 160, 160));
                 context.DrawEllipse(new SolidColorBrush(Color.FromArgb(230, 0xFF, 0xD1, 0x6B)), null, new System.Windows.Point(80, 92), 34, 34);
                 context.DrawRectangle(new SolidColorBrush(Color.FromRgb(0x24, 0x10, 0x4A)), null, new System.Windows.Rect(0, 104, 160, 56));

@@ -37,7 +37,7 @@ Uma Dynamic Island para o Windows. Música, Claude Code, os limites de uso e sua
 - **Uso do Claude:** anéis dos limites de **5 horas** e **semanal**, com o horário em que renovam
 - **Codex:** atividade ao vivo enquanto o Codex trabalha, os limites de 5 horas e semanal, e um aviso quando ele termina
 - **Páginas:** com a ilha expandida, role o mouse sobre ela ou clique nos pontinhos para alternar entre música, Claude e timer, que também tem seus botões ali
-- **Timer, cronômetro e Pomodoro** (ciclos de foco e pausa): inicie um pela página do Timer na ilha; ele aparece como atividade ao vivo e avisa quando o tempo acaba
+- **Timer, cronômetro e Pomodoro** (ciclos de foco e pausa): inicie um pela página do Timer na ilha; ele aparece como atividade ao vivo e avisa quando o tempo acaba. O timer compacto tem um anel em volta que some conforme o tempo acaba
 - **Pontos de microfone e câmera:** laranja com o microfone em uso, verde com a câmera, como no iPhone
 - **Bateria** em notebooks: aparece como atividade ao carregar, mais avisos de carregador conectado ou removido, bateria baixa e carregada
 - **Nomes dos apps nos pontos:** veja qual app usa o microfone ou a câmera ao passar o mouse sobre a ilha
@@ -103,6 +103,8 @@ Uma Dynamic Island para o Windows. Música, Claude Code, os limites de uso e sua
 | Brilho: um sol que acende, com os raios crescendo com o nível | <img src="docs/images/level-brightness-pt.gif" alt="Brilho: um sol que acende, com os raios crescendo com o nível" width="300"> |
 | Pomodoro: ciclos de foco e pausa, com o tempo contando | <img src="docs/images/pomodoro-pt.gif" alt="Pomodoro: ciclos de foco e pausa, com o tempo contando" width="300"> |
 | Pomodoro na ilha compacta | <img src="docs/images/pomodoro-compact-pt.gif" alt="Pomodoro na ilha compacta" width="300"> |
+| A música muda na ilha normal: a capa e o nome sobem e os novos entram, e o nome abre por um momento | <img src="docs/images/song-change-pt.gif" alt="A música muda na ilha normal: a capa e o nome sobem e os novos entram, e o nome abre por um momento" width="420"> |
+| A música muda com a ilha expandida | <img src="docs/images/song-change-expanded-pt.gif" alt="A música muda com a ilha expandida" width="460"> |
 | Página de atalhos: silenciar o microfone ou o alto-falante, tirar uma captura, ajustes de som e o volume | <img src="docs/images/quick-pt.gif" alt="Página de atalhos: silenciar o microfone ou o alto-falante, tirar uma captura, ajustes de som e o volume" width="300"> |
 
 ### A linha fina

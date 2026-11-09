@@ -1227,6 +1227,7 @@ namespace WindowsIsland
         public void RenderClips(string folder)
         {
             Directory.CreateDirectory(folder);
+            settings.MaximizedActivitiesThin = false; // Whatever window is in front while the clips are made must not turn the island into the thin line
             double[] levels = { 0.55, 0.95, 0.4, 0.75 };
             Array.Copy(levels, eqLevel, levels.Length);
             BuildExternal(new List<ApiActivity>
@@ -1374,9 +1375,35 @@ namespace WindowsIsland
                 Recompute();
             }, 3.4));
 
+            // A song change: the cover and the name go up and the new ones come in from below; on the normal island the name opens for a moment
+            bool songChangeDone = false;
+            Action<bool> songChange = (wide) =>
+            {
+                media.UseSample();
+                songShown = null; // The first song is not a change
+                UpdateMusic();
+                songChangeDone = false;
+                forced = wide ? View.MusicExpanded : View.MusicCompact;
+                Recompute();
+            };
+            clips.Add(("song-change", View.MusicCompact, () => songChange(false), 4.6));
+            clips.Add(("song-change-expanded", View.MusicExpanded, () => songChange(true), 2.4));
+            Action<double> songStep = tt =>
+            {
+                if (songChangeDone || tt < 0.12) return;
+                songChangeDone = true;
+                media.UseSampleNext();
+                UpdateMusic();
+                Recompute();
+            };
+            steps["song-change"] = songStep;
+            steps["song-change-expanded"] = songStep;
+
             const int fps = 20, substeps = 3;
+            string only = Environment.GetEnvironmentVariable("ISLAND_CLIPS_ONLY"); // For trying one clip: a name prefix
             foreach ((string name, View rest, Action apply, double seconds) clip in clips)
             {
+                if (!string.IsNullOrEmpty(only) && !clip.name.StartsWith(only)) continue;
                 string dir = System.IO.Path.Combine(folder, clip.name);
                 Directory.CreateDirectory(dir);
 
@@ -1390,7 +1417,7 @@ namespace WindowsIsland
                 ApplyFrame();
                 Root.UpdateLayout();
                 Rect crop = ClipBounds();
-                crop.Inflate(24, 20);
+                crop.Inflate(clip.name.StartsWith("song-") ? 60 : 24, 20);
                 crop.Intersect(new Rect(Root.RenderSize));
                 crop = new Rect(Math.Floor(crop.X), Math.Floor(crop.Y), Math.Ceiling(crop.Width / 2) * 2, Math.Ceiling(crop.Height / 2) * 2);
 
@@ -1409,6 +1436,12 @@ namespace WindowsIsland
                         {
                             bool moving, continuous;
                             Advance(1.0 / (fps * substeps), out moving, out continuous);
+                        }
+                        if (clip.name.StartsWith("song-"))
+                        {
+                            // These clips use WPF's own animations, which run on the clock: let it run, one frame at a time
+                            System.Threading.Thread.Sleep(1000 / fps - 4);
+                            Dispatcher.Invoke(DispatcherPriority.Background, new Action(() => { }));
                         }
                         Root.UpdateLayout();
                         SaveClipFrame(System.IO.Path.Combine(dir, "frame" + frame++.ToString("0000") + ".png"), crop);
@@ -1441,6 +1474,9 @@ namespace WindowsIsland
         void ClipRest(View rest, bool snap = true)
         {
             CascadeReset();
+            songNameUntil = DateTime.MinValue;
+            if (songNameTimer != null) songNameTimer.Stop();
+            ApplyCompactName();
             if (timer.Running) timer.Stop();
             banners.Clear();
             bannerUntil = DateTime.MinValue;

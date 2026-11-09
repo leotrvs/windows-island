@@ -2,6 +2,10 @@
 
 > Tradução de [CHANGELOG.md](CHANGELOG.md), que é o original em inglês.
 
+## 4.6.5
+
+- **Procurar atualização ficou bem mais rápido:** a lista da release e a assinatura dela agora são pedidas ao mesmo tempo, e cada uma vai pelos dois caminhos ao mesmo tempo (o endereço da release e, um segundo depois, a API do GitHub): vale a primeira resposta boa e a outra é descartada. Antes ele esperava o endereço da release desistir (e uma resposta lenta terminar) antes de tentar o outro caminho, e isso podia levar cerca de 30 segundos. Um arquivo pequeno tem no máximo 15 segundos. Depois que o endereço da release falha uma vez, a API vai primeiro pelos próximos 30 minutos. Vale igual pelo menu da bandeja e pelos Ajustes
+
 ## 4.6.4
 
 - **Troca de música, para cima e para baixo:** a capa, o título e o artista agora se movem na vertical, um depois do outro como uma cascata: os antigos sobem e os novos entram por baixo (ao contrário quando a música voltou), em vez de deslizar para o lado

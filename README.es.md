@@ -37,7 +37,7 @@ Una Dynamic Island para Windows. La música, Claude Code, sus límites de uso y 
 - **Uso de Claude:** anillos para los límites de **5 horas** y **semanal**, con la hora en que se renuevan
 - **Codex:** una actividad en vivo mientras Codex trabaja, sus límites de 5 horas y semanal, y un aviso cuando termina
 - **Páginas:** con la isla expandida, desplaza la rueda sobre ella o haz clic en los puntos para cambiar entre música, Claude y temporizador, que también tiene sus botones allí
-- **Temporizador, cronómetro y Pomodoro** (ciclos de enfoque y pausa): inícialos desde la página del Temporizador en la isla; aparecen como actividad en vivo y avisan cuando se acaba el tiempo
+- **Temporizador, cronómetro y Pomodoro** (ciclos de enfoque y pausa): inícialos desde la página del Temporizador en la isla; aparecen como actividad en vivo y avisan cuando se acaba el tiempo. El temporizador compacto tiene un anillo alrededor que se apaga a medida que pasa el tiempo
 - **Puntos de micrófono y cámara:** naranja con el micrófono en uso, verde con la cámara, como en el iPhone
 - **Batería** en portátiles: aparece como actividad al cargar, además de avisos de cargador conectado o retirado, batería baja y carga completa
 - **Nombres de las apps en los puntos:** mira qué app usa el micrófono o la cámara al pasar el ratón por la isla
@@ -103,6 +103,8 @@ Una Dynamic Island para Windows. La música, Claude Code, sus límites de uso y 
 | Brillo: un sol que se enciende, con rayos que crecen con el nivel | <img src="docs/images/level-brightness-en.gif" alt="Brillo: un sol que se enciende, con rayos que crecen con el nivel" width="300"> |
 | Pomodoro: ciclos de enfoque y pausa, con la cuenta atrás | <img src="docs/images/pomodoro-en.gif" alt="Pomodoro: ciclos de enfoque y pausa, con la cuenta atrás" width="300"> |
 | Pomodoro en la isla compacta | <img src="docs/images/pomodoro-compact-en.gif" alt="Pomodoro en la isla compacta" width="300"> |
+| La canción cambia en la isla normal: la carátula y el nombre suben y entran los nuevos, y el nombre se abre un momento | <img src="docs/images/song-change-en.gif" alt="La canción cambia en la isla normal: la carátula y el nombre suben y entran los nuevos, y el nombre se abre un momento" width="420"> |
+| La canción cambia con la isla expandida | <img src="docs/images/song-change-expanded-en.gif" alt="La canción cambia con la isla expandida" width="460"> |
 | Página de atajos: silenciar el micrófono o los altavoces, hacer una captura, ajustes de sonido y el volumen | <img src="docs/images/quick-en.gif" alt="Página de atajos: silenciar el micrófono o los altavoces, hacer una captura, ajustes de sonido y el volumen" width="300"> |
 
 ### La línea fina

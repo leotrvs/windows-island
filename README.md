@@ -37,7 +37,7 @@ A Dynamic Island for Windows. Music, Claude Code, its usage limits and your noti
 - **Claude usage:** rings for the **5-hour** and **weekly** limits, with reset times
 - **Codex:** a live activity while Codex works, its 5-hour and weekly limits, and an alert when it finishes
 - **Pages:** when the island is expanded, scroll over it or click the dots to switch between music, Claude and the timer, which also has its own buttons there
-- **Timer, stopwatch and Pomodoro** (focus and break cycles): start one from the island's Timer page; it shows as a live activity and alerts you when the time is up
+- **Timer, stopwatch and Pomodoro** (focus and break cycles): start one from the island's Timer page; it shows as a live activity and alerts you when the time is up. The compact timer has a ring around it that fades as the time runs out
 - **Microphone and camera dots:** orange while the microphone is in use, green for the camera, like on iPhone
 - **Battery** on laptops: shown as an activity while charging, plus alerts for charger connected or removed, low battery and fully charged
 - **App names on the dots:** see which app is using the microphone or camera
@@ -103,6 +103,8 @@ A Dynamic Island for Windows. Music, Claude Code, its usage limits and your noti
 | Brightness: a sun that lights up, its rays growing with the level | <img src="docs/images/level-brightness-en.gif" alt="Brightness: a sun that lights up, its rays growing with the level" width="300"> |
 | Pomodoro: focus and break cycles, with the time counting down | <img src="docs/images/pomodoro-en.gif" alt="Pomodoro: focus and break cycles, with the time counting down" width="300"> |
 | Pomodoro on the compact island | <img src="docs/images/pomodoro-compact-en.gif" alt="Pomodoro on the compact island" width="300"> |
+| The song changes on the normal island: the cover and the name go up and the new ones come in, and the name opens for a moment | <img src="docs/images/song-change-en.gif" alt="The song changes on the normal island: the cover and the name go up and the new ones come in, and the name opens for a moment" width="420"> |
+| The song changes with the island expanded | <img src="docs/images/song-change-expanded-en.gif" alt="The song changes with the island expanded" width="460"> |
 | Shortcuts page: mute the microphone or the speakers, take a screenshot, sound settings and the volume | <img src="docs/images/quick-en.gif" alt="Shortcuts page: mute the microphone or the speakers, take a screenshot, sound settings and the volume" width="300"> |
 
 ### The thin line
