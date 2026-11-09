@@ -22,7 +22,8 @@ namespace WindowsIsland
         public Action<string, Action> Ask; // A question on the island: the version, and what to do when the user says yes
         readonly DispatcherTimer settle;
         UpdateInfo found;
-        bool working;
+        bool installing;                                      // A download is under way: never two at once (they would write the same file)
+        Task<Tuple<UpdateResult, UpdateInfo>> inflight;       // The look for an update that is under way: whoever asks meanwhile joins it
 
         public UpdateFlow(Dispatcher dispatcher, Func<bool> islandBusy, Action quit, Action<string> say)
         {
@@ -42,42 +43,42 @@ namespace WindowsIsland
             if (phase == Phase.UpToDate || phase == Phase.Failed) settle.Start();
         }
 
+        // One look at a time: the tray menu, the Settings window and the hourly check that ask while it runs all wait for the same answer
+        async Task<Tuple<UpdateResult, UpdateInfo>> SharedCheckAsync()
+        {
+            if (inflight == null) inflight = Updater.CheckAsync();
+            Task<Tuple<UpdateResult, UpdateInfo>> task = inflight;
+            try { return await task; }
+            finally { if (inflight == task) inflight = null; }
+        }
+
         // manual = the user asked: a found update waits for a click. Otherwise it installs by itself.
         public async Task CheckAsync(bool manual)
         {
-            if (working) return;
+            if (installing) return;
             if (State == Phase.Available && manual) return;
-            working = true;
-            try
+            if (!Updater.CanUpdate)
             {
-                if (!Updater.CanUpdate)
-                {
-                    if (manual) say(Strings.UpdatesNeedInstall);
-                    return;
-                }
-                if (manual) Set(Phase.Checking);
+                if (manual) say(Strings.UpdatesNeedInstall);
+                return;
+            }
+            if (manual) Set(Phase.Checking);
 
-                Tuple<UpdateResult, UpdateInfo> check = await Updater.CheckAsync();
-                if (check.Item1 == UpdateResult.Available)
+            Tuple<UpdateResult, UpdateInfo> check = await SharedCheckAsync();
+            if (check.Item1 == UpdateResult.Available)
+            {
+                found = check.Item2;
+                Version = check.Item2.Version;
+                if (manual)
                 {
-                    found = check.Item2;
-                    Version = check.Item2.Version;
-                    if (manual)
-                    {
-                        Set(Phase.Available);
-                        return;
-                    }
-                    say(Strings.UpdateFoundAuto(Version)); // The island says so, then it downloads
-                    working = false;
-                    await InstallAsync();
+                    Set(Phase.Available);
                     return;
                 }
-                if (manual) Set(check.Item1 == UpdateResult.UpToDate ? Phase.UpToDate : Phase.Failed);
+                say(Strings.UpdateFoundAuto(Version)); // The island says so, then it downloads
+                await InstallAsync();
+                return;
             }
-            finally
-            {
-                working = false;
-            }
+            if (manual) Set(check.Item1 == UpdateResult.UpToDate ? Phase.UpToDate : Phase.Failed);
         }
 
         void Tell(string kind, string text)
@@ -86,44 +87,40 @@ namespace WindowsIsland
         }
 
         // From the tray menu: look in the background and, when there is a new version, ask on the island before downloading.
+        // The Settings window shows the same state (looking, then the Download button).
         public async Task CheckFromMenuAsync()
         {
-            if (working || State == Phase.Downloading) return;
+            if (installing) return;
             if (!Updater.CanUpdate) { say(Strings.UpdatesNeedInstall); return; }
-            working = true;
-            Tuple<UpdateResult, UpdateInfo> check;
-            try
-            {
-                Tell("checking", Strings.UpdateChecking);
-                check = await Updater.CheckAsync();
-            }
-            finally
-            {
-                working = false;
-            }
+            if (State == Phase.Available && found != null) { Ask?.Invoke(Version, () => { _ = InstallAsync(true); }); return; }
+
+            Set(Phase.Checking);
+            Tell("checking", Strings.UpdateChecking);
+            Tuple<UpdateResult, UpdateInfo> check = await SharedCheckAsync();
             if (check.Item1 == UpdateResult.Available)
             {
                 found = check.Item2;
                 Version = check.Item2.Version;
+                Set(Phase.Available);
                 if (Ask != null) Ask(Version, () => { _ = InstallAsync(true); });
                 else await InstallAsync(true);
             }
-            else if (check.Item1 == UpdateResult.UpToDate) Tell("uptodate", Strings.UpToDate);
-            else Tell("failed", Strings.UpdateFailed);
+            else if (check.Item1 == UpdateResult.UpToDate) { Set(Phase.UpToDate); Tell("uptodate", Strings.UpToDate); }
+            else { Set(Phase.Failed); Tell("failed", Strings.UpdateFailed); }
         }
 
         // Downloads the update that was found, checks it, and restarts into it.
+        // announce = someone asked for it (the island or the Settings window): the island says so, and the restart does not wait for the mouse to leave.
         public async Task InstallAsync(bool announce = false)
         {
-            if (working || found == null) return;
-            working = true;
+            if (installing || found == null) return;
+            installing = true;
             try
             {
                 Set(Phase.Downloading);
                 if (announce) Tell("downloading", Strings.UpdateDownloading);
                 if (await Updater.DownloadVerifiedAsync(found))
                 {
-                    // Someone who asked for the update from the island is waiting for it: no waiting for the mouse to leave
                     if (!announce) while (islandBusy()) await Task.Delay(2000);
                     if (Updater.ApplyAndRestart())
                     {
@@ -136,7 +133,7 @@ namespace WindowsIsland
             }
             finally
             {
-                working = false;
+                installing = false;
             }
         }
     }

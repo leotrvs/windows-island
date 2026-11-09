@@ -2,6 +2,11 @@
 
 > Tradução de [CHANGELOG.md](CHANGELOG.md), que é o original em inglês.
 
+## 4.6.6
+
+- **A ilha e os Ajustes agora dividem a atualização:** antes, a procura feita pelo menu da bandeja não avisava os Ajustes, e clicar em "Baixar" nos Ajustes enquanto a ilha ainda procurava podia iniciar um segundo download por cima do primeiro, travar por um tempão e falhar. Agora há uma procura de cada vez que os dois esperam (os Ajustes mostram "Procurando" e depois o botão Baixar também), e um download de cada vez; um download que você pede nos Ajustes é anunciado na ilha e reinicia na hora
+- **Um download que para de chegar** é abandonado depois de 30 segundos e o outro caminho é tentado, em vez de esperar minutos
+
 ## 4.6.5
 
 - **Procurar atualização ficou bem mais rápido:** a lista da release e a assinatura dela agora são pedidas ao mesmo tempo, e cada uma vai pelos dois caminhos ao mesmo tempo (o endereço da release e, um segundo depois, a API do GitHub): vale a primeira resposta boa e a outra é descartada. Antes ele esperava o endereço da release desistir (e uma resposta lenta terminar) antes de tentar o outro caminho, e isso podia levar cerca de 30 segundos. Um arquivo pequeno tem no máximo 15 segundos. Depois que o endereço da release falha uma vez, a API vai primeiro pelos próximos 30 minutos. Vale igual pelo menu da bandeja e pelos Ajustes

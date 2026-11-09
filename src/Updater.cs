@@ -322,17 +322,23 @@ namespace WindowsIsland
 #endif
             if (response.Content.Headers.ContentLength > maxBytes) throw new InvalidDataException();
 
-            using (Stream stream = await response.Content.ReadAsStreamAsync(token))
-            using (MemoryStream buffer = new MemoryStream())
+            // A download that stops coming for 30 seconds is given up (the other way is tried), instead of waiting for minutes
+            using (CancellationTokenSource idle = CancellationTokenSource.CreateLinkedTokenSource(token))
             {
-                byte[] chunk = new byte[81920];
-                int read;
-                while ((read = await stream.ReadAsync(chunk, 0, chunk.Length, token)) > 0)
+                idle.CancelAfter(TimeSpan.FromSeconds(30));
+                using (Stream stream = await response.Content.ReadAsStreamAsync(idle.Token))
+                using (MemoryStream buffer = new MemoryStream())
                 {
-                    buffer.Write(chunk, 0, read);
-                    if (buffer.Length > maxBytes) throw new InvalidDataException();
+                    byte[] chunk = new byte[81920];
+                    int read;
+                    while ((read = await stream.ReadAsync(chunk, 0, chunk.Length, idle.Token)) > 0)
+                    {
+                        idle.CancelAfter(TimeSpan.FromSeconds(30));
+                        buffer.Write(chunk, 0, read);
+                        if (buffer.Length > maxBytes) throw new InvalidDataException();
+                    }
+                    return buffer.ToArray();
                 }
-                return buffer.ToArray();
             }
         }
     }

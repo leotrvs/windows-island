@@ -271,7 +271,7 @@ namespace WindowsIsland
             line.MouseLeftButtonUp += (s, e) =>
             {
                 if (updates == null) return;
-                if (updates.State == UpdateFlow.Phase.Available) _ = updates.InstallAsync();
+                if (updates.State == UpdateFlow.Phase.Available) _ = updates.InstallAsync(true);
                 else if (updates.State == UpdateFlow.Phase.Idle || updates.State == UpdateFlow.Phase.UpToDate || updates.State == UpdateFlow.Phase.Failed) _ = updates.CheckAsync(true);
             };
             if (updates != null)

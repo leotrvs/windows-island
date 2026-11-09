@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.6.6
+
+- **The island and Settings now share the update:** before, the tray menu's look for an update did not tell Settings, so clicking "Download" in Settings while the island was still looking could start a second download over the first, hang for a long time and fail. Now there is one look at a time that both wait for (Settings shows "Searching" and then the Download button too), and one download at a time; a download you ask for in Settings is announced on the island and restarts at once
+- **A download that stops coming** is given up after 30 seconds and the other way is tried, instead of waiting for minutes
+
 ## 4.6.5
 
 - **Looking for an update is much faster:** the list of the release and its signature are now asked for at the same time, and each one goes both ways at once (the release address and, a second later, GitHub's API): the first good answer wins and the other is dropped. Before, it waited for the release address to give up (and for a slow answer to finish) before trying the other way, which could take about 30 seconds. A small file now has 15 seconds at most. After the release address fails once, the API goes first for the next 30 minutes. This is the same from the tray menu and from Settings
