@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.0.2
+
+- **Settings, Essentials:** without the theme (it is in Advanced, Appearance), without the long description under Windows notifications and with a shorter one under "Thin line always"
+
 ## 4.0.1
 
 - **Settings:** the row with the Chrome and Edge buttons now says what it is: "Browser extension", an extension to install in Chrome or Edge (site icons for web audio and the progress of downloads)

@@ -397,14 +397,10 @@ namespace WindowsIsland
         {
             Section(Strings.SectionEssentials);
             Toggle("\uE740", Strings.MenuAlwaysThin, Strings.HintAlwaysThin, () => settings.AlwaysThin, v => settings.AlwaysThin = v);
-            string[] themeValues = { "Auto", "Dark", "Light" };
-            Segmented("\uE790", Strings.MenuTheme, new[] { Strings.ThemeAuto, Strings.ThemeDark, Strings.ThemeLight },
-                () => Math.Max(0, Array.FindIndex(themeValues, v => string.Equals(v, settings.Theme, StringComparison.OrdinalIgnoreCase))),
-                i => { settings.Theme = themeValues[i]; Dispatcher.BeginInvoke(new Action(ChangeTheme), DispatcherPriority.Background); });
             Toggle("\uE8D6", Strings.MenuMusic, null, () => settings.ShowMusic, v => settings.ShowMusic = v);
             Toggle("img:claude", Strings.MenuClaude, null, () => settings.ShowClaude, v => settings.ShowClaude = v);
-            Toggle("\uE7E7", Strings.MenuNotifications, Strings.HintNotifications, () => settings.ShowNotifications, v => settings.ShowNotifications = v);
-            Toggle("\uE720", Strings.MenuPrivacyDots, Strings.HintPrivacyDots, () => settings.ShowPrivacyDots, v => settings.ShowPrivacyDots = v);
+            Toggle("\uE7E7", Strings.MenuNotifications, null, () => settings.ShowNotifications, v => settings.ShowNotifications = v);
+            Toggle("\uE720", Strings.MenuPrivacyDots, null, () => settings.ShowPrivacyDots, v => settings.ShowPrivacyDots = v);
             Toggle("\uE7E8", Strings.MenuStartup, null, () => settings.StartWithWindows, v => settings.StartWithWindows = v);
             ActionRow("\uE713", Strings.MoreSettings, () =>
             {

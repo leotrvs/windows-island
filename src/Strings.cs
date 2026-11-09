@@ -270,10 +270,7 @@ namespace WindowsIsland
         public static string WuInstalling => T("Installing updates", "Instalando atualizações", "Instalando actualizaciones", "Установка обновлений");
         public static string WuReboot => T("Restart to finish", "Reiniciar para concluir", "Reiniciar para terminar", "Перезагрузите для завершения");
         public static string MenuAlwaysThin => T("Thin line always", "Linha fina sempre", "Línea fina siempre", "Всегда тонкая линия");
-        public static string HintAlwaysThin => T("The collapsed island is a thin line with a tiny icon of what matters most. Hover to open it",
-                                    "A ilha recolhida é uma linha fina com um ícone pequeno do que mais importa. Passe o mouse para abrir",
-                                    "La isla recogida es una línea fina con un icono pequeño de lo más importante. Pasa el ratón para abrirla",
-                                    "Свёрнутый остров — тонкая линия с маленьким значком самого важного. Наведите мышь, чтобы открыть");
+        public static string HintAlwaysThin => T("A thin line when collapsed; hover to open", "Recolhida, vira uma linha fina; passe o mouse para abrir", "Recogida, es una línea fina; pasa el ratón para abrir", "В свёрнутом виде — тонкая линия; наведите мышь");
         public static string ModeEssentials => T("Essentials", "Essenciais", "Esenciales", "Основное");
         public static string ModeAdvanced => T("Advanced", "Avançado", "Avanzado", "Расширенные");
         public static string SectionEssentials => T("Essentials", "Essenciais", "Esenciales", "Основное");
