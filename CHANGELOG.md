@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.0.10
+
+- **Screen recording (OBS and Game Bar):** the icon on the normal island is red, not blue; on the thin line it is a dim red line with a blinking dot, no longer the red pulse that means an error or a low battery
+
 ## 3.0.9
 
 - **Steam downloads, in real time:** Steam writes a download's progress to its files only now and then (a new install stayed at 0% until it was paused and resumed). The island now counts the bytes Steam writes to disk while it works, starting from what its files said when the run began, so the percent moves while the download runs. When the island opens in the middle of a download it shows an ellipsis until the run is paused and resumed, instead of a wrong 0%

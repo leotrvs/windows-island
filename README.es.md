@@ -93,7 +93,8 @@ La isla recogida es una línea fina por defecto (Ajustes, Comportamiento, "Líne
 | Temporizador: la línea se vacía al acabarse el tiempo | <img src="docs/images/thin-timer-en.png" alt="Temporizador: la línea se vacía al acabarse el tiempo" width="300"> |
 | Una descarga, una compilación o un juego de Steam: la línea se llena con el progreso | <img src="docs/images/thin-progress-en.png" alt="Una descarga, una compilación o un juego de Steam: la línea se llena con el progreso" width="300"> |
 | Cargando: la línea se llena con la carga | <img src="docs/images/thin-charging-en.png" alt="Cargando: la línea se llena con la carga" width="300"> |
-| Grabación de pantalla (OBS o Game Bar) o batería baja: la línea pulsa en rojo | <img src="docs/images/thin-alert-en.png" alt="Grabación de pantalla (OBS o Game Bar) o batería baja: la línea pulsa en rojo" width="300"> |
+| Grabación de pantalla (OBS o Game Bar): una línea roja tenue con un punto parpadeante | <img src="docs/images/thin-recording-en.png" alt="Grabación de pantalla (OBS o Game Bar): una línea roja tenue con un punto parpadeante" width="300"> |
+| Batería baja o un error: la línea pulsa en rojo | <img src="docs/images/thin-alert-en.png" alt="Batería baja o un error: la línea pulsa en rojo" width="300"> |
 | Sin internet: una línea roja discontinua que parpadea | <img src="docs/images/thin-offline-en.png" alt="Sin internet: una línea roja discontinua que parpadea" width="300"> |
 | Terminado: la línea se vuelve verde | <img src="docs/images/thin-done-en.png" alt="Terminado: la línea se vuelve verde" width="300"> |
 | Enfoque: una lunita | <img src="docs/images/thin-focus-en.png" alt="Enfoque: una lunita" width="300"> |

@@ -157,6 +157,7 @@
                         <Ellipse x:Name="ThinCam" Width="6" Height="6" Fill="#3FBF5F" Margin="2,0" Visibility="Collapsed"/>
                         <Ellipse x:Name="ThinScreen" Width="6" Height="6" Fill="#3B8CFF" Margin="2,0" Visibility="Collapsed"/>
                     </StackPanel>
+                    <Ellipse x:Name="MinimalRec" Width="6" Height="6" Fill="#FF453A" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="12,1.5,0,0" Visibility="Collapsed"/>
                     <Ellipse x:Name="MinimalUnread" Width="5" Height="5" Fill="White" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="12,2,0,0" Visibility="Collapsed"/>
                     <TextBlock x:Name="MinimalGlyph" FontSize="11" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,3,0,0" Visibility="Collapsed"/>
                 </Grid>

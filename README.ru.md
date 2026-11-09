@@ -93,7 +93,8 @@ Dynamic Island для Windows. Музыка, Claude Code, его лимиты и
 | Таймер: линия пустеет по мере истечения времени | <img src="docs/images/thin-timer-en.png" alt="Таймер: линия пустеет по мере истечения времени" width="300"> |
 | Загрузка, сборка или игра Steam: линия заполняется по ходу | <img src="docs/images/thin-progress-en.png" alt="Загрузка, сборка или игра Steam: линия заполняется по ходу" width="300"> |
 | Зарядка: линия заполняется по заряду | <img src="docs/images/thin-charging-en.png" alt="Зарядка: линия заполняется по заряду" width="300"> |
-| Запись экрана (OBS или Game Bar) или низкий заряд: линия пульсирует красным | <img src="docs/images/thin-alert-en.png" alt="Запись экрана (OBS или Game Bar) или низкий заряд: линия пульсирует красным" width="300"> |
+| Запись экрана (OBS или Game Bar): тусклая красная линия с мигающей точкой | <img src="docs/images/thin-recording-en.png" alt="Запись экрана (OBS или Game Bar): тусклая красная линия с мигающей точкой" width="300"> |
+| Низкий заряд или ошибка: линия пульсирует красным | <img src="docs/images/thin-alert-en.png" alt="Низкий заряд или ошибка: линия пульсирует красным" width="300"> |
 | Нет интернета: красная пунктирная линия, которая мигает | <img src="docs/images/thin-offline-en.png" alt="Нет интернета: красная пунктирная линия, которая мигает" width="300"> |
 | Готово: линия становится зелёной | <img src="docs/images/thin-done-en.png" alt="Готово: линия становится зелёной" width="300"> |
 | Фокус: маленькая луна | <img src="docs/images/thin-focus-en.png" alt="Фокус: маленькая луна" width="300"> |

@@ -414,6 +414,8 @@ namespace WindowsIsland
         static readonly Brush ApiGreen = Freeze(new SolidColorBrush(Color.FromRgb(0x30, 0xD1, 0x58)));
         static readonly Brush ApiRed = Freeze(new SolidColorBrush(Color.FromRgb(0xFF, 0x45, 0x3A)));
         static Brush StateBrush(string state) { return state == "done" ? ApiGreen : state == "error" ? ApiRed : ApiBlue; }
+        static bool IsRecording(ApiActivity a) { return a.Id.StartsWith("obs-", StringComparison.Ordinal) || a.Id.StartsWith("gamebar-", StringComparison.Ordinal); }
+        static Brush ActivityBrush(ApiActivity a) { return a.State == "running" && IsRecording(a) ? ApiRed : StateBrush(a.State); } // A recording is red, not blue
         static string SideOf(ApiActivity a) { return a.State == "done" ? "\u2713" : a.State == "error" ? "\u2715" : a.Progress >= 0 ? a.Progress + "%" : "\u2026"; }
 
         void UpdateExternal()
@@ -428,12 +430,12 @@ namespace WindowsIsland
         {
             ApiActivity first = list[0];
             ExternalGlyph.Text = first.IconGlyph;
-            ExternalGlyph.Foreground = StateBrush(first.State);
+            ExternalGlyph.Foreground = ActivityBrush(first);
             ExternalTitle.Text = first.Title;
             ExternalSide.Text = SideOf(first);
             ExternalSide.Foreground = first.State == "running" ? White : StateBrush(first.State);
             BubbleExternal.Text = first.IconGlyph;
-            BubbleExternal.Foreground = StateBrush(first.State);
+            BubbleExternal.Foreground = ActivityBrush(first);
 
             // The progress bar under the main activity
             bool running = first.State == "running" && first.Progress >= 0;
@@ -464,7 +466,7 @@ namespace WindowsIsland
                 row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(30) });
                 row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
                 row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-                row.Children.Add(new TextBlock { Text = a.IconGlyph, FontFamily = new FontFamily("Segoe Fluent Icons, Segoe MDL2 Assets"), FontSize = 16, Foreground = StateBrush(a.State), VerticalAlignment = VerticalAlignment.Center });
+                row.Children.Add(new TextBlock { Text = a.IconGlyph, FontFamily = new FontFamily("Segoe Fluent Icons, Segoe MDL2 Assets"), FontSize = 16, Foreground = ActivityBrush(a), VerticalAlignment = VerticalAlignment.Center });
                 StackPanel text = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
                 text.Children.Add(new TextBlock { Text = a.Title, FontSize = 13, FontWeight = FontWeights.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis });
                 string caption = string.IsNullOrEmpty(a.Text) ? a.App : a.App + " \u00B7 " + a.Text;
@@ -973,6 +975,7 @@ namespace WindowsIsland
             ThinShot(folder, suffix, "progress", Thin.Progress, ThinBlue, 0.64, 0);
             ThinShot(folder, suffix, "charging", Thin.Charging, ThinGreen, 0.54, 0);
             ThinShot(folder, suffix, "alert", Thin.Alert, ThinRed, 0, 0);
+            ThinShot(folder, suffix, "recording", Thin.Recording, ThinRed, 0, 0);
             ThinShot(folder, suffix, "offline", Thin.Offline, ThinRed, 0, 0);
             ThinShot(folder, suffix, "done", Thin.Done, ThinGreen, 0, 0);
             ThinShot(folder, suffix, "focus", Thin.Focus, Colors.White, 0, 0);
@@ -1270,7 +1273,7 @@ namespace WindowsIsland
         // Claude working: a glow sweeps along it; waiting for you: it pulses; music: a tiny equalizer; a timer, a download or
         // the charge: it fills; an alert: it pulses red; done: green. Only the most important state shows, never a mix.
 
-        enum Thin { None, ClaudeWorking, ClaudeWaiting, Music, Timer, Progress, Busy, Alert, Done, Charging, Focus, Offline }
+        enum Thin { None, ClaudeWorking, ClaudeWaiting, Music, Timer, Progress, Busy, Alert, Done, Charging, Focus, Offline, Recording }
         bool networkOffline;
         DateTime unreadAt = DateTime.MinValue; // A notification came and nobody looked yet
         readonly LinearGradientBrush dashes = new LinearGradientBrush { StartPoint = new Point(0, 0.5), EndPoint = new Point(0.14, 0.5), SpreadMethod = GradientSpreadMethod.Repeat };
@@ -1332,9 +1335,10 @@ namespace WindowsIsland
             else if (primary == Activity.External && api != null && api.Activities.Count > 0)
             {
                 ApiActivity first = api.Activities.OrderByDescending(a => a.Updated).First();
-                bool recording = first.Id.StartsWith("obs-", StringComparison.Ordinal) || first.Id.StartsWith("gamebar-", StringComparison.Ordinal);
+                bool recording = IsRecording(first);
                 if (first.State == "done") { kind = Thin.Done; color = ThinGreen; }
-                else if (first.State == "error" || recording) { kind = Thin.Alert; color = ThinRed; }
+                else if (recording) { kind = Thin.Recording; color = ThinRed; } // A steady red line with a blinking dot: recording is not an error
+                else if (first.State == "error") { kind = Thin.Alert; color = ThinRed; }
                 else if (first.Progress >= 0) { kind = Thin.Progress; color = ThinBlue; fraction = first.Progress / 100.0; }
                 else { kind = Thin.Busy; color = ThinBlue; }
             }
@@ -1382,7 +1386,10 @@ namespace WindowsIsland
             }
 
             bool glow = minimalKind == Thin.ClaudeWorking || minimalKind == Thin.Busy;
-            bool solid = minimalKind == Thin.ClaudeWaiting || minimalKind == Thin.Alert || minimalKind == Thin.Done || minimalKind == Thin.Offline;
+            bool recordingNow = minimalKind == Thin.Recording;
+            MinimalRec.Visibility = recordingNow ? Visibility.Visible : Visibility.Collapsed;
+            if (recordingNow) MinimalRec.Opacity = clock % 1.2 < 0.7 ? 1 : 0.15; // Blinks like a recording light
+            bool solid = minimalKind == Thin.Recording || minimalKind == Thin.ClaudeWaiting || minimalKind == Thin.Alert || minimalKind == Thin.Done || minimalKind == Thin.Offline;
             bool unread = minimalPrimaryNone && DateTime.Now - unreadAt < TimeSpan.FromMinutes(10);
             MinimalUnread.Visibility = unread ? Visibility.Visible : Visibility.Collapsed;
             if (unread) MinimalUnread.Opacity = 0.3 + 0.7 * (0.5 + 0.5 * Math.Cos(clock * 4));
@@ -1435,6 +1442,10 @@ namespace WindowsIsland
                 case Thin.Done:
                     MinimalBase.Background = new SolidColorBrush(minimalColor);
                     return false;
+                case Thin.Recording:
+                    MinimalBase.Background = new SolidColorBrush(ThinRed);
+                    MinimalBase.Opacity = 0.32; // A dim red line; the dot is the light
+                    return true;
                 case Thin.Timer:
                 {
                     double left = minimalFixed ? minimalFraction : timer.Fraction;

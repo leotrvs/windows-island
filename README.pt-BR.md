@@ -93,7 +93,8 @@ A ilha recolhida é uma linha fina por padrão (Ajustes, Comportamento, "Linha f
 | Timer: a linha esvazia conforme o tempo acaba | <img src="docs/images/thin-timer-pt.png" alt="Timer: a linha esvazia conforme o tempo acaba" width="300"> |
 | Um download, uma compilação ou um jogo da Steam: a linha enche com o progresso | <img src="docs/images/thin-progress-pt.png" alt="Um download, uma compilação ou um jogo da Steam: a linha enche com o progresso" width="300"> |
 | Carregando: a linha enche com a carga | <img src="docs/images/thin-charging-pt.png" alt="Carregando: a linha enche com a carga" width="300"> |
-| Gravação de tela (OBS ou Game Bar) ou bateria baixa: a linha pulsa em vermelho | <img src="docs/images/thin-alert-pt.png" alt="Gravação de tela (OBS ou Game Bar) ou bateria baixa: a linha pulsa em vermelho" width="300"> |
+| Gravação de tela (OBS ou Game Bar): uma linha vermelha fraca com um ponto piscando | <img src="docs/images/thin-recording-pt.png" alt="Gravação de tela (OBS ou Game Bar): uma linha vermelha fraca com um ponto piscando" width="300"> |
+| Bateria baixa ou erro: a linha pulsa em vermelho | <img src="docs/images/thin-alert-pt.png" alt="Bateria baixa ou erro: a linha pulsa em vermelho" width="300"> |
 | Sem internet: uma linha vermelha tracejada que pisca | <img src="docs/images/thin-offline-pt.png" alt="Sem internet: uma linha vermelha tracejada que pisca" width="300"> |
 | Concluído: a linha fica verde | <img src="docs/images/thin-done-pt.png" alt="Concluído: a linha fica verde" width="300"> |
 | Foco: uma luazinha | <img src="docs/images/thin-focus-pt.png" alt="Foco: uma luazinha" width="300"> |

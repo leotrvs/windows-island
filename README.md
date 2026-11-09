@@ -93,7 +93,8 @@ The collapsed island is a thin line by default (Settings, Behavior, "Thin line a
 | Timer: the line empties as the time runs out | <img src="docs/images/thin-timer-en.png" alt="Timer: the line empties as the time runs out" width="300"> |
 | A download, a build or a Steam game: the line fills with the progress | <img src="docs/images/thin-progress-en.png" alt="A download, a build or a Steam game: the line fills with the progress" width="300"> |
 | Charging: the line fills with the charge | <img src="docs/images/thin-charging-en.png" alt="Charging: the line fills with the charge" width="300"> |
-| Screen recording (OBS or Game Bar) or low battery: the line pulses red | <img src="docs/images/thin-alert-en.png" alt="Screen recording (OBS or Game Bar) or low battery: the line pulses red" width="300"> |
+| Screen recording (OBS or Game Bar): a dim red line with a blinking dot | <img src="docs/images/thin-recording-en.png" alt="Screen recording (OBS or Game Bar): a dim red line with a blinking dot" width="300"> |
+| Low battery or an error: the line pulses red | <img src="docs/images/thin-alert-en.png" alt="Low battery or an error: the line pulses red" width="300"> |
 | No internet: a dashed red line that blinks | <img src="docs/images/thin-offline-en.png" alt="No internet: a dashed red line that blinks" width="300"> |
 | Done: the line turns green | <img src="docs/images/thin-done-en.png" alt="Done: the line turns green" width="300"> |
 | Focus: a small moon | <img src="docs/images/thin-focus-en.png" alt="Focus: a small moon" width="300"> |
