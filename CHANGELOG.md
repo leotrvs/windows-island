@@ -1,5 +1,12 @@
 # Changelog
 
+## 3.0.6
+
+- **Thin line, system monitor:** the two rings now read fresh numbers every second (they used to update only when the island was opened); the part that is not filled is black; with "keep the monitor in sight" the rings stay beside the line while another activity runs, and that activity's bubble moves out beyond them
+- **Thin line, privacy:** the microphone, camera and screen dots sit inside the line
+- **Thin line, more states when nothing else is happening:** no internet (a dashed red line that blinks), low battery (the line pulses red) and a white dot for a notification nobody looked at yet (it goes away when you hover the island, or after 10 minutes)
+- **Thin line, volume and brightness:** a small bar inside the line instead of the big one
+
 ## 3.0.5
 
 - **Thin line, system monitor:** with the system monitor on, the thin line shows processor and memory as two tiny rings beside it (blue and green, amber from 70%, red from 90%) while nothing else is happening

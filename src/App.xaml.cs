@@ -279,6 +279,8 @@ namespace WindowsIsland
             devices.Changed += (kind, name, connected) =>
             {
                 if (kind == DeviceService.Kind.Network)
+                    foreach (IslandWindow island in islands) island.SetOnline(connected);
+                if (kind == DeviceService.Kind.Network)
                     MainIsland?.ShowToast(connected ? Strings.NetworkOnline : Strings.NetworkOffline, connected ? "\uE701" : "\uF384", 2.6);
                 else
                     MainIsland?.ShowToast(connected ? Strings.DeviceConnected(name) : Strings.DeviceDisconnected(name), kind == DeviceService.Kind.Bluetooth ? "\uE702" : "\uE88E", 2.6);

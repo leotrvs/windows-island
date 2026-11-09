@@ -18,7 +18,7 @@ namespace WindowsIsland
 {
     public partial class IslandWindow : Window
     {
-        enum View { Hidden, Minimal, MusicPeek, Idle, MusicCompact, ClaudeCompact, CodexCompact, TimerCompact, BatteryCompact, ExternalCompact, SystemCompact, MusicExpanded, ClaudeExpanded, TimerExpanded, SystemExpanded, ExternalExpanded, Banner, Toast, Level, Permission }
+        enum View { Hidden, Minimal, MusicPeek, LevelMini, Idle, MusicCompact, ClaudeCompact, CodexCompact, TimerCompact, BatteryCompact, ExternalCompact, SystemCompact, MusicExpanded, ClaudeExpanded, TimerExpanded, SystemExpanded, ExternalExpanded, Banner, Toast, Level, Permission }
         enum Activity { None, Music, Claude, Codex, Timer, Battery, System, External }
 
         static readonly Dictionary<View, Size> Sizes = new Dictionary<View, Size>
@@ -26,6 +26,7 @@ namespace WindowsIsland
             [View.Hidden] = new Size(90, 24),
             [View.Minimal] = new Size(76, 6),
             [View.MusicPeek] = new Size(236, 36),
+            [View.LevelMini] = new Size(104, 20),
             [View.Idle] = new Size(112, 30),
             [View.MusicCompact] = new Size(176, 34),
             [View.SystemCompact] = new Size(140, 34),
@@ -120,6 +121,7 @@ namespace WindowsIsland
             panels[View.Idle] = IdlePanel;
             panels[View.Minimal] = MinimalPanel;
             panels[View.MusicPeek] = MusicPeek;
+            panels[View.LevelMini] = LevelMini;
             panels[View.MusicCompact] = MusicCompact;
             panels[View.ClaudeCompact] = ClaudeCompact;
             panels[View.CodexCompact] = CodexCompact;
@@ -349,6 +351,7 @@ namespace WindowsIsland
         void UpdateThinGauges()
         {
             if (!thinGauges) return;
+            UpdateSystemPage(); // Reads the processor and memory again (once a second)
             int cpu = systemStats.Cpu, memory = systemStats.Memory;
             ThinCpuRing.Data = Arc(Math.Max(cpu, 3), 14, 1.6);
             ThinMemRing.Data = Arc(Math.Max(memory, 3), 14, 1.6);
@@ -531,9 +534,15 @@ namespace WindowsIsland
         {
             UpdateFocusMoon();
             bool mic = privacy.Microphone && settings.ShowPrivacyDots, cam = privacy.Camera && settings.ShowPrivacyDots, screen = ScreenOn;
-            MicDot.Visibility = mic ? Visibility.Visible : Visibility.Collapsed;
-            CamDot.Visibility = cam ? Visibility.Visible : Visibility.Collapsed;
-            ScreenDot.Visibility = screen ? Visibility.Visible : Visibility.Collapsed;
+            // On the thin line the dots sit inside it; otherwise they sit beside the island
+            bool thin = view == View.Minimal;
+            MicDot.Visibility = mic && !thin ? Visibility.Visible : Visibility.Collapsed;
+            CamDot.Visibility = cam && !thin ? Visibility.Visible : Visibility.Collapsed;
+            ScreenDot.Visibility = screen && !thin ? Visibility.Visible : Visibility.Collapsed;
+            ThinMic.Visibility = mic && thin ? Visibility.Visible : Visibility.Collapsed;
+            ThinCam.Visibility = cam && thin ? Visibility.Visible : Visibility.Collapsed;
+            ThinScreen.Visibility = screen && thin ? Visibility.Visible : Visibility.Collapsed;
+            if (thin) { mic = cam = screen = false; } // Nothing of them beside the island, no name either
             // Muted or deafened in Discord, while the Discord option is on and connected
             bool deaf = settings.DiscordEnabled && discord != null && discord.Deafened;
             bool muted = settings.DiscordEnabled && discord != null && discord.Muted && !deaf;
@@ -1062,6 +1071,7 @@ namespace WindowsIsland
 
         void Recompute()
         {
+            if (hovering) unreadAt = DateTime.MinValue; // Looked at
             bool music = MusicActive;
             bool working = ClaudeActive;
 
@@ -1095,7 +1105,7 @@ namespace WindowsIsland
                 next = PickedPage() ?? DefaultPage(primary);
             else if (DateTime.Now < bannerUntil) next = View.Banner;
             else if (DateTime.Now < toastUntil) next = View.Toast;
-            else if (DateTime.Now < levelUntil) next = View.Level;
+            else if (DateTime.Now < levelUntil) next = ThinActive ? View.LevelMini : View.Level;
             // The same thin line for the activities too, when asked: hover to see them
             else if (DateTime.Now < musicPeekUntil && ThinActive) next = View.MusicPeek;
             else if (ThinActive && primary != Activity.None) next = View.Minimal;
@@ -1139,7 +1149,7 @@ namespace WindowsIsland
             if (next == View.Minimal && primary != Activity.None && second != primary) nextBubble = second; // On the thin line, the second activity is a tiny bubble beside it
             if (next == View.SystemCompact && KeepsMonitor(primary)) nextBubble = primary; // The monitor keeps its place, the activity is the bubble
             bool minimalChanged = next == View.Minimal ? UpdateMinimal(primary) : ClearMinimal();
-            bool gauges = next == View.Minimal && settings.SystemMonitor && primary == Activity.None;
+            bool gauges = next == View.Minimal && settings.SystemMonitor && (primary == Activity.None || (settings.MonitorKeepsPlace && !settings.EmptyIsland));
             bool gaugesChanged = gauges != thinGauges;
             thinGauges = gauges;
             if (next != view || nextBubble != bubble || minimalChanged || gaugesChanged)
@@ -1155,7 +1165,12 @@ namespace WindowsIsland
         // Claude working: a glow sweeps along it; waiting for you: it pulses; music: a tiny equalizer; a timer, a download or
         // the charge: it fills; an alert: it pulses red; done: green. Only the most important state shows, never a mix.
 
-        enum Thin { None, ClaudeWorking, ClaudeWaiting, Music, Timer, Progress, Busy, Alert, Done, Charging, Focus }
+        enum Thin { None, ClaudeWorking, ClaudeWaiting, Music, Timer, Progress, Busy, Alert, Done, Charging, Focus, Offline }
+        bool networkOffline;
+        DateTime unreadAt = DateTime.MinValue; // A notification came and nobody looked yet
+        readonly LinearGradientBrush dashes = new LinearGradientBrush { StartPoint = new Point(0, 0.5), EndPoint = new Point(0.14, 0.5), SpreadMethod = GradientSpreadMethod.Repeat };
+
+        internal void SetOnline(bool online) { networkOffline = !online; Recompute(); }
         Thin minimalKind = Thin.None;
         bool minimalHasContent; // Only the moon needs more room than the line
         string minimalSig = "";
@@ -1182,8 +1197,11 @@ namespace WindowsIsland
         }
 
         // Returns true when the line has to change size (the moon needs a little more room).
+        bool minimalPrimaryNone;
+
         bool UpdateMinimal(Activity primary)
         {
+            minimalPrimaryNone = primary == Activity.None;
             Thin kind = Thin.None;
             Color color = Colors.White;
             double fraction = 0;
@@ -1219,6 +1237,16 @@ namespace WindowsIsland
                 color = ThinGreen;
                 fraction = battery.Percent / 100.0;
             }
+            else if (networkOffline && settings.ShowNetworkAlerts)
+            {
+                kind = Thin.Offline;
+                color = ThinRed;
+            }
+            else if (battery != null && battery.HasBattery && !battery.Charging && battery.Percent <= 20 && settings.BatteryAlerts)
+            {
+                kind = Thin.Alert; // The line pulses red
+                color = ThinRed;
+            }
             else if (settings.ShowFocus && focusState != null && focusState.On)
             {
                 kind = Thin.Focus;
@@ -1247,7 +1275,10 @@ namespace WindowsIsland
             }
 
             bool glow = minimalKind == Thin.ClaudeWorking || minimalKind == Thin.Busy;
-            bool solid = minimalKind == Thin.ClaudeWaiting || minimalKind == Thin.Alert || minimalKind == Thin.Done;
+            bool solid = minimalKind == Thin.ClaudeWaiting || minimalKind == Thin.Alert || minimalKind == Thin.Done || minimalKind == Thin.Offline;
+            bool unread = minimalPrimaryNone && DateTime.Now - unreadAt < TimeSpan.FromMinutes(10);
+            MinimalUnread.Visibility = unread ? Visibility.Visible : Visibility.Collapsed;
+            if (unread) MinimalUnread.Opacity = 0.3 + 0.7 * (0.5 + 0.5 * Math.Cos(clock * 4));
             bool fills = minimalKind == Thin.Timer || minimalKind == Thin.Progress || minimalKind == Thin.Charging;
 
             MinimalBase.Opacity = glow || solid ? 1 : 0;
@@ -1277,6 +1308,18 @@ namespace WindowsIsland
                     MinimalBase.Background = sweep;
                     return true;
                 }
+                case Thin.Offline:
+                    if (dashes.GradientStops.Count != 4)
+                    {
+                        dashes.GradientStops.Clear();
+                        dashes.GradientStops.Add(new GradientStop(ThinRed, 0));
+                        dashes.GradientStops.Add(new GradientStop(ThinRed, 0.6));
+                        dashes.GradientStops.Add(new GradientStop(Colors.Black, 0.6));
+                        dashes.GradientStops.Add(new GradientStop(Colors.Black, 1));
+                    }
+                    MinimalBase.Background = dashes;
+                    MinimalBase.Opacity = 0.3 + 0.7 * (0.5 + 0.5 * Math.Cos(clock * 5)); // A dashed red line that blinks
+                    return true;
                 case Thin.ClaudeWaiting:
                 case Thin.Alert:
                     MinimalBase.Background = new SolidColorBrush(minimalColor);
@@ -1331,6 +1374,7 @@ namespace WindowsIsland
         void ApplyTargets()
         {
             UpdateDots();
+            UpdatePrivacy(); // The dots move into the thin line, or out of it
             double dot = view == View.Minimal ? 4.5 : 6; // Smaller beside the thin line
             MicDot.Width = MicDot.Height = CamDot.Width = CamDot.Height = ScreenDot.Width = ScreenDot.Height = dot;
             Bubble.IsHitTestVisible = bubble != Activity.None && view != View.Hidden; // The small second activity can be pointed at
@@ -1544,6 +1588,7 @@ namespace WindowsIsland
         internal void ShowNotification(IslandNotification notification)
         {
             if (!settings.ShowNotifications) return;
+            unreadAt = DateTime.Now;
             // The island already announces Claude itself, so the Claude app's own toasts would repeat it.
             if (settings.ShowClaude && settings.ClaudeBanners && notification.App == "Claude") return;
             Enqueue(new BannerItem
@@ -1577,6 +1622,8 @@ namespace WindowsIsland
                 LevelFill.Width = fill;
             }
             LevelText.Text = muted ? "" : percent + "%";
+            LevelMiniGlyph.Text = LevelGlyph.Text;
+            LevelMiniFill.Width = 64.0 * (muted ? 0 : percent) / 100;
             levelUntil = DateTime.Now.AddSeconds(1.4);
             Recompute();
         }
@@ -2156,7 +2203,7 @@ namespace WindowsIsland
             // The bubble follows the island's edge, sliding out from behind it.
             // Everything is measured at size 100% and multiplied by the user's size.
             bool thinLine = view == View.Minimal && bubble != Activity.None;
-            double bubbleSize = thinLine ? BubbleSize * 0.42 : BubbleSize, bubbleGap = thinLine ? 5 : BubbleGap;
+            double bubbleSize = thinLine ? BubbleSize * 0.42 : BubbleSize, bubbleGap = thinLine ? 5 + (thinGauges ? 34 : 0) : BubbleGap; // Beyond the rings, when they are there
             bubbleShift.Target = (bubble != Activity.None ? w / 2 + bubbleGap + bubbleSize / 2 : w / 2 - BubbleSize / 2 - 2) * s;
             BubbleShift.X = bubbleShift.Value;
             BubbleShift.Y = thinLine ? (bottom ? 17 - 3 * s : 3 * s - 17) // Level with the thin line
