@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.6.3
+
+- **The song's name opens and closes smoothly:** the cover and the equalizer now stay at the island's edges all along, so everything grows and shrinks together (before, the content squeezed first and the island followed). The content no longer fades and blurs while the island widens, and the name no longer flashes back at full strength before it goes away
+
 ## 4.6.2
 
 - **The song's name no longer cuts the cover and the equalizer:** the island now takes its new width as soon as the name opens (before, it stayed narrow and the cover and the equalizer were cut off), and the content follows the island's edges while it grows and shrinks

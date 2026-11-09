@@ -1939,11 +1939,21 @@ namespace WindowsIsland
             MicDot.Width = MicDot.Height = CamDot.Width = CamDot.Height = ScreenDot.Width = ScreenDot.Height = dot;
             Bubble.IsHitTestVisible = bubble != Activity.None && view != View.Hidden; // The small second activity can be pointed at
             Size size = SizeOf(view);
+            bool sameView = view == lastTargetView;
+            lastTargetView = view;
             if (Math.Abs(size.Width - morphToW) > 0.5 || Math.Abs(size.Height - morphToH) > 0.5)
             {
-                // A new size: the content of the incoming view waits until the shape has got most of the way
-                morphFromW = width.Value; morphFromH = height.Value;
-                morphToW = size.Width; morphToH = size.Height;
+                if (sameView)
+                {
+                    // The same view with another size (the name opening beside the cover): its content stays, it does not wait for the shape
+                    morphFromW = morphToW = size.Width; morphFromH = morphToH = size.Height;
+                }
+                else
+                {
+                    // A new size: the content of the incoming view waits until the shape has got most of the way
+                    morphFromW = width.Value; morphFromH = height.Value;
+                    morphToW = size.Width; morphToH = size.Height;
+                }
             }
             // Alerts arrive with a slightly bigger overshoot, everything else settles gently
             if (view == View.Banner || view == View.Toast || view == View.Permission) { width.Tune(320, 0.66); height.Tune(320, 0.66); }
@@ -2755,7 +2765,7 @@ namespace WindowsIsland
                 {
                     songNameTimer.Stop();
                     if (settings.SongNameAlways) return;
-                    DoubleAnimation fade = new DoubleAnimation(1, 0, TimeSpan.FromMilliseconds(160));
+                    DoubleAnimation fade = new DoubleAnimation(1, 0, TimeSpan.FromMilliseconds(160)) { FillBehavior = FillBehavior.HoldEnd };
                     fade.Completed += (s2, e2) =>
                     {
                         songNameUntil = DateTime.MinValue;
@@ -2998,6 +3008,7 @@ namespace WindowsIsland
         // How far the shape is on its way to the new size (0 to 1), and, from that, how much of the incoming content shows:
         // none until the shape is about a third of the way, all of it by the time it is four fifths there.
         double morphFromW = 112, morphFromH = 30, morphToW = 112, morphToH = 30;
+        View lastTargetView = View.Hidden;
 
         double MorphGate(double w, double h)
         {
@@ -3064,7 +3075,7 @@ namespace WindowsIsland
                 scale.CenterY = bottom ? panel.Height : 0;
                 // The old content slides up as it leaves and the new one comes up from below, a little
                 double slide = (incoming ? 1 : -1) * (1 - Math.Clamp(p, 0, 1)) * 9 * (bottom ? -1 : 1);
-                if (pair.Key == View.MusicCompact) panel.Width = Math.Max(90, Math.Min(w, SongNameShown ? 236 : 176));
+                if (pair.Key == View.MusicCompact) panel.Width = Math.Max(90, Math.Min(w, 236)); // The cover and the equalizer stay at the island's edges while it grows and shrinks
                 Canvas.SetLeft(panel, (w - panel.Width) / 2);
                 Canvas.SetTop(panel, (bottom ? h - panel.Height : 0) + slide);
                 if (pair.Key == View.MusicExpanded || pair.Key == View.ClaudeExpanded || pair.Key == View.TimerExpanded || pair.Key == View.QuickExpanded || pair.Key == View.SystemExpanded || pair.Key == View.ExternalExpanded)

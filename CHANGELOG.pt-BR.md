@@ -2,6 +2,10 @@
 
 > Tradução de [CHANGELOG.md](CHANGELOG.md), que é o original em inglês.
 
+## 4.6.3
+
+- **O nome da música abre e fecha com fluidez:** a capa e o equalizador agora ficam nas bordas da ilha o tempo todo, então tudo cresce e encolhe junto (antes o conteúdo se comprimia primeiro e a ilha vinha atrás). O conteúdo não some nem fica borrado enquanto a ilha alarga, e o nome não volta com força total antes de sumir
+
 ## 4.6.2
 
 - **O nome da música não corta mais a capa e o equalizador:** a ilha agora toma a largura nova assim que o nome abre (antes ela ficava estreita e a capa e o equalizador eram cortados), e o conteúdo acompanha as bordas da ilha enquanto ela cresce e encolhe
