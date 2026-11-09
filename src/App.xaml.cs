@@ -468,10 +468,9 @@ namespace WindowsIsland
 
             Updater.CleanUp();
             if (afterUpdate)
-                MainIsland.Loaded += (s, a) => MainIsland.ShowSystemBanner(Installer.Name, Strings.UpdatedTo(Installer.Version) +
-                    (settings.WhatsNewSeen != WhatsNew.Key ? " · " + Strings.WhatsNewHint : ""));
+                MainIsland.Loaded += (s, a) => MainIsland.ShowStatus("uptodate", Strings.UpdatedTo(Installer.Version), settings.WhatsNewSeen != WhatsNew.Key ? Strings.WhatsNewHint : null); // The green check, as when the update is looked for
             if (afterCrash)
-                MainIsland.Loaded += (s, a) => MainIsland.ShowSystemBanner(Installer.Name, Strings.ReopenedAfterFailure);
+                MainIsland.Loaded += (s, a) => MainIsland.ShowStatus("failed", Strings.ReopenedAfterFailure);
             updateTimer = new DispatcherTimer { Interval = FirstUpdateCheck };
             updateTimer.Tick += (s, a) =>
             {

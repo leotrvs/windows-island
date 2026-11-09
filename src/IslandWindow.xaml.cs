@@ -2439,9 +2439,9 @@ namespace WindowsIsland
 
         // The update status on the island, one at a time: each replaces the one before instead of queueing behind it.
         // kind: checking, downloading (a turning arrow), found (a green arrow down), uptodate (a green check that pops), failed (an amber warning)
-        internal void ShowStatus(string kind, string text)
+        internal void ShowStatus(string kind, string text, string body = null)
         {
-            BannerItem item = new BannerItem { App = Installer.Name, Title = text, Seconds = kind == "checking" ? 30 : kind == "downloading" ? 60 : Math.Max(3, settings.AlertSeconds) };
+            BannerItem item = new BannerItem { App = Installer.Name, Title = text, Subtitle = body, Seconds = kind == "checking" ? 30 : kind == "downloading" ? 60 : Math.Max(3, settings.AlertSeconds) };
             switch (kind)
             {
                 case "checking": item.Glyph = "\uE895"; item.GlyphBrush = White; item.Spin = true; break;

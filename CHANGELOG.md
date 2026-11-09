@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.5.3
+
+- **After an update:** when the app restarts into the new version, the island shows the green check that pops in ("Updated to version X") instead of the gray bell. After a failure it reopens with the amber warning
+
 ## 4.5.2
 
 - **Faster updates from the island:** when the release address does not answer, it is skipped for the next 30 minutes (it waited for it again on every file), the list of the release's files is asked for once, and after a download you asked for the app restarts at once instead of waiting for the notice to go away

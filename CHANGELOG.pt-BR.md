@@ -2,6 +2,10 @@
 
 > Tradução de [CHANGELOG.md](CHANGELOG.md), que é o original em inglês.
 
+## 4.5.3
+
+- **Depois de atualizar:** quando o app reinicia na versão nova, a ilha mostra o visto verde que aparece com um pulinho ("Atualizado para a versão X") no lugar do sino cinza. Depois de uma falha ela reabre com o alerta âmbar
+
 ## 4.5.2
 
 - **Atualizações mais rápidas pela ilha:** quando o endereço de download não responde, ele é ignorado pelos próximos 30 minutos (esperava por ele de novo a cada arquivo), a lista de arquivos da release é pedida uma vez só, e depois de um download que você pediu o app reinicia na hora em vez de esperar o aviso sumir
