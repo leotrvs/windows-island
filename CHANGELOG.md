@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.0.1
+
+- **Settings:** the row with the Chrome and Edge buttons now says what it is: "Browser extension", an extension to install in Chrome or Edge (site icons for web audio and the progress of downloads)
+
 ## 4.0.0
 
 - **Welcome:** on the first run, and once after updating to 4.0, a short welcome asks how the island should look (a thin line when idle, always a thin line, or a pill) and what it should show (music, Claude, Windows notifications, microphone and camera dots, answering Claude permissions, start with Windows)

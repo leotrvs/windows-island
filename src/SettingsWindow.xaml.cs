@@ -1374,7 +1374,7 @@ namespace WindowsIsland
                 };
                 browsers.Children.Add(install);
             }
-            Row("\uE896", Strings.ExtInstall, Strings.ExtHint, null, null, browsers);
+            Row("\uE896", Strings.ExtInstall, Strings.ExtHint, browsers); // The name and what it does on the left, the two browsers on the right
             if (api.LastStartFailed)
                 ((StackPanel)card.Children[card.Children.Count - 1]).Children.Add(new TextBlock { Text = Strings.ApiPortBusy, FontSize = 12, Foreground = Brushes.IndianRed, Margin = new Thickness(60, 0, 14, 10) });
             ((StackPanel)card.Children[card.Children.Count - 1]).Children.Add(note);
