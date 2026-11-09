@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.4.3
+
+- **Update question on the island:** it now has a green "Download" button, and stays in front even when the mouse is over the island (before, hovering opened the music instead and the answer was lost). It waits 30 seconds
+
 ## 4.4.2
 
 - **Update notices on the island:** no more gray bell. Looking and downloading show the turning arrow, a new version a green arrow, "up to date" a green check that pops in, and a failure an amber warning. Each notice replaces the one before instead of waiting behind it

@@ -2,6 +2,10 @@
 
 > Tradução de [CHANGELOG.md](CHANGELOG.md), que é o original em inglês.
 
+## 4.4.3
+
+- **Pergunta de atualização na ilha:** agora tem um botão verde "Baixar" e fica na frente mesmo com o mouse sobre a ilha (antes, passar o mouse abria a música e a resposta se perdia). Espera 30 segundos
+
 ## 4.4.2
 
 - **Avisos de atualização na ilha:** acabou o sino cinza. Procurar e baixar mostram a seta girando, uma versão nova uma seta verde, "atualizado" um visto verde que aparece com um pulinho, e uma falha um alerta âmbar. Cada aviso substitui o anterior em vez de esperar na fila

@@ -350,8 +350,9 @@ namespace WindowsIsland
         public static string MenuOpenSettings => T("Open settings file", "Abrir arquivo de configurações", "Abrir archivo de configuración", "Открыть файл настроек");
         public static string MenuClose => T("Close", "Fechar", "Cerrar", "Закрыть");
         public static string MenuQuietIsland => T("Do not disturb (island)", "Não perturbe (ilha)", "No molestar (isla)", "Не беспокоить (остров)");
-        public static string UpdateAskTitle(string version) => T("Update " + version + " available", "Atualização " + version + " disponível", "Actualización " + version + " disponible", "Доступно обновление " + version);
-        public static string UpdateAskBody => T("Tap to download and restart", "Toque para baixar e reiniciar", "Toca para descargar y reiniciar", "Нажмите, чтобы скачать и перезапустить");
+        public static string UpdateAskTitle(string version) => T("Update " + version, "Atualização " + version, "Actualización " + version, "Обновление " + version);
+        public static string UpdateAskBody => T("Available · restarts after", "Disponível · reinicia depois", "Disponible · se reinicia después", "Доступно · потом перезапуск");
+        public static string UpdateAskButton => T("Download", "Baixar", "Descargar", "Скачать");
         public static string MenuQuit => T("Quit", "Sair", "Salir", "Выход");
         public static string MenuTimer => T("Timer", "Timer", "Temporizador", "Таймер");
         public static string MenuTimerMinutes(int minutes) => minutes < 60 ? minutes + " " + T("min", "min", "min", "мин") : (minutes / 60) + " " + T("h", "h", "h", "ч");

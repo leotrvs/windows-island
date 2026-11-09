@@ -614,6 +614,11 @@
                             <TextBlock x:Name="BannerSubtitle" Style="{StaticResource Caption}" FontSize="13" Margin="0,1,0,0"/>
                         </StackPanel>
                         <!-- A big value on the right, such as the battery percentage -->
+                        <!-- A question banner (an update to download) has its own button -->
+                        <Border x:Name="BannerAction" Grid.Column="2" CornerRadius="14" Padding="14,6" Margin="12,0,2,0" Background="#FF30D158" Cursor="Hand"
+                                VerticalAlignment="Center" Visibility="Collapsed">
+                            <TextBlock x:Name="BannerActionText" FontSize="13" FontWeight="SemiBold" Foreground="Black"/>
+                        </Border>
                         <TextBlock x:Name="BannerSide" Grid.Column="2" FontSize="26" FontWeight="SemiBold" VerticalAlignment="Center"
                                    Margin="12,0,2,0" Typography.NumeralAlignment="Tabular" Visibility="Collapsed"/>
                     </Grid>

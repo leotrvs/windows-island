@@ -191,6 +191,7 @@ namespace WindowsIsland
             // prompt appeared, so a click meant for the window underneath (or a double click) cannot answer it
             PermAllow.MouseLeftButtonDown += (s, e) => { e.Handled = true; permissionPressed = PermAllow; PermAllow.CaptureMouse(); };
             PermDeny.MouseLeftButtonDown += (s, e) => { e.Handled = true; permissionPressed = PermDeny; PermDeny.CaptureMouse(); };
+            BannerAction.MouseLeftButtonUp += (s, e) => { e.Handled = true; AnswerBannerQuestion(); };
             PermAllow.MouseLeftButtonUp += (s, e) => AnswerPermission(PermAllow, "allow", e);
             PermDeny.MouseLeftButtonUp += (s, e) => AnswerPermission(PermDeny, "deny", e);
             PermOpen.MouseLeftButtonUp += (s, e) => { e.Handled = true; OpenClaudeNeedsInput(); };
@@ -1559,6 +1560,7 @@ namespace WindowsIsland
             else if (fullscreen && settings.HideInFullscreen) next = View.Hidden;
             else if (permission != null) next = View.Permission; // A question that waits for a click comes first
             else if (tucked) next = View.Hidden;
+            else if (DateTime.Now < bannerUntil && currentBanner?.OnClick != null) next = View.Banner; // A question waits for its button, even under the mouse
             else if (hovering || DateTime.Now < peekUntil)
                 next = PickedPage() ?? DefaultPage(primary);
             else if (DateTime.Now < bannerUntil) next = View.Banner;
@@ -2035,9 +2037,8 @@ namespace WindowsIsland
             if (view == View.Banner)
             {
                 bool fromClaude = currentBanner == null || currentBanner.FromClaude || currentBanner.FromCodex;
-                Action answer = currentBanner?.OnClick;
+                if (currentBanner?.OnClick != null) { AnswerBannerQuestion(); return; }
                 bannerUntil = DateTime.MinValue;
-                if (answer != null) { currentBanner.OnClick = null; if (banners.Count > 0) NextBanner(); else Recompute(); answer(); return; }
                 if (banners.Count > 0) { NextBanner(); return; }
                 if (!fromClaude) { Recompute(); return; } // A notification click just dismisses it
                 SetHovering(true);
@@ -2047,6 +2048,17 @@ namespace WindowsIsland
         }
 
         // ---------- Banners ----------
+
+        // Yes to the question a banner asks (download the update): the banner goes and the action runs.
+        void AnswerBannerQuestion()
+        {
+            Action answer = currentBanner?.OnClick;
+            if (answer == null) return;
+            currentBanner.OnClick = null;
+            bannerUntil = DateTime.MinValue;
+            if (banners.Count > 0) NextBanner(); else Recompute();
+            answer();
+        }
 
         sealed class BannerItem
         {
@@ -2364,7 +2376,7 @@ namespace WindowsIsland
         // A banner that waits for a tap: yes runs the action, anything else lets it go.
         internal void ShowQuestion(string title, string body, Action yes)
         {
-            BannerItem item = new BannerItem { App = Installer.Name, Title = title, Subtitle = body, Seconds = 15, Glyph = "\uE896", GlyphBrush = Green, OnClick = yes };
+            BannerItem item = new BannerItem { App = Installer.Name, Title = title, Subtitle = body, Seconds = 30, Glyph = "\uE896", GlyphBrush = Green, OnClick = yes };
             Enqueue(item, true);
         }
 
@@ -2469,6 +2481,8 @@ namespace WindowsIsland
             BannerTitle.Text = item.Title;
             BannerSubtitle.Text = item.Subtitle ?? "";
             BannerSubtitle.Visibility = string.IsNullOrEmpty(item.Subtitle) ? Visibility.Collapsed : Visibility.Visible;
+            BannerAction.Visibility = item.OnClick != null ? Visibility.Visible : Visibility.Collapsed;
+            BannerActionText.Text = Strings.UpdateAskButton;
             BannerSide.Text = item.Side ?? "";
             BannerSide.Foreground = item.GlyphBrush ?? White;
             BannerSide.Visibility = string.IsNullOrEmpty(item.Side) ? Visibility.Collapsed : Visibility.Visible;
