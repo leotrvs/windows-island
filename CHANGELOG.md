@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.0.5
+
+- **Thin line, system monitor:** with the system monitor on, the thin line shows processor and memory as two tiny rings beside it (blue and green, amber from 70%, red from 90%) while nothing else is happening
+- **Undone:** the steady orange outline for Claude working beside another activity (3.0.4). Claude working beside music is a tiny bubble again
+
 ## 3.0.3
 
 - **Thin line:** the second activity (a Steam download while Claude works, music while a timer runs, and so on) shows as a tiny bubble beside the line, with its own icon, cover or progress ring, so nothing important stays hidden

@@ -164,7 +164,7 @@ namespace WindowsIsland
             ApplyTexts();
             ApplyBannerSize();
 
-            monitorTimer.Tick += (s, e) => UpdateSystemMonitor();
+            monitorTimer.Tick += (s, e) => { if (view == View.SystemCompact) UpdateSystemMonitor(); else UpdateThinGauges(); };
             Pill.PreviewMouseLeftButtonDown += (s, e) => { dragStart = e.GetPosition(this); suppressClick = false; };
             Pill.PreviewMouseMove += OnPillDrag;
             Pill.PreviewMouseLeftButtonUp += (s, e) => dragStart = null;
@@ -341,6 +341,19 @@ namespace WindowsIsland
                 string style = settings.MonitorStyle ?? "";
                 return style.Equals("Bars", StringComparison.OrdinalIgnoreCase) ? "Bars" : style.Equals("Numbers", StringComparison.OrdinalIgnoreCase) ? "Numbers" : "Rings";
             }
+        }
+
+        bool thinGauges; // Processor and memory as two tiny rings beside the thin line, while nothing else is happening
+        readonly Spring thinGaugesOpacity = new Spring(0, 0.002, 500, 1);
+
+        void UpdateThinGauges()
+        {
+            if (!thinGauges) return;
+            int cpu = systemStats.Cpu, memory = systemStats.Memory;
+            ThinCpuRing.Data = Arc(Math.Max(cpu, 3), 14, 1.6);
+            ThinMemRing.Data = Arc(Math.Max(memory, 3), 14, 1.6);
+            ThinCpuRing.Stroke = cpu >= 90 ? Red : cpu >= 70 ? Amber : MonitorBlue;
+            ThinMemRing.Stroke = memory >= 90 ? Red : memory >= 70 ? Amber : MonitorGreen;
         }
 
         void UpdateSystemMonitor()
@@ -1097,7 +1110,7 @@ namespace WindowsIsland
             else if (primary == Activity.Battery && !settings.EmptyIsland) next = View.BatteryCompact;
             else if (primary == Activity.Timer) next = View.TimerCompact;
             else if (maximized && settings.MaximizedMode == "Hidden") next = View.Hidden; // A game or a video that fills the screen
-            else if (settings.SystemMonitor && maximized && !IsBottom && settings.MaximizedMode == "Thin") next = View.Minimal;
+            else if (settings.SystemMonitor && (settings.AlwaysThin || (maximized && !IsBottom && settings.MaximizedMode == "Thin"))) next = View.Minimal; // The thin line with two tiny rings
             else if (settings.SystemMonitor) next = View.SystemCompact;
             else if (!settings.ShowIdlePill && !PrivacyOn && DateTime.Now - discordChangedAt > TimeSpan.FromSeconds(4)) next = View.Hidden;
             else if (maximized && !IsBottom && settings.MaximizedMode == "Thin") next = View.Minimal; // Stay out of the way of tab strips
@@ -1126,7 +1139,10 @@ namespace WindowsIsland
             if (next == View.Minimal && primary != Activity.None && second != primary) nextBubble = second; // On the thin line, the second activity is a tiny bubble beside it
             if (next == View.SystemCompact && KeepsMonitor(primary)) nextBubble = primary; // The monitor keeps its place, the activity is the bubble
             bool minimalChanged = next == View.Minimal ? UpdateMinimal(primary) : ClearMinimal();
-            if (next != view || nextBubble != bubble || minimalChanged)
+            bool gauges = next == View.Minimal && settings.SystemMonitor && primary == Activity.None;
+            bool gaugesChanged = gauges != thinGauges;
+            thinGauges = gauges;
+            if (next != view || nextBubble != bubble || minimalChanged || gaugesChanged)
             {
                 view = next;
                 bubble = nextBubble;
@@ -1329,7 +1345,13 @@ namespace WindowsIsland
                 if (!monitorTimer.IsEnabled) monitorTimer.Start();
                 UpdateSystemMonitor();
             }
+            else if (thinGauges)
+            {
+                if (!monitorTimer.IsEnabled) monitorTimer.Start();
+                UpdateThinGauges();
+            }
             else monitorTimer.Stop();
+            thinGaugesOpacity.Target = thinGauges ? 1 : 0;
             if (view == View.ClaudeExpanded && forced == null) claude.RefreshUsage();
 
             foreach (KeyValuePair<View, FrameworkElement> pair in panels)
@@ -1880,6 +1902,8 @@ namespace WindowsIsland
             Thickness margin = bottom ? new Thickness(0, 0, 0, settings.OffsetY) : new Thickness(0, settings.OffsetY, 0, 0);
             Pill.VerticalAlignment = align;
             Bubble.VerticalAlignment = align;
+            ThinGauges.VerticalAlignment = align;
+            ThinGauges.Margin = bottom ? new Thickness(0, 0, 0, settings.OffsetY) : new Thickness(0, settings.OffsetY, 0, 0);
             Pill.Margin = margin;
             Bubble.Margin = margin;
             PrivacyDots.VerticalAlignment = align;
@@ -2053,6 +2077,7 @@ namespace WindowsIsland
             moving |= bubbleScale.Step(dt);
             moving |= bubbleOpacity.Step(dt);
             moving |= privacyOpacity.Step(dt);
+            moving |= thinGaugesOpacity.Step(dt);
             moving |= privacyShift.Step(dt);
             moving |= sessionArc.Step(dt);
             moving |= weeklyArc.Step(dt);
@@ -2143,6 +2168,10 @@ namespace WindowsIsland
             // (they must never hide), and keep the idle island's spot instead of sliding with its shrinking width.
             bool away = view == View.Hidden && !(fullscreen && settings.HideInFullscreen);
             double dotsBase = away ? SizeOf(View.Idle).Width : w;
+            ThinGaugesScale.ScaleX = ThinGaugesScale.ScaleY = s;
+            ThinGaugesShift.X = (w / 2 + 5 + 15.5) * s;
+            ThinGaugesShift.Y = bottom ? 7 - 3 * s : 3 * s - 7; // Level with the thin line
+            ThinGauges.Opacity = Math.Clamp(thinGaugesOpacity.Value, 0, 1) * visible;
             PrivacyShift.X = -(dotsBase / 2 + BubbleGap + PrivacyDots.Width / 2) * s; // Straight to its place: it follows the island's own spring
             PrivacyShift.Y = (bottom ? -1 : 1) * (Math.Min(h, 34) * s - PrivacyDots.Height) / 2; // Level with a compact island
             PrivacyDots.Opacity = Math.Clamp(privacyOpacity.Value, 0, 1) * (away ? 1 : visible);
