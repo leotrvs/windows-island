@@ -17,6 +17,8 @@ namespace WindowsIsland
         public sealed class Item
         {
             public string Text;
+            public string Icon;   // A Segoe icon glyph
+            public bool Danger;   // Drawn in red
             public bool Checked;
             public bool Separator;
             public Action Click;
@@ -24,11 +26,20 @@ namespace WindowsIsland
         }
 
         const double MenuWidth = 232, Shadow = 16;
-        static readonly Brush CardBrush = Frozen(new SolidColorBrush(Color.FromRgb(0x1C, 0x1C, 0x1E)));
-        static readonly Brush LineBrush = Frozen(new SolidColorBrush(Color.FromRgb(0x38, 0x38, 0x3A)));
-        static readonly Brush HoverBrush = Frozen(new SolidColorBrush(Color.FromRgb(0x2C, 0x2C, 0x2E)));
-        static readonly Brush TextBrush = Frozen(new SolidColorBrush(Colors.White));
-        static readonly Brush DimBrush = Frozen(new SolidColorBrush(Color.FromRgb(0x8E, 0x8E, 0x93)));
+        static Brush CardBrush, LineBrush, HoverBrush, TextBrush, DimBrush;
+        static readonly Brush DangerBrush = Frozen(new SolidColorBrush(Color.FromRgb(0xFF, 0x45, 0x3A)));
+
+        // Black with white text in the dark theme, white with black text in the light one
+        static void ApplyTheme(string setting)
+        {
+            SettingsTheme.Choose(setting);
+            bool light = SettingsTheme.Light;
+            CardBrush = Frozen(new SolidColorBrush(light ? Colors.White : Colors.Black));
+            LineBrush = Frozen(new SolidColorBrush(light ? Color.FromRgb(0xD1, 0xD1, 0xD6) : Color.FromRgb(0x38, 0x38, 0x3A)));
+            HoverBrush = Frozen(new SolidColorBrush(light ? Color.FromRgb(0xEE, 0xEE, 0xF2) : Color.FromRgb(0x2C, 0x2C, 0x2E)));
+            TextBrush = Frozen(new SolidColorBrush(light ? Colors.Black : Colors.White));
+            DimBrush = Frozen(new SolidColorBrush(light ? Color.FromRgb(0x6C, 0x6C, 0x70) : Color.FromRgb(0x8E, 0x8E, 0x93)));
+        }
         static readonly FontFamily IconFont = new FontFamily("Segoe Fluent Icons, Segoe MDL2 Assets");
 
         static TrayMenu current;
@@ -44,9 +55,10 @@ namespace WindowsIsland
         static Brush Frozen(SolidColorBrush brush) { brush.Freeze(); return brush; }
 
         // Opens the menu with its corner at the cursor (in physical pixels). Opening it again closes it.
-        public static void Open(List<Item> items, Point cursorPx)
+        public static void Open(List<Item> items, Point cursorPx, string theme)
         {
             if (current != null) { current.CloseAnimated(); return; }
+            ApplyTheme(theme);
             Display display = Displays.UnderCursor();
             Point cursor = new Point(cursorPx.X / display.Scale, cursorPx.Y / display.Scale);
             current = new TrayMenu(items, cursor, display.WorkArea);
@@ -135,14 +147,22 @@ namespace WindowsIsland
             }
 
             Grid row = new Grid();
-            row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(22) });
+            row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(28) });
             row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-            if (item.Checked)
-                row.Children.Add(new TextBlock { Text = "", FontFamily = IconFont, FontSize = 12, Foreground = TextBrush, VerticalAlignment = VerticalAlignment.Center });
-            TextBlock label = new TextBlock { Text = item.Text, Foreground = TextBrush, VerticalAlignment = VerticalAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis };
+            Brush ink = item.Danger ? DangerBrush : TextBrush;
+            if (item.Icon != null)
+                row.Children.Add(new TextBlock { Text = item.Icon, FontFamily = IconFont, FontSize = 14, Foreground = item.Danger ? DangerBrush : DimBrush, VerticalAlignment = VerticalAlignment.Center });
+            TextBlock label = new TextBlock { Text = item.Text, Foreground = ink, VerticalAlignment = VerticalAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis };
             Grid.SetColumn(label, 1);
             row.Children.Add(label);
+
+            if (item.Checked)
+            {
+                TextBlock tick = new TextBlock { Text = "\uE73E", FontFamily = IconFont, FontSize = 12, Foreground = TextBrush, VerticalAlignment = VerticalAlignment.Center };
+                Grid.SetColumn(tick, 2);
+                row.Children.Add(tick);
+            }
 
             TextBlock arrow = null;
             if (item.Sub != null)

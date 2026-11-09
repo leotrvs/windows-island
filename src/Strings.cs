@@ -348,6 +348,10 @@ namespace WindowsIsland
         public static string DiagReport => T("Report a problem", "Relatar problema", "Informar un problema", "Сообщить о проблеме");
         public static string DiagHint => T("Nothing is sent: the report only stays on this PC until you paste it. No names or keys", "Nada é enviado: o relatório só fica neste PC até você colar. Sem nomes nem chaves", "No se envía nada: el informe solo queda en este PC hasta que lo pegues. Sin nombres ni claves", "Ничего не отправляется: отчёт остаётся на этом ПК, пока вы его не вставите. Без имён и ключей");
         public static string MenuOpenSettings => T("Open settings file", "Abrir arquivo de configurações", "Abrir archivo de configuración", "Открыть файл настроек");
+        public static string MenuClose => T("Close", "Fechar", "Cerrar", "Закрыть");
+        public static string MenuQuietIsland => T("Do not disturb (island)", "Não perturbe (ilha)", "No molestar (isla)", "Не беспокоить (остров)");
+        public static string UpdateAskTitle(string version) => T("Update " + version + " available", "Atualização " + version + " disponível", "Actualización " + version + " disponible", "Доступно обновление " + version);
+        public static string UpdateAskBody => T("Tap to download and restart", "Toque para baixar e reiniciar", "Toca para descargar y reiniciar", "Нажмите, чтобы скачать и перезапустить");
         public static string MenuQuit => T("Quit", "Sair", "Salir", "Выход");
         public static string MenuTimer => T("Timer", "Timer", "Temporizador", "Таймер");
         public static string MenuTimerMinutes(int minutes) => minutes < 60 ? minutes + " " + T("min", "min", "min", "мин") : (minutes / 60) + " " + T("h", "h", "h", "ч");

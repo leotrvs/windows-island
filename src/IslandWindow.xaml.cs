@@ -2035,7 +2035,9 @@ namespace WindowsIsland
             if (view == View.Banner)
             {
                 bool fromClaude = currentBanner == null || currentBanner.FromClaude || currentBanner.FromCodex;
+                Action answer = currentBanner?.OnClick;
                 bannerUntil = DateTime.MinValue;
+                if (answer != null) { currentBanner.OnClick = null; if (banners.Count > 0) NextBanner(); else Recompute(); answer(); return; }
                 if (banners.Count > 0) { NextBanner(); return; }
                 if (!fromClaude) { Recompute(); return; } // A notification click just dismisses it
                 SetHovering(true);
@@ -2058,6 +2060,7 @@ namespace WindowsIsland
             public string Title;
             public string Subtitle;
             public double Seconds;
+            public Action OnClick;     // A banner that asks: a click answers yes
         }
 
         readonly Queue<BannerItem> banners = new Queue<BannerItem>();
@@ -2356,6 +2359,13 @@ namespace WindowsIsland
             Enqueue(item);
         }
 
+        // A banner that waits for a tap: yes runs the action, anything else lets it go.
+        internal void ShowQuestion(string title, string body, Action yes)
+        {
+            BannerItem item = new BannerItem { App = Installer.Name, Title = title, Subtitle = body, Seconds = 15, Glyph = "\uE896", GlyphBrush = Green, OnClick = yes };
+            Enqueue(item, true);
+        }
+
         internal void ShowSystemBanner(string title, string body, string kind = null)
         {
             BannerItem item = new BannerItem { App = Installer.Name, Title = title, Subtitle = body, Seconds = settings.AlertSeconds };
@@ -2382,9 +2392,10 @@ namespace WindowsIsland
             get { return hovering || view == View.Banner || view == View.Permission || view == View.MusicExpanded || view == View.ClaudeExpanded || view == View.TimerExpanded || view == View.QuickExpanded || view == View.SystemExpanded || view == View.ExternalExpanded; }
         }
 
-        void Enqueue(BannerItem item)
+        void Enqueue(BannerItem item, bool always = false)
         {
             if (fullscreen && settings.HideInFullscreen) return;
+            if (settings.IslandQuiet && !always && !item.FromClaude && !item.FromCodex) return; // Do not disturb for the island: only what Claude asks still shows
             if (banners.Count >= 5) banners.Dequeue(); // A burst of notifications never piles up for minutes
             banners.Enqueue(item);
             if (DateTime.Now >= bannerUntil) NextBanner();

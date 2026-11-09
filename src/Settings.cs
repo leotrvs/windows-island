@@ -87,6 +87,7 @@ namespace WindowsIsland
         public bool ShowNetworkAlerts { get; set; } = true; // Going offline and coming back
         public bool HotkeyEnabled { get; set; } = false;   // A global shortcut that opens and closes the island: off by default
         public string HotkeyCombo { get; set; } = "Ctrl+Alt+I";
+        public bool IslandQuiet { get; set; } = false; // Do not disturb for the island only: banners stay away (the tray menu turns it on)
         public bool ShowFocus { get; set; } = true; // A small moon while Do not disturb is on
         // Where the Settings window was left (size and place), so it opens the same way next time
         public double? SettingsLeft { get; set; }

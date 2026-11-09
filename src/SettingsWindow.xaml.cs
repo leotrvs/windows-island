@@ -928,16 +928,19 @@ namespace WindowsIsland
 
             Section(Strings.SectionPages);
             System.Collections.Generic.List<string> pageOrder = settings.PageOrderList();
+            System.Collections.Generic.List<UIElement> pageRows = new System.Collections.Generic.List<UIElement>();
+            StackPanel pageCard = card;
             for (int i = 0; i < pageOrder.Count; i++)
             {
                 string name = pageOrder[i];
-                string hint = i == 0 ? Strings.HintPages : null; // The arrows change the order the pages are shown in
-                UIElement arrows = PageArrows(name, i, pageOrder.Count);
-                if (name == "Music") Toggle("\uE8D6", Strings.PageMusicLabel, hint, () => settings.PageMusic, v => settings.PageMusic = v, arrows);
-                else if (name == "Claude") Toggle("img:claude", Strings.PageClaudeLabel, hint, () => settings.PageClaude, v => settings.PageClaude = v, arrows);
-                else if (name == "System") Toggle("\uE9D9", Strings.PageSystemLabel, hint, () => settings.PageSystem, v => settings.PageSystem = v, arrows);
-                else if (name == "Quick") Toggle("\uE713", Strings.PageQuickLabel, hint, () => settings.PageQuick, v => settings.PageQuick = v, arrows);
-                else Toggle("\uE916", Strings.PageTimerLabel, hint, () => settings.PageTimer, v => settings.PageTimer = v, arrows);
+                string hint = i == 0 ? Strings.HintPages : null; // Dragging the handle changes the order the pages are shown in
+                UIElement grip = PageGrip(name, i, pageRows, pageCard);
+                if (name == "Music") Toggle("\uE8D6", Strings.PageMusicLabel, hint, () => settings.PageMusic, v => settings.PageMusic = v, grip);
+                else if (name == "Claude") Toggle("img:claude", Strings.PageClaudeLabel, hint, () => settings.PageClaude, v => settings.PageClaude = v, grip);
+                else if (name == "System") Toggle("\uE9D9", Strings.PageSystemLabel, hint, () => settings.PageSystem, v => settings.PageSystem = v, grip);
+                else if (name == "Quick") Toggle("\uE713", Strings.PageQuickLabel, hint, () => settings.PageQuick, v => settings.PageQuick = v, grip);
+                else Toggle("\uE916", Strings.PageTimerLabel, hint, () => settings.PageTimer, v => settings.PageTimer = v, grip);
+                pageRows.Add(pageCard.Children[pageCard.Children.Count - 1]);
             }
         }
 
@@ -1374,39 +1377,89 @@ namespace WindowsIsland
             Row(icon, label, hint, both);
         }
 
-        // Up and down arrows that move a page one place in the order the pages are shown.
-        UIElement PageArrows(string name, int index, int count)
+        // A grip (two columns of dots) that drags a page row up or down; the other rows slide out of the way and the order is saved on release.
+        UIElement PageGrip(string name, int index, System.Collections.Generic.List<UIElement> rows, StackPanel host)
         {
-            StackPanel arrows = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 8, 0), VerticalAlignment = VerticalAlignment.Center };
-            foreach (int step in new[] { -1, 1 })
+            Grid grip = new Grid
             {
-                int target = index + step;
-                bool possible = target >= 0 && target < count;
-                TextBlock arrow = new TextBlock
+                Width = 28, Height = 32, Margin = new Thickness(0, 0, 6, 0), VerticalAlignment = VerticalAlignment.Center,
+                Background = Brushes.Transparent, Cursor = System.Windows.Input.Cursors.SizeNS,
+            };
+            System.Windows.Controls.Primitives.UniformGrid dots = new System.Windows.Controls.Primitives.UniformGrid { Columns = 2, Rows = 3, Width = 10, Height = 16, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, IsHitTestVisible = false };
+            for (int i = 0; i < 6; i++)
+                dots.Children.Add(new System.Windows.Shapes.Ellipse { Width = 3, Height = 3, Fill = (Brush)FindResource("Secondary"), HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center });
+            grip.Children.Add(dots);
+
+            double startY = 0, dragged = 0;
+            double[] tops = null, heights = null;
+            int target = index;
+
+            grip.MouseLeftButtonDown += (s, e) =>
+            {
+                tops = new double[rows.Count];
+                heights = new double[rows.Count];
+                for (int i = 0; i < rows.Count; i++)
                 {
-                    Text = step < 0 ? "\uE70E" : "\uE70D",
-                    FontFamily = IconFont,
-                    FontSize = 12,
-                    Foreground = (Brush)FindResource("Secondary"),
-                    Padding = new Thickness(5, 6, 5, 6),
-                    Opacity = possible ? 1 : 0.25,
-                    Cursor = possible ? System.Windows.Input.Cursors.Hand : System.Windows.Input.Cursors.Arrow,
-                    Background = Brushes.Transparent,
-                };
-                if (possible)
-                    arrow.MouseLeftButtonUp += (s, e) =>
-                    {
-                        System.Collections.Generic.List<string> order = settings.PageOrderList();
-                        string other = order[target];
-                        order[target] = name;
-                        order[index] = other;
-                        settings.PageOrder = string.Join(",", order);
-                        Apply();
-                        Dispatcher.BeginInvoke(new Action(Rebuild), DispatcherPriority.Background);
-                    };
-                arrows.Children.Add(arrow);
-            }
-            return arrows;
+                    FrameworkElement r = (FrameworkElement)rows[i];
+                    tops[i] = r.TranslatePoint(new Point(0, 0), host).Y;
+                    heights[i] = r.ActualHeight;
+                    r.RenderTransform = new TranslateTransform();
+                }
+                startY = e.GetPosition(host).Y;
+                target = index;
+                Panel.SetZIndex(rows[index], 10);
+                rows[index].Opacity = 0.85;
+                grip.CaptureMouse();
+                e.Handled = true;
+            };
+            grip.MouseMove += (s, e) =>
+            {
+                if (!grip.IsMouseCaptured || tops == null) return;
+                double minDy = -tops[index] + tops[0], maxDy = tops[rows.Count - 1] + heights[rows.Count - 1] - tops[index] - heights[index];
+                dragged = Math.Max(minDy, Math.Min(maxDy, e.GetPosition(host).Y - startY));
+                ((TranslateTransform)rows[index].RenderTransform).Y = dragged;
+                double center = tops[index] + heights[index] / 2 + dragged;
+                int t = 0;
+                for (int j = 0; j < rows.Count; j++)
+                    if (j != index && tops[j] + heights[j] / 2 < center) t++;
+                target = t;
+                for (int j = 0; j < rows.Count; j++)
+                {
+                    if (j == index) continue;
+                    double shift = 0;
+                    if (j < index && j >= target) shift = heights[index];
+                    else if (j > index && j <= target) shift = -heights[index];
+                    ((TranslateTransform)rows[j].RenderTransform).Y = shift;
+                }
+            };
+            grip.MouseLeftButtonUp += (s, e) =>
+            {
+                if (!grip.IsMouseCaptured) return;
+                grip.ReleaseMouseCapture();
+                tops = null;
+                if (target == index)
+                {
+                    foreach (UIElement r in rows) r.RenderTransform = Transform.Identity;
+                    rows[index].Opacity = 1;
+                    Panel.SetZIndex(rows[index], 0);
+                    return;
+                }
+                System.Collections.Generic.List<string> order = settings.PageOrderList();
+                order.RemoveAt(index);
+                order.Insert(target, name);
+                settings.PageOrder = string.Join(",", order);
+                Apply();
+                Dispatcher.BeginInvoke(new Action(Rebuild), DispatcherPriority.Background);
+            };
+            grip.LostMouseCapture += (s, e) =>
+            {
+                if (tops == null) return;
+                tops = null;
+                foreach (UIElement r in rows) r.RenderTransform = Transform.Identity;
+                rows[index].Opacity = 1;
+                Panel.SetZIndex(rows[index], 0);
+            };
+            return grip;
         }
 
         static Color SwitchOn { get { return SettingsTheme.On; } }

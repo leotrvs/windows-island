@@ -138,32 +138,32 @@ namespace WindowsIsland
 
         internal void ShowMenu()
         {
-            List<TrayMenu.Item> timerItems = new List<TrayMenu.Item>();
-            foreach (int minutes in TimerMinutes)
-            {
-                int m = minutes;
-                timerItems.Add(new TrayMenu.Item { Text = Strings.MenuTimerMinutes(m), Click = () => timer.StartCountdown(m) });
-            }
-            timerItems.Add(new TrayMenu.Item { Separator = true });
-            timerItems.Add(new TrayMenu.Item { Text = Strings.MenuStopwatch, Click = () => timer.StartStopwatch() });
-            if (timer.Running) timerItems.Add(new TrayMenu.Item { Text = Strings.MenuStopTimer, Click = () => timer.Stop() });
-
             List<TrayMenu.Item> items = new List<TrayMenu.Item>
             {
-                new TrayMenu.Item { Text = Strings.MenuSettings, Click = openSettings },
+                new TrayMenu.Item { Icon = "\uE713", Text = Strings.MenuSettings, Click = openSettings },
+                new TrayMenu.Item { Separator = true },
                 new TrayMenu.Item
                 {
-                    Text = Strings.MenuEmptyIsland, Checked = settings.EmptyIsland,
+                    Icon = "\uE740", Text = Strings.MenuAlwaysThin, Checked = settings.AlwaysThin,
+                    Click = () => { settings.AlwaysThin = !settings.AlwaysThin; settings.Save(); changed(); },
+                },
+                new TrayMenu.Item
+                {
+                    Icon = "\uE708", Text = Strings.MenuQuietIsland, Checked = settings.IslandQuiet,
+                    Click = () => { settings.IslandQuiet = !settings.IslandQuiet; settings.Save(); changed(); },
+                },
+                new TrayMenu.Item
+                {
+                    Icon = "\uE7B3", Text = Strings.MenuEmptyIsland, Checked = settings.EmptyIsland,
                     Click = () => { settings.EmptyIsland = !settings.EmptyIsland; settings.Save(); changed(); },
                 },
-                new TrayMenu.Item { Text = Strings.MenuTimer, Sub = timerItems },
                 new TrayMenu.Item { Separator = true },
-                new TrayMenu.Item { Text = Strings.MenuCheckUpdates, Click = checkForUpdates },
-                new TrayMenu.Item { Text = Strings.MenuQuit, Click = quit },
+                new TrayMenu.Item { Icon = "\uE895", Text = Strings.MenuCheckUpdates, Click = checkForUpdates },
+                new TrayMenu.Item { Icon = "\uE711", Text = Strings.MenuClose, Danger = true, Click = quit },
             };
             POINT cursor;
             GetCursorPos(out cursor);
-            TrayMenu.Open(items, new Point(cursor.X, cursor.Y));
+            TrayMenu.Open(items, new Point(cursor.X, cursor.Y), settings.Theme);
         }
 
         // A small dark pill with a light outline, readable on both light and dark taskbars.

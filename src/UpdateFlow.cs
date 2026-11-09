@@ -18,6 +18,7 @@ namespace WindowsIsland
         readonly Func<bool> islandBusy; // Never restart under the user's mouse
         readonly Action quit;
         readonly Action<string> say;    // A message on the island
+        public Action<string, Action> Ask; // A question on the island: the version, and what to do when the user says yes
         readonly DispatcherTimer settle;
         UpdateInfo found;
         bool working;
@@ -76,6 +77,32 @@ namespace WindowsIsland
             {
                 working = false;
             }
+        }
+
+        // From the tray menu: look in the background and, when there is a new version, ask on the island before downloading.
+        public async Task CheckFromMenuAsync()
+        {
+            if (working || State == Phase.Downloading) return;
+            if (!Updater.CanUpdate) { say(Strings.UpdatesNeedInstall); return; }
+            working = true;
+            Tuple<UpdateResult, UpdateInfo> check;
+            try
+            {
+                say(Strings.UpdateChecking);
+                check = await Updater.CheckAsync();
+            }
+            finally
+            {
+                working = false;
+            }
+            if (check.Item1 == UpdateResult.Available)
+            {
+                found = check.Item2;
+                Version = check.Item2.Version;
+                if (Ask != null) Ask(Version, () => { _ = InstallAsync(); });
+                else await InstallAsync();
+            }
+            else say(check.Item1 == UpdateResult.UpToDate ? Strings.UpToDate : Strings.UpdateFailed);
         }
 
         // Downloads the update that was found, checks it, and restarts into it.

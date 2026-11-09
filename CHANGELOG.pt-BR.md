@@ -2,6 +2,12 @@
 
 > Tradução de [CHANGELOG.md](CHANGELOG.md), que é o original em inglês.
 
+## 4.4.0
+
+- **Menu da bandeja:** ícones em cada item, "Sair" virou "Fechar" em vermelho, o timer saiu dele, e o fundo segue o tema (preto no escuro, branco no claro). Ele liga e desliga a linha fina e ativa o Não perturbe da ilha (os avisos não aparecem; só o que o Claude pergunta continua aparecendo)
+- **Procurar atualizações pela bandeja:** não abre mais os Ajustes. Procura em segundo plano e, se houver versão nova, a ilha pergunta: toque para baixar, conferir e reiniciar
+- **Ajustes, Páginas:** arraste uma página pela alça para reordenar, no lugar das setas
+
 ## 4.3.2
 
 - **Ajustes:** quando uma versão nova é encontrada, o botão de atualização ("Baixar a atualização X") e a seta ficam verdes (assim como "Atualizado"), e em Essenciais ele tem mais espaço das bordas

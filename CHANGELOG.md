@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.4.0
+
+- **Tray menu:** icons on each item, "Quit" is now a red "Close", the timer is gone from it, and the background follows the theme (black in dark, white in light). It can switch the thin line on or off and turn on Do not disturb for the island (banners stay away; only what Claude asks still shows)
+- **Check for updates from the tray:** it no longer opens Settings. It looks in the background and, when there is a new version, the island asks: tap to download, verify and restart
+- **Settings, Pages:** drag a page by its handle to reorder them, instead of the arrows
+
 ## 4.3.2
 
 - **Settings:** when a new version is found, the update button ("Download version X") and its arrow are green (so is "Up to date"), and in Essentials it has more room from the edges
