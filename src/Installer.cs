@@ -79,8 +79,44 @@ namespace WindowsIsland
         // Returns true when the island was installed and started, so this copy should quit.
         public static bool RunInteractive()
         {
-            MessageBoxResult answer = MessageBox.Show(Strings.InstallPrompt, Strings.InstallTitle,
-                MessageBoxButton.YesNo, MessageBoxImage.Question);
+            // A copy kept from some time ago is not the newest: offer the newest before installing this one
+            try
+            {
+                System.Threading.Tasks.Task<Tuple<UpdateResult, UpdateInfo>> check = System.Threading.Tasks.Task.Run(() => Updater.CheckForInstallAsync());
+                if (check.Wait(TimeSpan.FromSeconds(12)) && check.Result.Item1 == UpdateResult.Available)
+                {
+                    UpdateInfo newer = check.Result.Item2;
+                    if (MessageBox.Show(Strings.InstallNewerPrompt(newer.Version, Version), Strings.InstallTitle, MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+                    {
+                        string file = System.IO.Path.Combine(System.IO.Path.GetTempPath(), Id + "-" + newer.Version + ".exe");
+                        System.Threading.Tasks.Task<bool> download = System.Threading.Tasks.Task.Run(() => Updater.DownloadVerifiedToAsync(newer, file));
+                        if (download.Wait(TimeSpan.FromMinutes(3)) && download.Result)
+                        {
+                            Process.Start(new ProcessStartInfo(file, "--install-now") { UseShellExecute = true })?.Dispose(); // The newest installs itself, without asking again
+                            return true;
+                        }
+                        MessageBox.Show(Strings.InstallNewerFailed, Name, MessageBoxButton.OK, MessageBoxImage.Warning);
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // No connection: this copy is offered as it is
+            }
+
+            // An older copy over a newer one is a step back: it asks first
+            string installedVersion = null;
+            try { if (File.Exists(InstalledExe)) installedVersion = FileVersionInfo.GetVersionInfo(InstalledExe).ProductVersion; }
+            catch (Exception) { }
+            Version installed, mine;
+            string prompt = Strings.InstallPrompt;
+            MessageBoxImage icon = MessageBoxImage.Question;
+            if (installedVersion != null && System.Version.TryParse(installedVersion.Split('+')[0], out installed) && System.Version.TryParse(Version, out mine) && installed > mine)
+            {
+                prompt = Strings.InstallOlderPrompt(installedVersion.Split('+')[0], Version);
+                icon = MessageBoxImage.Warning;
+            }
+            MessageBoxResult answer = MessageBox.Show(prompt, Strings.InstallTitle, MessageBoxButton.YesNo, icon, MessageBoxResult.No);
             if (answer != MessageBoxResult.Yes) return false;
 
             try

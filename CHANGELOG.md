@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.2.4
+
+- **A downloaded `.exe` that is not the newest:** when you open it to install, it checks for a newer version first and offers to download and install that one instead (the same signature and hash checks as an update). And if a newer version than the file is already installed, it warns that this is a step back and asks, with "No" as the default
+
 ## 4.2.3
 
 - **Updates:** "Check for updates" failed on some connections because GitHub's release download address timed out; when it does not answer, the app now asks GitHub's API for the same file (the signature and the hash are checked just the same)

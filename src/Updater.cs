@@ -96,9 +96,20 @@ namespace WindowsIsland
             }
         }
 
-        public static async Task<Tuple<UpdateResult, UpdateInfo>> CheckAsync()
+        // From a copy that is not installed (to offer the newest version before installing it)
+        public static Task<Tuple<UpdateResult, UpdateInfo>> CheckForInstallAsync()
         {
-            if (!CanUpdate) return Tuple.Create(UpdateResult.Failed, (UpdateInfo)null);
+            return CheckCoreAsync(UpdateKey.PublicKeyXml.Length > 0);
+        }
+
+        public static Task<Tuple<UpdateResult, UpdateInfo>> CheckAsync()
+        {
+            return CheckCoreAsync(CanUpdate);
+        }
+
+        static async Task<Tuple<UpdateResult, UpdateInfo>> CheckCoreAsync(bool allowed)
+        {
+            if (!allowed) return Tuple.Create(UpdateResult.Failed, (UpdateInfo)null);
             try
             {
                 byte[] manifestBytes = await DownloadAsync("update.json", MaxManifestBytes);
@@ -127,14 +138,19 @@ namespace WindowsIsland
         }
 
         // Returns true when an exe whose hash matches the signed manifest is ready to install.
-        public static async Task<bool> DownloadVerifiedAsync(UpdateInfo update)
+        public static Task<bool> DownloadVerifiedAsync(UpdateInfo update)
+        {
+            return DownloadVerifiedToAsync(update, NewFile);
+        }
+
+        public static async Task<bool> DownloadVerifiedToAsync(UpdateInfo update, string path)
         {
             try
             {
                 byte[] exe = await DownloadAsync(ExeName, MaxExeBytes);
                 if (!Convert.ToHexString(SHA256.HashData(exe)).Equals(update.Sha256, StringComparison.OrdinalIgnoreCase))
                     return false;
-                await File.WriteAllBytesAsync(NewFile, exe);
+                await File.WriteAllBytesAsync(path, exe);
                 return true;
             }
             catch (Exception)

@@ -90,7 +90,7 @@ namespace WindowsIsland
             System.Windows.Media.RenderOptions.ProcessRenderMode = System.Windows.Interop.RenderMode.SoftwareOnly;
 
             string preview = null, render = null, frames = null, clips = null;
-            bool portable = false, uninstall = false, afterUpdate = false, afterCrash = false;
+            bool portable = false, uninstall = false, afterUpdate = false, afterCrash = false, installNow = false;
             for (int i = 0; i < e.Args.Length; i++)
             {
                 string arg = e.Args[i];
@@ -102,6 +102,7 @@ namespace WindowsIsland
                 else if (arg.Equals("--uninstall", StringComparison.OrdinalIgnoreCase)) uninstall = true;
                 else if (arg.Equals("--after-update", StringComparison.OrdinalIgnoreCase)) afterUpdate = true;
                 else if (arg.Equals("--after-crash", StringComparison.OrdinalIgnoreCase)) afterCrash = true;
+                else if (arg.Equals("--install-now", StringComparison.OrdinalIgnoreCase)) installNow = true;
                 else if (arg.StartsWith("--lang=", StringComparison.OrdinalIgnoreCase))
                     CultureInfo.CurrentUICulture = CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo(arg.Substring(7));
             }
@@ -137,7 +138,12 @@ namespace WindowsIsland
             // A downloaded copy offers to install itself; --portable runs it in place.
             if (!sample && !portable && !afterUpdate && Array.IndexOf(e.Args, "--dev") < 0 && !Installer.IsInstalledCopy)
             {
-                Installer.RunInteractive();
+                if (installNow)
+                {
+                    try { Installer.Install(); }
+                    catch (Exception) { MessageBox.Show(Strings.InstallFailed, Installer.Name, MessageBoxButton.OK, MessageBoxImage.Warning); }
+                }
+                else Installer.RunInteractive();
                 Shutdown();
                 return;
             }

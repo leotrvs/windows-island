@@ -2,6 +2,10 @@
 
 > Tradução de [CHANGELOG.md](CHANGELOG.md), que é o original em inglês.
 
+## 4.2.4
+
+- **Um `.exe` baixado que não é o mais novo:** ao abri-lo para instalar, ele primeiro procura uma versão mais nova e oferece baixar e instalar essa no lugar (com as mesmas conferências de assinatura e hash de uma atualização). E se já houver instalada uma versão mais nova que o arquivo, ele avisa que isso é um retrocesso e pergunta, com "Não" como padrão
+
 ## 4.2.3
 
 - **Atualizações:** "Procurar atualizações" falhava em algumas conexões porque o endereço de download das versões no GitHub demorava demais; quando ele não responde, o app agora pede o mesmo arquivo à API do GitHub (a assinatura e o hash são conferidos do mesmo jeito)

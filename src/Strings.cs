@@ -109,6 +109,17 @@ namespace WindowsIsland
             "Instalar o Windows Island para o seu usuário do Windows?\n\nCria atalhos no menu Iniciar e na Área de Trabalho e inicia com o Windows. Dá para desinstalar em Configurações > Aplicativos.",
             "¿Instalar Windows Island para tu usuario de Windows?\n\nCrea accesos directos en el menú Inicio y el Escritorio y se inicia con Windows. Puedes desinstalarlo en Configuración > Aplicaciones.",
             "Установить Windows Island для вашей учётной записи Windows?\n\nБудут созданы ярлыки в меню «Пуск» и на рабочем столе, приложение будет запускаться вместе с Windows. Удалить его можно в Параметры > Приложения.");
+        public static string InstallNewerPrompt(string newer, string current) => T(
+            "Version " + newer + " is available and newer than this file (" + current + "). Download and install the newest one instead?",
+            "A versão " + newer + " está disponível e é mais nova que este arquivo (" + current + "). Baixar e instalar a mais nova?",
+            "La versión " + newer + " está disponible y es más nueva que este archivo (" + current + "). ¿Descargar e instalar la más nueva?",
+            "Доступна версия " + newer + ", она новее этого файла (" + current + "). Скачать и установить новую?");
+        public static string InstallNewerFailed => T("The newest version could not be downloaded. This file will be offered instead.", "Não foi possível baixar a versão mais nova. Este arquivo será oferecido no lugar.", "No se pudo descargar la versión más nueva. Se ofrecerá este archivo.", "Не удалось скачать новую версию. Будет предложен этот файл.");
+        public static string InstallOlderPrompt(string installed, string current) => T(
+            "Version " + installed + " is already installed and is newer than this file (" + current + "). Install this older one anyway?",
+            "A versão " + installed + " já está instalada e é mais nova que este arquivo (" + current + "). Instalar este mais antigo mesmo assim?",
+            "La versión " + installed + " ya está instalada y es más nueva que este archivo (" + current + "). ¿Instalar este más antiguo de todos modos?",
+            "Версия " + installed + " уже установлена и новее этого файла (" + current + "). Всё равно установить старую?");
         public static string InstallFailed => T("The installation failed. Try again, or run with --portable.",
                                                 "A instalação falhou. Tente de novo ou rode com --portable.",
                                                 "La instalación falló. Inténtalo de nuevo o ejecútalo con --portable.",
