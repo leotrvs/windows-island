@@ -1123,10 +1123,9 @@ namespace WindowsIsland
                                    : Activity.None;
             Activity other = primary == shownActivity ? second : primary;
             Activity nextBubble = shownActivity != Activity.None && other != shownActivity ? other : Activity.None;
-            // On the thin line, the second activity is a tiny bubble beside it; Claude working beside another activity is a steady orange outline instead
-            if (next == View.Minimal && primary != Activity.None && second != primary && second != Activity.Claude) nextBubble = second;
+            if (next == View.Minimal && primary != Activity.None && second != primary) nextBubble = second; // On the thin line, the second activity is a tiny bubble beside it
             if (next == View.SystemCompact && KeepsMonitor(primary)) nextBubble = primary; // The monitor keeps its place, the activity is the bubble
-            bool minimalChanged = next == View.Minimal ? UpdateMinimal(primary, second) : ClearMinimal();
+            bool minimalChanged = next == View.Minimal ? UpdateMinimal(primary) : ClearMinimal();
             if (next != view || nextBubble != bubble || minimalChanged)
             {
                 view = next;
@@ -1167,19 +1166,8 @@ namespace WindowsIsland
         }
 
         // Returns true when the line has to change size (the moon needs a little more room).
-        Color ClaudeLimitColor()
+        bool UpdateMinimal(Activity primary)
         {
-            int percent = claude.Session != null && claude.Session.Percent.HasValue ? claude.Session.EffectivePercent : 0;
-            return percent >= 90 ? ThinRed : percent >= 75 ? ThinYellow : ThinClay; // The limit tints it
-        }
-
-        bool minimalOutline; // Claude is working beside what the line shows: a steady outline, never a pulse (a pulse means "waiting for you")
-        Color minimalOutlineColor = ThinClay;
-
-        bool UpdateMinimal(Activity primary, Activity second)
-        {
-            minimalOutline = second == Activity.Claude && primary != Activity.Claude && claude.Busy > 0 && claude.Waiting == 0;
-            minimalOutlineColor = ClaudeLimitColor();
             Thin kind = Thin.None;
             Color color = Colors.White;
             double fraction = 0;
@@ -1242,8 +1230,6 @@ namespace WindowsIsland
                 }
             }
 
-            MinimalOutline.Visibility = minimalOutline ? Visibility.Visible : Visibility.Collapsed;
-            if (minimalOutline) MinimalOutline.BorderBrush = new SolidColorBrush(minimalOutlineColor);
             bool glow = minimalKind == Thin.ClaudeWorking || minimalKind == Thin.Busy;
             bool solid = minimalKind == Thin.ClaudeWaiting || minimalKind == Thin.Alert || minimalKind == Thin.Done;
             bool fills = minimalKind == Thin.Timer || minimalKind == Thin.Progress || minimalKind == Thin.Charging;

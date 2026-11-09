@@ -1,9 +1,5 @@
 # Changelog
 
-## 3.0.4
-
-- **Thin line:** when Claude is working beside another activity (music, for example), the line keeps showing that activity and gets a steady orange outline, with no pulse. A pulse is only for Claude waiting for you
-
 ## 3.0.3
 
 - **Thin line:** the second activity (a Steam download while Claude works, music while a timer runs, and so on) shows as a tiny bubble beside the line, with its own icon, cover or progress ring, so nothing important stays hidden
