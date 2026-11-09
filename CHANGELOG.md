@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.0.3
+
+- **Thin line:** the second activity (a Steam download while Claude works, music while a timer runs, and so on) shows as a tiny bubble beside the line, with its own icon, cover or progress ring, so nothing important stays hidden
+
 ## 3.0.2
 
 - **Thin line:** the glow while Claude works is wider, repeats along the line and moves faster, so most of the line is lit; the music equalizer takes the color of the cover; the privacy dots are smaller beside the thin line and go back to their place at once when the name or the dot goes away

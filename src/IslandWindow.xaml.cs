@@ -1123,6 +1123,7 @@ namespace WindowsIsland
                                    : Activity.None;
             Activity other = primary == shownActivity ? second : primary;
             Activity nextBubble = shownActivity != Activity.None && other != shownActivity ? other : Activity.None;
+            if (next == View.Minimal && primary != Activity.None && second != primary) nextBubble = second; // On the thin line, the second activity is a tiny bubble beside it
             if (next == View.SystemCompact && KeepsMonitor(primary)) nextBubble = primary; // The monitor keeps its place, the activity is the bubble
             bool minimalChanged = next == View.Minimal ? UpdateMinimal(primary) : ClearMinimal();
             if (next != view || nextBubble != bubble || minimalChanged)
@@ -1352,7 +1353,7 @@ namespace WindowsIsland
                 BubbleExternalGroup.Visibility = bubble == Activity.External ? Visibility.Visible : Visibility.Collapsed;
             }
             bubbleOpacity.Target = hasBubble ? 1 : 0;
-            bubbleScale.Target = hasBubble ? 1 : 0.4;
+            bubbleScale.Target = hasBubble ? (view == View.Minimal ? 0.42 : 1) : 0.3;
         }
 
         // ---------- Pages ----------
@@ -2129,9 +2130,12 @@ namespace WindowsIsland
 
             // The bubble follows the island's edge, sliding out from behind it.
             // Everything is measured at size 100% and multiplied by the user's size.
-            bubbleShift.Target = (bubble != Activity.None ? w / 2 + BubbleGap + BubbleSize / 2 : w / 2 - BubbleSize / 2 - 2) * s;
+            bool thinLine = view == View.Minimal && bubble != Activity.None;
+            double bubbleSize = thinLine ? BubbleSize * 0.42 : BubbleSize, bubbleGap = thinLine ? 5 : BubbleGap;
+            bubbleShift.Target = (bubble != Activity.None ? w / 2 + bubbleGap + bubbleSize / 2 : w / 2 - BubbleSize / 2 - 2) * s;
             BubbleShift.X = bubbleShift.Value;
-            BubbleShift.Y = (bottom ? -1 : 1) * BubbleSize / 2 * (s - 1); // Keeps it level with the scaled island
+            BubbleShift.Y = thinLine ? (bottom ? 17 - 3 * s : 3 * s - 17) // Level with the thin line
+                                     : (bottom ? -1 : 1) * BubbleSize / 2 * (s - 1); // Keeps it level with the scaled island
             BubbleScale.ScaleX = BubbleScale.ScaleY = Math.Max(0, bubbleScale.Value * s);
             Bubble.Opacity = Math.Clamp(bubbleOpacity.Value, 0, 1) * visible;
 
