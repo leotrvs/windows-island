@@ -2,6 +2,11 @@
 
 > Tradução de [CHANGELOG.md](CHANGELOG.md), que é o original em inglês.
 
+## 4.5.0
+
+- **Contorno do timer:** no timer compacto (e no Pomodoro), um anel corre em volta da pílula: cheio no começo, e some no sentido horário conforme o tempo acaba (laranja no foco, verde na pausa), sobre um trilho fraquinho
+- **Ajustes, Essenciais:** os dois botões de baixo ("Mais ajustes" e atualizações) agora têm a mesma largura, e o texto da atualização é curto para nunca ser cortado ("Atualizações", "Procurando…", "Baixar 4.5.0", "Atualizado")
+
 ## 4.4.3
 
 - **Pergunta de atualização na ilha:** agora tem um botão verde "Baixar" e fica na frente mesmo com o mouse sobre a ilha (antes, passar o mouse abria a música e a resposta se perdia). Espera 30 segundos

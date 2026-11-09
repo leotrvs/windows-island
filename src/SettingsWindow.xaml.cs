@@ -253,11 +253,14 @@ namespace WindowsIsland
             Row(null, null, null, null, null, MakeUpdateLine());
         }
 
-        FrameworkElement MakeUpdateLine()
+        bool updateCompact; // The narrow version in Essentials: short texts, one line, so both halves of the row look the same
+
+        FrameworkElement MakeUpdateLine(bool compact = false)
         {
+            updateCompact = compact;
             spin = new RotateTransform();
             updateGlyph = new TextBlock { FontFamily = IconFont, FontSize = 16, Margin = new Thickness(0, 0, 14, 0), VerticalAlignment = VerticalAlignment.Center, RenderTransform = spin, RenderTransformOrigin = new Point(0.5, 0.5) };
-            updateText = new TextBlock { VerticalAlignment = VerticalAlignment.Center, TextWrapping = TextWrapping.Wrap };
+            updateText = new TextBlock { VerticalAlignment = VerticalAlignment.Center, TextWrapping = compact ? TextWrapping.NoWrap : TextWrapping.Wrap, TextTrimming = TextTrimming.CharacterEllipsis };
             // The text wraps inside the space it has, so a long message is never cut off
             Grid line = new Grid { Background = Brushes.Transparent, Cursor = System.Windows.Input.Cursors.Hand };
             line.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
@@ -290,16 +293,16 @@ namespace WindowsIsland
             if (updateText == null) return;
             UpdateFlow.Phase phase = updates?.State ?? UpdateFlow.Phase.Idle;
             string glyph = "\uE895";
-            string text = Strings.MenuCheckUpdates;
+            string text = updateCompact ? Strings.UpdateIdleShort : Strings.MenuCheckUpdates;
             Brush color = (Brush)FindResource("Accent");
             bool spinning = false;
             switch (phase)
             {
-                case UpdateFlow.Phase.Checking: glyph = "\uE895"; text = Strings.UpdateChecking; color = (Brush)FindResource("Secondary"); spinning = true; break;
-                case UpdateFlow.Phase.Available: glyph = "\uE896"; text = Strings.UpdateDownload(updates.Version); color = new SolidColorBrush(Color.FromRgb(0x30, 0xD1, 0x58)); break; // A new version: green
-                case UpdateFlow.Phase.Downloading: glyph = "\uE895"; text = Strings.UpdateDownloading; color = (Brush)FindResource("Secondary"); spinning = true; break;
-                case UpdateFlow.Phase.UpToDate: glyph = "\uE73E"; text = Strings.UpToDate; color = new SolidColorBrush(Color.FromRgb(0x30, 0xD1, 0x58)); break;
-                case UpdateFlow.Phase.Failed: glyph = "\uE7BA"; text = Strings.UpdateFailed; color = new SolidColorBrush(Color.FromRgb(0xFF, 0x9F, 0x0A)); break;
+                case UpdateFlow.Phase.Checking: glyph = "\uE895"; text = updateCompact ? Strings.UpdateCheckingShort : Strings.UpdateChecking; color = (Brush)FindResource("Secondary"); spinning = true; break;
+                case UpdateFlow.Phase.Available: glyph = "\uE896"; text = updateCompact ? Strings.UpdateAskButton + " " + updates.Version : Strings.UpdateDownload(updates.Version); color = new SolidColorBrush(Color.FromRgb(0x30, 0xD1, 0x58)); break; // A new version: green
+                case UpdateFlow.Phase.Downloading: glyph = "\uE895"; text = updateCompact ? Strings.UpdateDownloadingShort : Strings.UpdateDownloading; color = (Brush)FindResource("Secondary"); spinning = true; break;
+                case UpdateFlow.Phase.UpToDate: glyph = "\uE73E"; text = updateCompact ? Strings.UpToDateShort : Strings.UpToDate; color = new SolidColorBrush(Color.FromRgb(0x30, 0xD1, 0x58)); break;
+                case UpdateFlow.Phase.Failed: glyph = "\uE7BA"; text = updateCompact ? Strings.UpdateFailedShort : Strings.UpdateFailed; color = new SolidColorBrush(Color.FromRgb(0xFF, 0x9F, 0x0A)); break;
             }
             updateGlyph.Text = glyph;
             updateGlyph.Foreground = color;
@@ -563,9 +566,9 @@ namespace WindowsIsland
 
             // Not part of the list: a row of its own, split in two (more settings | updates)
             Grid split = new Grid();
-            split.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(2, GridUnitType.Star) });
+            split.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             split.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1) });
-            split.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) });
+            split.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             StackPanel more = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, Background = Brushes.Transparent, Cursor = System.Windows.Input.Cursors.Hand, Margin = new Thickness(0, 14, 0, 14) };
             more.Children.Add(new TextBlock { Text = "\uE713", FontFamily = IconFont, FontSize = 16, Foreground = (Brush)FindResource("Accent"), Margin = new Thickness(0, 0, 10, 0), VerticalAlignment = VerticalAlignment.Center });
             more.Children.Add(new TextBlock { Text = Strings.MoreSettings, Foreground = (Brush)FindResource("Accent"), VerticalAlignment = VerticalAlignment.Center });
@@ -580,8 +583,8 @@ namespace WindowsIsland
             Border divider = new Border { Background = (Brush)FindResource("Separator"), Margin = new Thickness(0, 8, 0, 8) };
             Grid.SetColumn(divider, 1);
             split.Children.Add(divider);
-            FrameworkElement update = MakeUpdateLine();
-            update.HorizontalAlignment = HorizontalAlignment.Stretch;
+            FrameworkElement update = MakeUpdateLine(true);
+            update.HorizontalAlignment = HorizontalAlignment.Center;
             update.VerticalAlignment = VerticalAlignment.Center;
             update.Margin = new Thickness(16, 14, 16, 14); // Room on both sides: the text does not touch the edge
             Grid.SetColumn(update, 2);

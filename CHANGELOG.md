@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.5.0
+
+- **Timer outline:** on the compact timer (and the Pomodoro), a ring runs around the pill: full at the start, fading away clockwise as the time runs out (orange for focus, green for a break), over a faint rail
+- **Settings, Essentials:** the two buttons at the bottom ("More settings" and updates) are the same width now, and the update text is short so it never gets cut ("Updates", "Searching…", "Download 4.5.0", "Up to date")
+
 ## 4.4.3
 
 - **Update question on the island:** it now has a green "Download" button, and stays in front even when the mouse is over the island (before, hovering opened the music instead and the answer was lost). It waits 30 seconds

@@ -352,6 +352,12 @@ namespace WindowsIsland
         public static string MenuQuietIsland => T("Do not disturb (island)", "Não perturbe (ilha)", "No molestar (isla)", "Не беспокоить (остров)");
         public static string UpdateAskTitle(string version) => T("Update " + version, "Atualização " + version, "Actualización " + version, "Обновление " + version);
         public static string UpdateAskBody => T("Available · restarts after", "Disponível · reinicia depois", "Disponible · se reinicia después", "Доступно · потом перезапуск");
+        // Short forms for the narrow update button in Essentials
+        public static string UpdateIdleShort => T("Updates", "Atualizações", "Actualizaciones", "Обновления");
+        public static string UpdateCheckingShort => T("Searching…", "Procurando…", "Buscando…", "Поиск…");
+        public static string UpdateDownloadingShort => T("Downloading…", "Baixando…", "Descargando…", "Загрузка…");
+        public static string UpToDateShort => T("Up to date", "Atualizado", "Al día", "Актуально");
+        public static string UpdateFailedShort => T("Could not check", "Falha ao procurar", "Error al buscar", "Не удалось");
         public static string UpdateAskButton => T("Download", "Baixar", "Descargar", "Скачать");
         public static string MenuQuit => T("Quit", "Sair", "Salir", "Выход");
         public static string MenuTimer => T("Timer", "Timer", "Temporizador", "Таймер");

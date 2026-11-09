@@ -118,6 +118,8 @@ namespace WindowsIsland
             this.claude = claude;
             this.codex = codex;
             InitializeComponent();
+            Stage.Children.Add(timerRail); // The timer ring sits on top of the panels
+            Stage.Children.Add(timerRing);
 
             panels[View.Idle] = IdlePanel;
             panels[View.Minimal] = MinimalPanel;
@@ -604,6 +606,48 @@ namespace WindowsIsland
             privacyOpacity.Target = anything ? 1 : 0;
         }
 
+        // The timer's outline: a ring around the pill that is full at the start and fades away as the time runs out
+        // (orange for focus, green for a break). A faint rail stays behind it. It shows only on the compact timer.
+        readonly System.Windows.Shapes.Path timerRing = new System.Windows.Shapes.Path { StrokeThickness = 2, StrokeStartLineCap = PenLineCap.Round, StrokeEndLineCap = PenLineCap.Round, IsHitTestVisible = false, Opacity = 0 };
+        readonly System.Windows.Shapes.Path timerRail = new System.Windows.Shapes.Path { StrokeThickness = 2, IsHitTestVisible = false, Opacity = 0, Stroke = Freeze(new SolidColorBrush(Color.FromArgb(0x30, 0xFF, 0xFF, 0xFF))) };
+        double ringW, ringH, ringLength;
+
+        void UpdateTimerRing(double w, double h)
+        {
+            double presenceValue = presence[TimerCompact].Value;
+            bool on = presenceValue > 0.01 && timer.Running && timer.Mode == TimerService.Kind.Countdown;
+            if (!on)
+            {
+                if (timerRing.Opacity != 0) { timerRing.Opacity = 0; timerRail.Opacity = 0; }
+                return;
+            }
+            const double inset = 2;
+            double a = w - 2 * inset, b = h - 2 * inset, r = b / 2;
+            if (a <= b || b <= 4) { timerRing.Opacity = 0; timerRail.Opacity = 0; return; }
+            if (w != ringW || h != ringH)
+            {
+                ringW = w; ringH = h;
+                PathFigure figure = new PathFigure { StartPoint = new Point(w / 2, inset) };
+                figure.Segments.Add(new LineSegment(new Point(w - inset - r, inset), true));
+                figure.Segments.Add(new ArcSegment(new Point(w - inset - r, h - inset), new Size(r, r), 0, false, SweepDirection.Clockwise, true));
+                figure.Segments.Add(new LineSegment(new Point(inset + r, h - inset), true));
+                figure.Segments.Add(new ArcSegment(new Point(inset + r, inset), new Size(r, r), 0, false, SweepDirection.Clockwise, true));
+                figure.Segments.Add(new LineSegment(new Point(w / 2, inset), true));
+                PathGeometry geometry = new PathGeometry(new[] { figure });
+                geometry.Freeze();
+                timerRing.Data = geometry;
+                timerRail.Data = geometry;
+                ringLength = 2 * (a - b) + Math.PI * b;
+            }
+            double left = Math.Clamp(timer.Fraction, 0, 1);
+            double unit = ringLength / timerRing.StrokeThickness;
+            // The part that is left ends at the top and shrinks clockwise, like the iPhone's timer
+            timerRing.StrokeDashArray = new DoubleCollection { left * unit, unit };
+            timerRing.StrokeDashOffset = -(1 - left) * unit;
+            timerRing.Stroke = OnBreak ? PomodoroGreen : TimerOrange;
+            timerRing.Opacity = timerRail.Opacity = Math.Clamp(presenceValue, 0, 1);
+        }
+
         string lastTimerText;
         void UpdateTimerLive()
         {
@@ -618,6 +662,7 @@ namespace WindowsIsland
             Brush phase = OnBreak ? PomodoroGreen : TimerOrange; // Focus is orange, a break is green
             TimerCompactText.Foreground = phase;
             TimerBig.Foreground = OnBreak ? PomodoroGreen : Brushes.White;
+            UpdateTimerRing(Pill.Width, Pill.Height);
         }
 
         // What the timer page offers: choose a length and start, or pause and stop what is running.
@@ -2816,6 +2861,7 @@ namespace WindowsIsland
             stageClip.Rect = new Rect(0, 0, w, h);
             stageClip.RadiusX = radius;
             stageClip.RadiusY = radius;
+            UpdateTimerRing(w, h);
 
             double visible = Math.Clamp(shown.Value, 0, 1);
             Pill.Opacity = visible;
