@@ -46,6 +46,7 @@ namespace WindowsIsland
         public int PomodoroFocus { get; set; } = 25;   // Minutes
         public int PomodoroBreak { get; set; } = 5;
         public int PomodoroLong { get; set; } = 15;
+        public bool SongNameAlways { get; set; } = false; // The song's name stays beside the cover on the island (otherwise it shows for a moment when the song changes)
         public bool MinimalMusicPosition { get; set; } = false; // The thin line fills along the song while music plays
         public bool ThinDefaultsApplied { get; set; } = false; // From 4.5.1: copies from before get "thin line with a maximized window" and "activities too" switched on once
         public bool MaximizedActivitiesThin { get; set; } = true; // With a maximized window and the thin line: activities too become the thin line (hover to see them)

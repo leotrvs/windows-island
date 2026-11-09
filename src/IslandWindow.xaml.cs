@@ -275,8 +275,10 @@ namespace WindowsIsland
                 return;
             }
             string glyph = null;
+            bool songChanged = false;
             if (title.Length > 0 && title != musicTitle)
             {
+                songChanged = true;
                 // The command that was just given says which way; without one, a song heard a moment ago means back
                 bool recent = DateTime.Now - media.LastWayAt < TimeSpan.FromSeconds(4);
                 bool back = recent ? media.LastWay == MediaService.Way.Previous : musicHistory.Contains(title);
@@ -287,7 +289,9 @@ namespace WindowsIsland
             }
             else if (playing != musicWasPlaying) glyph = playing ? "\uE768" : "\uE769";
             musicWasPlaying = playing;
-            if (glyph == null || !settings.ShowMusic || !ThinActive) return;
+            if (glyph == null || !settings.ShowMusic) return;
+            // On the thin line every change shows; on the normal island only a new song does, and only while the name is not already there
+            if (!ThinActive && (!songChanged || settings.SongNameAlways || settings.EmptyIsland)) return;
             PeekGlyph.Text = glyph;
             PeekTitle.Text = string.IsNullOrEmpty(title) ? Strings.UnknownTrack : title;
             musicPeekUntil = DateTime.Now.AddSeconds(2.6);
@@ -786,6 +790,7 @@ namespace WindowsIsland
             if (value == View.Banner) return new Size(Banner.Width, Banner.Height);
             if (value == View.Permission) return new Size(372, permissionHeight);
             if (value == View.SystemCompact) return new Size(monitorWidth, 34);
+            if (value == View.MusicCompact && settings.SongNameAlways) return new Size(236, 34);
             if (value == View.Minimal && minimalHasContent) return new Size(108, 18);
             return Sizes[value];
         }
@@ -921,6 +926,7 @@ namespace WindowsIsland
         // Draws every state to PNG files for the README, from sample data and without touching the screen.
         public void RenderStates(string folder, string suffix)
         {
+            cascadeOff = true;
             Directory.CreateDirectory(folder);
             View[] states = { View.Idle, View.MusicCompact, View.ClaudeCompact, View.CodexCompact, View.BatteryCompact, View.ExternalCompact, View.SystemCompact, View.ExternalExpanded, View.MusicExpanded, View.ClaudeExpanded, View.TimerExpanded, View.SystemExpanded, View.Level, View.Banner };
             double[] levels = { 0.55, 0.95, 0.4, 0.75 };
@@ -1171,6 +1177,7 @@ namespace WindowsIsland
         // Records the README animation: the island going through its states, one PNG per frame, from sample data.
         public void RenderAnimation(string folder)
         {
+            cascadeOff = true;
             Directory.CreateDirectory(folder);
             BannerTitle.Text = Strings.ClaudeDone;
             BannerSubtitle.Text = Strings.SampleSession;
@@ -1420,8 +1427,21 @@ namespace WindowsIsland
         }
 
         // The island at rest between clips: nothing queued, nothing forced but the resting view.
+        // A clip starts from a page that has not come in yet
+        void CascadeReset()
+        {
+            foreach (FrameworkElement panel in cascadeStart.Keys.ToList())
+            {
+                Panel host = panel as Panel;
+                if (host != null && host.Children.Count == 1 && host.Children[0] is Panel inner) host = inner;
+                if (host != null) CascadeRestore(host);
+            }
+            cascadeStart.Clear();
+        }
+
         void ClipRest(View rest, bool snap = true)
         {
+            CascadeReset();
             if (timer.Running) timer.Stop();
             banners.Clear();
             bannerUntil = DateTime.MinValue;
@@ -1624,7 +1644,7 @@ namespace WindowsIsland
             else if (DateTime.Now < toastUntil) next = View.Toast;
             else if (DateTime.Now < levelUntil) next = ThinActive ? View.LevelMini : View.Level;
             // The same thin line for the activities too, when asked: hover to see them
-            else if (DateTime.Now < musicPeekUntil && ThinActive) next = View.MusicPeek;
+            else if (DateTime.Now < musicPeekUntil && (ThinActive || (primary == Activity.Music && !settings.EmptyIsland && !settings.SongNameAlways))) next = View.MusicPeek;
             else if (ThinActive && primary != Activity.None) next = View.Minimal;
             else if (settings.MaximizedActivitiesThin && maximized && !IsBottom && settings.MaximizedMode == "Thin") next = View.Minimal;
             // With the system monitor on, it stays and the activity is the small bubble beside it
@@ -2660,10 +2680,49 @@ namespace WindowsIsland
 
         // ---------- Content ----------
 
+        string songShown; // The title on screen: when it changes, the cover and the name slide out and the new ones slide in
+
+        // -1 when the song went back, 1 when it moved on
+        int SongDirection(string title)
+        {
+            if (DateTime.Now - media.LastWayAt < TimeSpan.FromSeconds(4)) return media.LastWay == MediaService.Way.Previous ? -1 : 1;
+            return musicHistory.Contains(title) ? -1 : 1;
+        }
+
+        // The old content slides out to one side and fades, the new slides in from the other
+        void SlideSwap(FrameworkElement element, int direction, Action apply, int delayMs = 0)
+        {
+            TranslateTransform move = element.RenderTransform as TranslateTransform;
+            if (move == null)
+            {
+                if (element.RenderTransform != null && !element.RenderTransform.Value.IsIdentity) { apply(); return; }
+                move = new TranslateTransform();
+                element.RenderTransform = move;
+            }
+            CubicEase easeIn = new CubicEase { EasingMode = EasingMode.EaseIn }, easeOut = new CubicEase { EasingMode = EasingMode.EaseOut };
+            TimeSpan delay = TimeSpan.FromMilliseconds(delayMs);
+            DoubleAnimation away = new DoubleAnimation(0, -22 * direction, TimeSpan.FromMilliseconds(140)) { BeginTime = delay, EasingFunction = easeIn, FillBehavior = FillBehavior.HoldEnd };
+            away.Completed += (s, e) =>
+            {
+                apply();
+                move.BeginAnimation(TranslateTransform.XProperty, new DoubleAnimation(22 * direction, 0, TimeSpan.FromMilliseconds(260)) { EasingFunction = easeOut });
+                element.BeginAnimation(OpacityProperty, new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(260)));
+            };
+            move.BeginAnimation(TranslateTransform.XProperty, away);
+            element.BeginAnimation(OpacityProperty, new DoubleAnimation(1, 0, TimeSpan.FromMilliseconds(140)) { BeginTime = delay, FillBehavior = FillBehavior.HoldEnd });
+        }
+
         void UpdateMusic()
         {
-            TrackTitle.Text = string.IsNullOrEmpty(media.Title) ? Strings.UnknownTrack : media.Title;
-            TrackArtist.Text = media.Artist;
+            string shownTitle = string.IsNullOrEmpty(media.Title) ? Strings.UnknownTrack : media.Title;
+            string shownArtist = media.Artist;
+            bool songChanged = songShown != null && songShown != shownTitle && !string.IsNullOrEmpty(media.Title);
+            songShown = shownTitle;
+            int way = songChanged ? SongDirection(media.Title) : 1;
+            bool expandedSeen = songChanged && presence[MusicExpanded].Value > 0.5;
+            bool compactSeen = songChanged && presence[MusicCompact].Value > 0.5;
+            MusicCompact.Width = settings.SongNameAlways ? 236 : 176;
+            CompactTitle.Visibility = settings.SongNameAlways ? Visibility.Visible : Visibility.Collapsed;
 
             ImageBrush artBrush = null;
             if (media.Art != null)
@@ -2672,10 +2731,38 @@ namespace WindowsIsland
                 RenderOptions.SetBitmapScalingMode(artBrush, BitmapScalingMode.HighQuality); // Small icons stay smooth, not blocky
             }
             Brush art = artBrush != null ? Freeze(artBrush) : (Brush)FindResource("ArtPlaceholder");
-            CompactArt.Background = art;
-            ExpandedArt.Background = art;
+            if (compactSeen)
+            {
+                SlideSwap(CompactArt, way, () => CompactArt.Background = art);
+                if (settings.SongNameAlways) SlideSwap(CompactTitle, way, () => CompactTitle.Text = shownTitle, 30);
+                else CompactTitle.Text = shownTitle;
+            }
+            else
+            {
+                CompactArt.Background = art;
+                CompactTitle.Text = shownTitle;
+            }
+            if (expandedSeen)
+            {
+                SlideSwap(ExpandedArt, way, () => ExpandedArt.Background = art);
+                SlideSwap(TrackTitle, way, () => TrackTitle.Text = shownTitle, 30);
+                SlideSwap(TrackArtist, way, () => TrackArtist.Text = shownArtist, 60);
+            }
+            else
+            {
+                ExpandedArt.Background = art;
+                TrackTitle.Text = shownTitle;
+                TrackArtist.Text = shownArtist;
+            }
             BubbleArt.Fill = art;
             PeekArt.Background = art;
+            if (songChanged && presence[MusicCompact].Value > 0.5)
+            {
+                // The island gives a small nudge when the song changes
+                DoubleAnimation nudge = new DoubleAnimation(0, 0.05, TimeSpan.FromMilliseconds(150)) { AutoReverse = true, IsAdditive = true, EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } };
+                PillScale.BeginAnimation(ScaleTransform.ScaleXProperty, nudge);
+                PillScale.BeginAnimation(ScaleTransform.ScaleYProperty, nudge);
+            }
 
             Brush accent = Freeze(new SolidColorBrush(media.Accent));
             foreach (Rectangle bar in compactBars) bar.Fill = accent;
@@ -2904,6 +2991,8 @@ namespace WindowsIsland
                 double slide = (incoming ? 1 : -1) * (1 - Math.Clamp(p, 0, 1)) * 9 * (bottom ? -1 : 1);
                 Canvas.SetLeft(panel, (w - panel.Width) / 2);
                 Canvas.SetTop(panel, (bottom ? h - panel.Height : 0) + slide);
+                if (pair.Key == View.MusicExpanded || pair.Key == View.ClaudeExpanded || pair.Key == View.TimerExpanded || pair.Key == View.QuickExpanded || pair.Key == View.SystemExpanded || pair.Key == View.ExternalExpanded)
+                    Cascade(panel, incoming, bottom, opacity);
 
                 double blur = (1 - opacity) * 12;
                 BlurEffect effect = panel.Effect as BlurEffect;
@@ -2960,10 +3049,68 @@ namespace WindowsIsland
             }
         }
 
+        // When a page opens, its rows come in one after the other (a little later and a little lower each), instead of all at once
+        readonly Dictionary<UIElement, double> cascadeBase = new Dictionary<UIElement, double>();
+        readonly Dictionary<FrameworkElement, DateTime> cascadeStart = new Dictionary<FrameworkElement, DateTime>();
+        static readonly DateTime CascadeDone = DateTime.MaxValue;
+        bool cascadeRunning, cascadeOff; // Off for the still images of the README (a page caught half way in would be empty)
+
+        void Cascade(FrameworkElement panel, bool incoming, bool bottom, double visibleNow)
+        {
+            if (cascadeOff) return;
+            Panel host = panel as Panel;
+            if (host == null) return;
+            if (host.Children.Count == 1 && host.Children[0] is Panel inner) host = inner;
+            DateTime start;
+            bool known = cascadeStart.TryGetValue(panel, out start);
+            if (!incoming)
+            {
+                if (known) { cascadeStart.Remove(panel); CascadeRestore(host); }
+                return;
+            }
+            if (known && start == CascadeDone) return;
+            if (!known)
+            {
+                if (visibleNow < 0.05) return; // It starts when the page can be seen
+                start = SampleClock.UtcNow;
+                cascadeStart[panel] = start;
+                foreach (UIElement child in host.Children) cascadeBase[child] = child.Opacity;
+            }
+            double t = (SampleClock.UtcNow - start).TotalSeconds;
+            int index = 0;
+            bool finished = true;
+            foreach (UIElement child in host.Children)
+            {
+                double c = Math.Clamp((t - 0.03 - 0.07 * index++) / 0.30, 0, 1);
+                if (c < 1) finished = false;
+                double eased = 1 - Math.Pow(1 - c, 3);
+                double original;
+                child.Opacity = (cascadeBase.TryGetValue(child, out original) ? original : 1) * eased;
+                TranslateTransform shift = child.RenderTransform as TranslateTransform;
+                if (shift == null && (child.RenderTransform == null || child.RenderTransform.Value.IsIdentity))
+                    child.RenderTransform = shift = new TranslateTransform();
+                if (shift != null) shift.Y = (1 - eased) * 12 * (bottom ? -1 : 1);
+            }
+            if (finished) { CascadeRestore(host); cascadeStart[panel] = CascadeDone; }
+            else cascadeRunning = true;
+        }
+
+        void CascadeRestore(Panel host)
+        {
+            foreach (UIElement child in host.Children)
+            {
+                double original;
+                child.Opacity = cascadeBase.TryGetValue(child, out original) ? original : 1;
+                TranslateTransform shift = child.RenderTransform as TranslateTransform;
+                if (shift != null) shift.Y = 0;
+            }
+        }
+
         // Equalizer, progress, the working spark and the timer. Returns true while any of them must keep moving.
         bool AnimateLive(double dt)
         {
-            bool keepGoing = false;
+            bool keepGoing = cascadeRunning;
+            cascadeRunning = false;
 
             if (presence[MinimalPanel].Value > 0.01) keepGoing |= AnimateMinimal() || RecordingOn;
 

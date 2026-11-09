@@ -723,6 +723,7 @@ namespace WindowsIsland
         {
             Section(Strings.SectionActivities);
             Toggle("\uE8D6", Strings.MenuMusic, null, () => settings.ShowMusic, v => settings.ShowMusic = v);
+            Toggle("\uE8EC", Strings.MenuSongName, Strings.HintSongName, () => settings.SongNameAlways, v => settings.SongNameAlways = v);
             Toggle("img:claude", Strings.MenuClaude, null, () => settings.ShowClaude, v => settings.ShowClaude = v);
             Toggle("\uEA8F", Strings.MenuBanners, null, () => settings.ClaudeBanners, v => settings.ClaudeBanners = v);
             Group("\uE9D9", Strings.GroupLimits, () =>

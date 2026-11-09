@@ -2,6 +2,11 @@
 
 > Tradução de [CHANGELOG.md](CHANGELOG.md), que é o original em inglês.
 
+## 4.6.0
+
+- **O nome da música:** quando a música muda, a capa e o nome deslizam para um lado (a direção segue próxima ou anterior), a ilha dá um pequeno empurrão, e na ilha normal o nome aparece por um momento ao lado da capa e depois some. Novo em Ajustes, Atividades: **Nome da música sempre visível** (desligado por padrão)
+- **As páginas entram uma a uma:** quando a ilha abre, cada linha da página (música, Claude, timer, atalhos, sistema) entra um pouco depois da anterior
+
 ## 4.5.3
 
 - **Depois de atualizar:** quando o app reinicia na versão nova, a ilha mostra o visto verde que aparece com um pulinho ("Atualizado para a versão X") no lugar do sino cinza. Depois de uma falha ela reabre com o alerta âmbar

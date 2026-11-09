@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.6.0
+
+- **The song's name:** when the song changes, the cover and the name slide to one side (the direction follows next or previous), the island gives a small nudge, and on the normal island the name shows for a moment beside the cover and then goes away. New in Settings, Activities: **Song name always shown** (off by default)
+- **Pages come in one by one:** when the island opens, each row of the page (music, Claude, timer, shortcuts, system) comes in a little after the one before
+
 ## 4.5.3
 
 - **After an update:** when the app restarts into the new version, the island shows the green check that pops in ("Updated to version X") instead of the gray bell. After a failure it reopens with the amber warning

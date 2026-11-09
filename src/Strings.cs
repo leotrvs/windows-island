@@ -131,6 +131,8 @@ namespace WindowsIsland
                                                   "Удалить Windows Island, его ярлыки и настройки?");
 
         // Tray menu and Settings
+        public static string MenuSongName => T("Song name always shown", "Nome da música sempre visível", "Nombre de la canción siempre visible", "Название песни всегда на виду");
+        public static string HintSongName => T("Off: the name shows for a moment when the song changes", "Desligado: o nome aparece por um momento quando a música muda", "Desactivado: el nombre aparece un momento cuando cambia la canción", "Выключено: название показывается ненадолго при смене песни");
         public static string MenuMusic => T("Show music", "Mostrar música", "Mostrar música", "Показывать музыку");
         public static string MenuClaude => T("Show Claude", "Mostrar Claude", "Mostrar Claude", "Показывать Claude");
         public static string MenuBanners => T("Claude alerts", "Avisos do Claude", "Avisos de Claude", "Оповещения Claude");
