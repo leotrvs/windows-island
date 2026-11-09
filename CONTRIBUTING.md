@@ -30,6 +30,7 @@ Run the tests with `dotnet test tests`. They cover the logic that has no window 
   ```
 
   The animated GIF at the top of the README is made the same way, with `pwsh -File scripts/render-gif.ps1` (it needs Python 3 with Pillow).
+  The small animation of each state in the README tables is made with `pwsh -File scripts/render-clips.ps1` (`WindowsIsland.exe --clips <folder>` writes the frames, `scripts/assemble-clips.py` joins them; same Python and Pillow).
 
   To look at one state with sample data, run `.\bin\WindowsIsland.exe --preview=MusicExpanded`. The states are `Idle`, `Minimal`, `MusicCompact`, `ClaudeCompact`, `MusicExpanded`, `ClaudeExpanded` and `Banner`. Add `--lang=en` or `--lang=pt` to force a language.
 

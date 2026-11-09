@@ -77,26 +77,26 @@ Dynamic Island для Windows. Музыка, Claude Code, его лимиты и
 | Состояние | Вид |
 |---|---|
 | Ожидание | <img src="docs/images/idle-en.png" alt="Капсула в ожидании" width="260"> |
-| Играет музыка, рядом работает Claude | <img src="docs/images/musiccompact-en.png" alt="Компактная музыка с пузырьком Claude" width="380"> |
-| Claude работает, с прошедшим временем | <img src="docs/images/claudecompact-en.png" alt="Компактная активность Claude" width="320"> |
-| Codex работает | <img src="docs/images/codexcompact-en.png" alt="Компактная активность Codex" width="320"> |
-| Claude закончил или ему нужны вы | <img src="docs/images/banner-en.png" alt="Оповещение Claude" width="420"> |
-| Уведомление Windows | <img src="docs/images/notification-en.png" alt="Баннер уведомления" width="420"> |
-| Зарядка батареи | <img src="docs/images/battery-charging-en.png" alt="Оповещение о зарядке" width="420"> |
-| Низкий заряд | <img src="docs/images/battery-low-en.png" alt="Оповещение о низком заряде" width="420"> |
-| Claude развёрнут, с лимитами | <img src="docs/images/claudeexpanded-en.png" alt="Развёрнутый Claude с кольцами использования" width="460"> |
-| Claude ждёт вас (разрешение или вопрос) | <img src="docs/images/banner-waiting-en.png" alt="Claude ждёт вас (разрешение или вопрос)" width="420"> |
-| Claude Code запрашивает разрешение | <img src="docs/images/permission-en.png" alt="Claude Code запрашивает разрешение" width="460"> |
-| Лимит Claude на 75% или 90% | <img src="docs/images/usage-90-en.png" alt="Лимит Claude на 75% или 90%" width="420"> |
-| Лимит Claude исчерпан | <img src="docs/images/usage-100-en.png" alt="Лимит Claude исчерпан" width="420"> |
-| Лимит Claude обновился | <img src="docs/images/usage-reset5-en.png" alt="Лимит Claude обновился" width="420"> |
-| Несколько чатов работают одновременно | <img src="docs/images/chats-working-compact-en.png" alt="Несколько чатов работают одновременно" width="320"> |
-| Один из двух чатов ждёт вас | <img src="docs/images/chats-waiting-compact-en.png" alt="Один из двух чатов ждёт вас" width="320"> |
-| Страница Claude показывает каждый чат | <img src="docs/images/chats-waiting-expanded-en.png" alt="Страница Claude показывает каждый чат" width="460"> |
-| Системный монитор: кольца, полосы или цифры | <img src="docs/images/systemcompact-en.png" alt="Системный монитор: кольца, полосы или цифры" width="260"> |
-|  | <img src="docs/images/systemcompact-bars-en.png" alt="Системный монитор: кольца, полосы или цифры" width="260"> |
-|  | <img src="docs/images/systemcompact-numbers-en.png" alt="Системный монитор: кольца, полосы или цифры" width="260"> |
-| Изменение громкости или яркости | <img src="docs/images/level-en.png" alt="Volume bar" width="260"> |
+| Играет музыка, рядом работает Claude | <img src="docs/images/musiccompact-en.gif" alt="Компактная музыка с пузырьком Claude" width="380"> |
+| Claude работает, с прошедшим временем | <img src="docs/images/claudecompact-en.gif" alt="Компактная активность Claude" width="320"> |
+| Codex работает | <img src="docs/images/codexcompact-en.gif" alt="Компактная активность Codex" width="320"> |
+| Claude закончил или ему нужны вы | <img src="docs/images/banner-en.gif" alt="Оповещение Claude" width="420"> |
+| Уведомление Windows | <img src="docs/images/notification-en.gif" alt="Баннер уведомления" width="420"> |
+| Зарядка батареи | <img src="docs/images/battery-charging-en.gif" alt="Оповещение о зарядке" width="420"> |
+| Низкий заряд | <img src="docs/images/battery-low-en.gif" alt="Оповещение о низком заряде" width="420"> |
+| Claude развёрнут, с лимитами | <img src="docs/images/claudeexpanded-en.gif" alt="Развёрнутый Claude с кольцами использования" width="460"> |
+| Claude ждёт вас (разрешение или вопрос) | <img src="docs/images/banner-waiting-en.gif" alt="Claude ждёт вас (разрешение или вопрос)" width="420"> |
+| Claude Code запрашивает разрешение | <img src="docs/images/permission-en.gif" alt="Claude Code запрашивает разрешение" width="460"> |
+| Лимит Claude на 75% или 90% | <img src="docs/images/usage-90-en.gif" alt="Лимит Claude на 75% или 90%" width="420"> |
+| Лимит Claude исчерпан | <img src="docs/images/usage-100-en.gif" alt="Лимит Claude исчерпан" width="420"> |
+| Лимит Claude обновился | <img src="docs/images/usage-reset5-en.gif" alt="Лимит Claude обновился" width="420"> |
+| Несколько чатов работают одновременно | <img src="docs/images/chats-working-compact-en.gif" alt="Несколько чатов работают одновременно" width="320"> |
+| Один из двух чатов ждёт вас | <img src="docs/images/chats-waiting-compact-en.gif" alt="Один из двух чатов ждёт вас" width="320"> |
+| Страница Claude показывает каждый чат | <img src="docs/images/chats-waiting-expanded-en.gif" alt="Страница Claude показывает каждый чат" width="460"> |
+| Системный монитор: кольца, полосы или цифры | <img src="docs/images/systemcompact-en.gif" alt="Системный монитор: кольца, полосы или цифры" width="260"> |
+|  | <img src="docs/images/systemcompact-bars-en.gif" alt="Системный монитор: кольца, полосы или цифры" width="260"> |
+|  | <img src="docs/images/systemcompact-numbers-en.gif" alt="Системный монитор: кольца, полосы или цифры" width="260"> |
+| Изменение громкости или яркости | <img src="docs/images/level-en.gif" alt="Volume bar" width="260"> |
 
 ### Тонкая линия
 
@@ -105,22 +105,22 @@ Dynamic Island для Windows. Музыка, Claude Code, его лимиты и
 | Состояние | Вид |
 |---|---|
 | В покое | <img src="docs/images/thin-idle-en.png" alt="В покое" width="300"> |
-| Claude работает: по линии бежит свечение (жёлтое или красное, по мере заполнения лимита) | <img src="docs/images/thin-claude-en.png" alt="Claude работает: по линии бежит свечение (жёлтое или красное, по мере заполнения лимита)" width="300"> |
-| Claude ждёт вас: линия пульсирует | <img src="docs/images/thin-waiting-en.png" alt="Claude ждёт вас: линия пульсирует" width="300"> |
-| Музыка: маленький эквалайзер цвета обложки | <img src="docs/images/thin-music-en.png" alt="Музыка: маленький эквалайзер цвета обложки" width="300"> |
-| Таймер: линия пустеет по мере истечения времени | <img src="docs/images/thin-timer-en.png" alt="Таймер: линия пустеет по мере истечения времени" width="300"> |
-| Загрузка, сборка или игра Steam: линия заполняется по ходу | <img src="docs/images/thin-progress-en.png" alt="Загрузка, сборка или игра Steam: линия заполняется по ходу" width="300"> |
-| Зарядка: линия заполняется по заряду | <img src="docs/images/thin-charging-en.png" alt="Зарядка: линия заполняется по заряду" width="300"> |
-| Запись экрана (OBS или Game Bar): тусклая красная линия с мигающей точкой | <img src="docs/images/thin-recording-en.png" alt="Запись экрана (OBS или Game Bar): тусклая красная линия с мигающей точкой" width="300"> |
-| Низкий заряд или ошибка: линия пульсирует красным | <img src="docs/images/thin-alert-en.png" alt="Низкий заряд или ошибка: линия пульсирует красным" width="300"> |
-| Нет интернета: красная пунктирная линия, которая мигает | <img src="docs/images/thin-offline-en.png" alt="Нет интернета: красная пунктирная линия, которая мигает" width="300"> |
-| Готово: линия становится зелёной | <img src="docs/images/thin-done-en.png" alt="Готово: линия становится зелёной" width="300"> |
-| Фокус: маленькая луна | <img src="docs/images/thin-focus-en.png" alt="Фокус: маленькая луна" width="300"> |
-| Монитор системы: два маленьких кольца, процессор и память | <img src="docs/images/thin-gauges-en.png" alt="Монитор системы: два маленьких кольца, процессор и память" width="300"> |
+| Claude работает: по линии бежит свечение (жёлтое или красное, по мере заполнения лимита) | <img src="docs/images/thin-claude-en.gif" alt="Claude работает: по линии бежит свечение (жёлтое или красное, по мере заполнения лимита)" width="300"> |
+| Claude ждёт вас: линия пульсирует | <img src="docs/images/thin-waiting-en.gif" alt="Claude ждёт вас: линия пульсирует" width="300"> |
+| Музыка: маленький эквалайзер цвета обложки | <img src="docs/images/thin-music-en.gif" alt="Музыка: маленький эквалайзер цвета обложки" width="300"> |
+| Таймер: линия пустеет по мере истечения времени | <img src="docs/images/thin-timer-en.gif" alt="Таймер: линия пустеет по мере истечения времени" width="300"> |
+| Загрузка, сборка или игра Steam: линия заполняется по ходу | <img src="docs/images/thin-progress-en.gif" alt="Загрузка, сборка или игра Steam: линия заполняется по ходу" width="300"> |
+| Зарядка: линия заполняется по заряду | <img src="docs/images/thin-charging-en.gif" alt="Зарядка: линия заполняется по заряду" width="300"> |
+| Запись экрана (OBS или Game Bar): тусклая красная линия с мигающей точкой | <img src="docs/images/thin-recording-en.gif" alt="Запись экрана (OBS или Game Bar): тусклая красная линия с мигающей точкой" width="300"> |
+| Низкий заряд или ошибка: линия пульсирует красным | <img src="docs/images/thin-alert-en.gif" alt="Низкий заряд или ошибка: линия пульсирует красным" width="300"> |
+| Нет интернета: красная пунктирная линия, которая мигает | <img src="docs/images/thin-offline-en.gif" alt="Нет интернета: красная пунктирная линия, которая мигает" width="300"> |
+| Готово: линия становится зелёной | <img src="docs/images/thin-done-en.gif" alt="Готово: линия становится зелёной" width="300"> |
+| Фокус: маленькая луна | <img src="docs/images/thin-focus-en.gif" alt="Фокус: маленькая луна" width="300"> |
+| Монитор системы: два маленьких кольца, процессор и память | <img src="docs/images/thin-gauges-en.gif" alt="Монитор системы: два маленьких кольца, процессор и память" width="300"> |
 | Микрофон и камера: точки внутри линии | <img src="docs/images/thin-privacy-en.png" alt="Микрофон и камера: точки внутри линии" width="300"> |
-| Вторая активность: маленький пузырь рядом с линией | <img src="docs/images/thin-bubble-en.png" alt="Вторая активность: маленький пузырь рядом с линией" width="300"> |
-| Смена песни: обложка, название и символ | <img src="docs/images/thin-peek-en.png" alt="Смена песни: обложка, название и символ" width="300"> |
-| Громкость или яркость: маленькая полоса | <img src="docs/images/thin-level-en.png" alt="Громкость или яркость: маленькая полоса" width="300"> |
+| Вторая активность: маленький пузырь рядом с линией | <img src="docs/images/thin-bubble-en.gif" alt="Вторая активность: маленький пузырь рядом с линией" width="300"> |
+| Смена песни: обложка, название и символ | <img src="docs/images/thin-peek-en.gif" alt="Смена песни: обложка, название и символ" width="300"> |
+| Громкость или яркость: маленькая полоса | <img src="docs/images/thin-level-en.gif" alt="Громкость или яркость: маленькая полоса" width="300"> |
 
 ### Первый запуск и настройки
 

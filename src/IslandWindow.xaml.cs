@@ -1081,6 +1081,219 @@ namespace WindowsIsland
             StopLoop();
         }
 
+        // One short animation per state for the README: the island at rest, the state appearing, held, and back to rest.
+        // Each clip is a folder of numbered PNG frames, cropped to the same size, from sample data.
+        public void RenderClips(string folder)
+        {
+            Directory.CreateDirectory(folder);
+            double[] levels = { 0.55, 0.95, 0.4, 0.75 };
+            Array.Copy(levels, eqLevel, levels.Length);
+            BuildExternal(new List<ApiActivity>
+            {
+                new ApiActivity { Id = "build", App = "PowerShell", Title = "Build", Text = "compiling", Progress = 40, IconGlyph = LocalApi.Glyph("build"), State = "running", Updated = DateTime.UtcNow },
+                new ApiActivity { Id = "dl", App = "curl", Title = "Download", Text = "", Progress = 72, IconGlyph = LocalApi.Glyph("download"), State = "running", Updated = DateTime.UtcNow },
+            });
+            BatteryCompactText.Text = "54%";
+            LevelGlyph.Text = ""; LevelFill.Width = 84.5; LevelText.Text = "65%";
+            LevelMiniGlyph.Text = "\uE767"; LevelMiniFill.Width = 64.0 * 0.65;
+            UpdateSystemPage();
+            BannerTitle.Text = Strings.ClaudeDone;
+            BannerSubtitle.Text = Strings.SampleSession;
+            LayoutBars(compactBars, CompactEq.Height);
+            LayoutBars(expandedBars, ExpandedEq.Height);
+
+            List<(string name, View rest, Action apply, double seconds)> clips = new List<(string, View, Action, double)>();
+            Action<View> viewClip = v => clips.Add((v.ToString().ToLowerInvariant(), View.Idle, () => { forced = v; Recompute(); }, 3.0));
+            foreach (View v in new[] { View.MusicCompact, View.ClaudeCompact, View.CodexCompact, View.BatteryCompact, View.ExternalCompact, View.SystemCompact,
+                                       View.ExternalExpanded, View.MusicExpanded, View.ClaudeExpanded, View.TimerExpanded, View.SystemExpanded, View.Level })
+                viewClip(v);
+
+            // Banners: a Claude alert, a Windows notification, Claude needing you, the battery and the limits
+            Action<BannerItem> bannerClip = null;
+            clips.Add(("banner", View.Idle, () => { forced = View.Banner; Recompute(); }, 3.2));
+            clips.Add(("notification", View.Idle, () => { forced = View.Banner; Recompute(); banners.Enqueue(new BannerItem { App = "Mail", Title = Strings.SampleNotificationTitle, Subtitle = Strings.SampleNotificationBody, Seconds = 5 }); NextBanner(); }, 3.4));
+            clips.Add(("banner-waiting", View.Idle, () => { forced = View.Banner; Recompute(); banners.Enqueue(new BannerItem { FromClaude = true, Title = Strings.ClaudeNeedsYou, Subtitle = Strings.SampleQuestion, Seconds = 5 }); NextBanner(); }, 3.4));
+            foreach (string kind in new[] { "charging", "low" })
+            {
+                string k = kind;
+                clips.Add(("battery-" + k, View.Idle, () =>
+                {
+                    forced = View.Banner; Recompute();
+                    BannerItem alert = new BannerItem { App = Installer.Name, Title = k == "low" ? Strings.BatteryLow : Strings.BatteryCharging, Side = k == "low" ? "18%" : "54%", Seconds = 5 };
+                    ApplyKind(alert, k);
+                    banners.Enqueue(alert);
+                    NextBanner();
+                }, 3.2));
+            }
+            DateTime fiveReset = DateTime.Now.AddHours(2.5), weekReset = DateTime.Now.Date.AddDays(3).AddHours(9);
+            (string key, string title, string sub, string side, Brush color)[] specs =
+            {
+                ("75", Strings.LimitFiveHour, Strings.Resets(fiveReset), "75%", RingBrush(75)),
+                ("90", Strings.LimitFiveHour, Strings.Resets(fiveReset), "90%", RingBrush(90)),
+                ("100", Strings.LimitReachedTitle, Strings.WindowFiveHour + " · " + Strings.Resets(fiveReset), "100%", RingBrush(100)),
+                ("reset5", Strings.LimitRenewed(Strings.LimitFiveHour), Strings.LimitFull, "0%", Green),
+            };
+            foreach (var spec in specs)
+            {
+                var sp = spec;
+                clips.Add(("usage-" + sp.key, View.Idle, () =>
+                {
+                    forced = View.Banner; Recompute();
+                    banners.Enqueue(new BannerItem { FromClaude = true, Title = sp.title, Subtitle = sp.sub, Side = sp.side, GlyphBrush = sp.color, Seconds = 5 });
+                    NextBanner();
+                }, 3.2));
+            }
+            foreach (string style in new[] { "Bars", "Numbers" })
+            {
+                string st = style;
+                clips.Add(("systemcompact-" + st.ToLowerInvariant(), View.Idle, () => { settings.MonitorStyle = st; UpdateSystemMonitor(); forced = View.SystemCompact; Recompute(); }, 2.6));
+            }
+
+            // The thin line: from a plain line, into each state
+            View line = View.Minimal;
+            Action<string, Thin, Color, double, bool, Activity> thinClip = (name, kind, color, fraction, gauges, bubbleActivity) =>
+                clips.Add(("thin-" + name, line, () => { renderThin = true; renderGauges = gauges; renderBubble = bubbleActivity; forced = View.Minimal; Recompute(); SetThin(kind, color, fraction, gauges, bubbleActivity); }, 2.8));
+            thinClip("claude", Thin.ClaudeWorking, ThinClay, 0, false, Activity.None);
+            thinClip("waiting", Thin.ClaudeWaiting, ThinClay, 0, false, Activity.None);
+            thinClip("music", Thin.Music, media.Accent, 0, false, Activity.None);
+            thinClip("timer", Thin.Timer, ThinYellow, 0.58, false, Activity.None);
+            thinClip("progress", Thin.Progress, ThinBlue, 0.64, false, Activity.None);
+            thinClip("charging", Thin.Charging, ThinGreen, 0.54, false, Activity.None);
+            thinClip("alert", Thin.Alert, ThinRed, 0, false, Activity.None);
+            thinClip("recording", Thin.Recording, ThinRed, 0, false, Activity.None);
+            thinClip("offline", Thin.Offline, ThinRed, 0, false, Activity.None);
+            thinClip("done", Thin.Done, ThinGreen, 0, false, Activity.None);
+            thinClip("focus", Thin.Focus, Colors.White, 0, false, Activity.None);
+            thinClip("gauges", Thin.None, Colors.White, 0, true, Activity.None);
+            thinClip("bubble", Thin.ClaudeWorking, ThinClay, 0, false, Activity.Music);
+            clips.Add(("thin-peek", line, () => { PeekGlyph.Text = "\uE893"; PeekTitle.Text = media.Title; forced = View.MusicPeek; Recompute(); }, 2.6));
+            clips.Add(("thin-level", line, () => { forced = View.LevelMini; Recompute(); }, 2.4));
+
+            // Several chats, a chat that waits, and a permission request
+            for (int i = 0; i < 2; i++)
+            {
+                int chats = i;
+                string chatName = chats == 0 ? "chats-working" : "chats-waiting";
+                foreach (View chatView in new[] { View.ClaudeCompact, View.ClaudeExpanded })
+                {
+                    View cv = chatView;
+                    clips.Add((chatName + (cv == View.ClaudeCompact ? "-compact" : "-expanded"), View.Idle, () =>
+                    {
+                        claude.UseSampleChats(chats);
+                        lastCompactText = null; lastStatus = null;
+                        forced = cv;
+                        UpdateClaude();
+                        UpdateClaudeLive();
+                        Recompute();
+                    }, 3.0));
+                }
+            }
+            clips.Add(("permission", View.Idle, () =>
+            {
+                settings.PermissionPrompts = true;
+                ApiPermission sample = new ApiPermission { Tool = "mcp__supabase__apply_migration", Summary = "create table invoices (id uuid primary key default gen_random_uuid(), amount numeric not null, paid boolean default false)" };
+                sample.Closed += () => { };
+                ShowPermission(sample);
+                forced = View.Permission;
+                Recompute();
+            }, 3.4));
+
+            const int fps = 20, substeps = 3;
+            foreach ((string name, View rest, Action apply, double seconds) clip in clips)
+            {
+                string dir = System.IO.Path.Combine(folder, clip.name);
+                Directory.CreateDirectory(dir);
+
+                // Pass one: where the island ends up, to cut every frame of the clip at the same size
+                ClipRest(clip.rest);
+                clip.apply();
+                SnapAll();
+                ApplyFrame();
+                bubbleShift.Snap(bubbleShift.Target);
+                Root.UpdateLayout();
+                ApplyFrame();
+                Root.UpdateLayout();
+                Rect crop = ClipBounds();
+                crop.Inflate(24, 20);
+                crop.Intersect(new Rect(Root.RenderSize));
+                crop = new Rect(Math.Floor(crop.X), Math.Floor(crop.Y), Math.Ceiling(crop.Width / 2) * 2, Math.Ceiling(crop.Height / 2) * 2);
+
+                // Pass two: rest, the state arriving, held, and back to rest
+                ClipRest(clip.rest);
+                int frame = 0;
+                Action<double> run = seconds =>
+                {
+                    int count = (int)Math.Round(seconds * fps);
+                    for (int i = 0; i < count; i++)
+                    {
+                        for (int k = 0; k < substeps; k++)
+                        {
+                            bool moving, continuous;
+                            Advance(1.0 / (fps * substeps), out moving, out continuous);
+                        }
+                        Root.UpdateLayout();
+                        SaveClipFrame(System.IO.Path.Combine(dir, "frame" + frame++.ToString("0000") + ".png"), crop);
+                    }
+                };
+                run(0.4);
+                clip.apply();
+                run(clip.seconds);
+                ClipRest(clip.rest, false); // Back to rest, animated
+                run(0.7);
+            }
+            StopLoop();
+        }
+
+        // The island at rest between clips: nothing queued, nothing forced but the resting view.
+        void ClipRest(View rest, bool snap = true)
+        {
+            banners.Clear();
+            bannerUntil = DateTime.MinValue;
+            toastUntil = DateTime.MinValue;
+            levelUntil = DateTime.MinValue;
+            musicPeekUntil = DateTime.MinValue;
+            renderThin = rest == View.Minimal;
+            renderGauges = false;
+            renderBubble = Activity.None;
+            minimalFixed = renderThin;
+            forced = rest;
+            Recompute();
+            if (rest == View.Minimal) SetThin(Thin.None, Colors.White, 0);
+            if (!snap) return;
+            SnapAll();
+            ApplyFrame();
+            bubbleShift.Snap(bubbleShift.Target);
+            Root.UpdateLayout();
+        }
+
+        Rect ClipBounds()
+        {
+            Rect bounds = Pill.TransformToAncestor(Root).TransformBounds(new Rect(Pill.RenderSize));
+            if (Bubble.Opacity > 0.01) bounds.Union(Bubble.TransformToAncestor(Root).TransformBounds(new Rect(Bubble.RenderSize)));
+            if (ThinGauges.Opacity > 0.01) bounds.Union(ThinGauges.TransformToAncestor(Root).TransformBounds(new Rect(ThinGauges.RenderSize)));
+            return bounds;
+        }
+
+        void SaveClipFrame(string file, Rect crop)
+        {
+            const double scale = 1.5;
+            RenderTargetBitmap full = new RenderTargetBitmap((int)(Root.ActualWidth * scale), (int)(Root.ActualHeight * scale), 96 * scale, 96 * scale, PixelFormats.Pbgra32);
+            full.Render(Root);
+            Int32Rect area = new Int32Rect((int)(crop.X * scale), (int)(crop.Y * scale), (int)(crop.Width * scale), (int)(crop.Height * scale));
+            DrawingVisual card = new DrawingVisual();
+            using (DrawingContext context = card.RenderOpen())
+            {
+                Rect rect = new Rect(0, 0, area.Width, area.Height);
+                context.DrawRectangle(new LinearGradientBrush(Color.FromRgb(0xEE, 0xEC, 0xF6), Color.FromRgb(0xD5, 0xD9, 0xEA), 90), null, rect);
+                context.DrawImage(new CroppedBitmap(full, area), rect);
+            }
+            RenderTargetBitmap output = new RenderTargetBitmap(area.Width, area.Height, 96, 96, PixelFormats.Pbgra32);
+            output.Render(card);
+            PngBitmapEncoder encoder = new PngBitmapEncoder();
+            encoder.Frames.Add(BitmapFrame.Create(output));
+            using (FileStream stream = File.Create(file)) encoder.Save(stream);
+        }
+
         // A fixed window around the island, so every frame has the same size.
         void SaveFrame(string file)
         {

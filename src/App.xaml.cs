@@ -68,6 +68,7 @@ namespace WindowsIsland
 
         // Arguments:
         //   --preview=<State>   shows one state with sample data (Idle, MusicCompact, ClaudeExpanded...)
+        //   --clips <folder>    writes one short animation per state (as numbered PNG frames in a folder each), then quits
         //   --frames <folder>   writes the README animation as numbered PNG frames with sample data, then quits
         //   --dev               runs beside the installed copy (its own instance), for testing a build
         //   --render <folder>   writes every state to PNG files with sample data, then quits
@@ -88,7 +89,7 @@ namespace WindowsIsland
             // that a Direct3D device takes. Measured: 166 MB private memory with GPU, 43 MB without.
             System.Windows.Media.RenderOptions.ProcessRenderMode = System.Windows.Interop.RenderMode.SoftwareOnly;
 
-            string preview = null, render = null, frames = null;
+            string preview = null, render = null, frames = null, clips = null;
             bool portable = false, uninstall = false, afterUpdate = false;
             for (int i = 0; i < e.Args.Length; i++)
             {
@@ -96,13 +97,14 @@ namespace WindowsIsland
                 if (arg.StartsWith("--preview=", StringComparison.OrdinalIgnoreCase)) preview = arg.Substring(10);
                 else if (arg.Equals("--render", StringComparison.OrdinalIgnoreCase) && i + 1 < e.Args.Length) render = e.Args[++i];
                 else if (arg.Equals("--frames", StringComparison.OrdinalIgnoreCase) && i + 1 < e.Args.Length) frames = e.Args[++i];
+                else if (arg.Equals("--clips", StringComparison.OrdinalIgnoreCase) && i + 1 < e.Args.Length) clips = e.Args[++i];
                 else if (arg.Equals("--portable", StringComparison.OrdinalIgnoreCase)) portable = true;
                 else if (arg.Equals("--uninstall", StringComparison.OrdinalIgnoreCase)) uninstall = true;
                 else if (arg.Equals("--after-update", StringComparison.OrdinalIgnoreCase)) afterUpdate = true;
                 else if (arg.StartsWith("--lang=", StringComparison.OrdinalIgnoreCase))
                     CultureInfo.CurrentUICulture = CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo(arg.Substring(7));
             }
-            bool sample = preview != null || render != null || frames != null;
+            bool sample = preview != null || render != null || frames != null || clips != null;
 
             int diagnose = Array.IndexOf(e.Args, "--diagnose-codex");
             if (diagnose >= 0 && diagnose + 1 < e.Args.Length)
@@ -239,6 +241,18 @@ namespace WindowsIsland
                     return;
                 }
                 if (preview != null) window.Preview(preview);
+                if (clips != null)
+                {
+                    settings.OffsetY = 28;
+                    window.Opacity = 0;
+                    window.Loaded += (s, a) => Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() =>
+                    {
+                        window.RenderClips(clips);
+                        Shutdown();
+                    }));
+                    window.Show();
+                    return;
+                }
                 if (frames != null)
                 {
                     settings.OffsetY = 28;

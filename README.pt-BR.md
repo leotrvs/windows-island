@@ -77,26 +77,26 @@ Uma Dynamic Island para o Windows. Música, Claude Code, os limites de uso e sua
 | Estado | Visual |
 |---|---|
 | Ociosa | <img src="docs/images/idle-pt.png" alt="Pílula ociosa" width="260"> |
-| Música tocando, com o Claude trabalhando ao lado | <img src="docs/images/musiccompact-pt.png" alt="Música compacta com a bolha do Claude" width="380"> |
-| Claude trabalhando, com o tempo decorrido | <img src="docs/images/claudecompact-pt.png" alt="Atividade compacta do Claude" width="320"> |
-| Codex trabalhando | <img src="docs/images/codexcompact-pt.png" alt="Atividade compacta do Codex" width="320"> |
-| Claude terminou ou precisa de você | <img src="docs/images/banner-pt.png" alt="Aviso do Claude" width="420"> |
-| Uma notificação do Windows | <img src="docs/images/notification-pt.png" alt="Aviso de notificação" width="420"> |
-| Bateria carregando | <img src="docs/images/battery-charging-pt.png" alt="Aviso de carregamento" width="420"> |
-| Bateria baixa | <img src="docs/images/battery-low-pt.png" alt="Aviso de bateria baixa" width="420"> |
-| Claude expandido, com os limites | <img src="docs/images/claudeexpanded-pt.png" alt="Claude expandido com os anéis de uso" width="460"> |
-| Claude precisa de você (uma permissão ou uma pergunta) | <img src="docs/images/banner-waiting-pt.png" alt="Claude precisa de você (uma permissão ou uma pergunta)" width="420"> |
-| Claude Code pede uma permissão | <img src="docs/images/permission-pt.png" alt="Claude Code pede uma permissão" width="460"> |
-| Limite do Claude em 75% ou 90% | <img src="docs/images/usage-90-pt.png" alt="Limite do Claude em 75% ou 90%" width="420"> |
-| Limite do Claude atingido | <img src="docs/images/usage-100-pt.png" alt="Limite do Claude atingido" width="420"> |
-| Limite do Claude renovado | <img src="docs/images/usage-reset5-pt.png" alt="Limite do Claude renovado" width="420"> |
-| Vários chats trabalhando ao mesmo tempo | <img src="docs/images/chats-working-compact-pt.png" alt="Vários chats trabalhando ao mesmo tempo" width="320"> |
-| Um de dois chats esperando você | <img src="docs/images/chats-waiting-compact-pt.png" alt="Um de dois chats esperando você" width="320"> |
-| A página do Claude lista cada chat | <img src="docs/images/chats-waiting-expanded-pt.png" alt="A página do Claude lista cada chat" width="460"> |
-| Monitor do sistema: anéis, barras ou números | <img src="docs/images/systemcompact-pt.png" alt="Monitor do sistema: anéis, barras ou números" width="260"> |
-|  | <img src="docs/images/systemcompact-bars-pt.png" alt="Monitor do sistema: anéis, barras ou números" width="260"> |
-|  | <img src="docs/images/systemcompact-numbers-pt.png" alt="Monitor do sistema: anéis, barras ou números" width="260"> |
-| Volume ou brilho mudando | <img src="docs/images/level-pt.png" alt="Volume bar" width="260"> |
+| Música tocando, com o Claude trabalhando ao lado | <img src="docs/images/musiccompact-pt.gif" alt="Música compacta com a bolha do Claude" width="380"> |
+| Claude trabalhando, com o tempo decorrido | <img src="docs/images/claudecompact-pt.gif" alt="Atividade compacta do Claude" width="320"> |
+| Codex trabalhando | <img src="docs/images/codexcompact-pt.gif" alt="Atividade compacta do Codex" width="320"> |
+| Claude terminou ou precisa de você | <img src="docs/images/banner-pt.gif" alt="Aviso do Claude" width="420"> |
+| Uma notificação do Windows | <img src="docs/images/notification-pt.gif" alt="Aviso de notificação" width="420"> |
+| Bateria carregando | <img src="docs/images/battery-charging-pt.gif" alt="Aviso de carregamento" width="420"> |
+| Bateria baixa | <img src="docs/images/battery-low-pt.gif" alt="Aviso de bateria baixa" width="420"> |
+| Claude expandido, com os limites | <img src="docs/images/claudeexpanded-pt.gif" alt="Claude expandido com os anéis de uso" width="460"> |
+| Claude precisa de você (uma permissão ou uma pergunta) | <img src="docs/images/banner-waiting-pt.gif" alt="Claude precisa de você (uma permissão ou uma pergunta)" width="420"> |
+| Claude Code pede uma permissão | <img src="docs/images/permission-pt.gif" alt="Claude Code pede uma permissão" width="460"> |
+| Limite do Claude em 75% ou 90% | <img src="docs/images/usage-90-pt.gif" alt="Limite do Claude em 75% ou 90%" width="420"> |
+| Limite do Claude atingido | <img src="docs/images/usage-100-pt.gif" alt="Limite do Claude atingido" width="420"> |
+| Limite do Claude renovado | <img src="docs/images/usage-reset5-pt.gif" alt="Limite do Claude renovado" width="420"> |
+| Vários chats trabalhando ao mesmo tempo | <img src="docs/images/chats-working-compact-pt.gif" alt="Vários chats trabalhando ao mesmo tempo" width="320"> |
+| Um de dois chats esperando você | <img src="docs/images/chats-waiting-compact-pt.gif" alt="Um de dois chats esperando você" width="320"> |
+| A página do Claude lista cada chat | <img src="docs/images/chats-waiting-expanded-pt.gif" alt="A página do Claude lista cada chat" width="460"> |
+| Monitor do sistema: anéis, barras ou números | <img src="docs/images/systemcompact-pt.gif" alt="Monitor do sistema: anéis, barras ou números" width="260"> |
+|  | <img src="docs/images/systemcompact-bars-pt.gif" alt="Monitor do sistema: anéis, barras ou números" width="260"> |
+|  | <img src="docs/images/systemcompact-numbers-pt.gif" alt="Monitor do sistema: anéis, barras ou números" width="260"> |
+| Volume ou brilho mudando | <img src="docs/images/level-pt.gif" alt="Volume bar" width="260"> |
 
 ### A linha fina
 
@@ -105,22 +105,22 @@ A ilha recolhida é uma linha fina por padrão (Ajustes, Comportamento, "Linha f
 | Estado | Visual |
 |---|---|
 | Em repouso | <img src="docs/images/thin-idle-pt.png" alt="Em repouso" width="300"> |
-| Claude trabalhando: um brilho corre por ela (amarelo ou vermelho conforme o limite enche) | <img src="docs/images/thin-claude-pt.png" alt="Claude trabalhando: um brilho corre por ela (amarelo ou vermelho conforme o limite enche)" width="300"> |
-| Claude espera você: a linha pulsa | <img src="docs/images/thin-waiting-pt.png" alt="Claude espera você: a linha pulsa" width="300"> |
-| Música: um equalizador pequeno na cor da capa | <img src="docs/images/thin-music-pt.png" alt="Música: um equalizador pequeno na cor da capa" width="300"> |
-| Timer: a linha esvazia conforme o tempo acaba | <img src="docs/images/thin-timer-pt.png" alt="Timer: a linha esvazia conforme o tempo acaba" width="300"> |
-| Um download, uma compilação ou um jogo da Steam: a linha enche com o progresso | <img src="docs/images/thin-progress-pt.png" alt="Um download, uma compilação ou um jogo da Steam: a linha enche com o progresso" width="300"> |
-| Carregando: a linha enche com a carga | <img src="docs/images/thin-charging-pt.png" alt="Carregando: a linha enche com a carga" width="300"> |
-| Gravação de tela (OBS ou Game Bar): uma linha vermelha fraca com um ponto piscando | <img src="docs/images/thin-recording-pt.png" alt="Gravação de tela (OBS ou Game Bar): uma linha vermelha fraca com um ponto piscando" width="300"> |
-| Bateria baixa ou erro: a linha pulsa em vermelho | <img src="docs/images/thin-alert-pt.png" alt="Bateria baixa ou erro: a linha pulsa em vermelho" width="300"> |
-| Sem internet: uma linha vermelha tracejada que pisca | <img src="docs/images/thin-offline-pt.png" alt="Sem internet: uma linha vermelha tracejada que pisca" width="300"> |
-| Concluído: a linha fica verde | <img src="docs/images/thin-done-pt.png" alt="Concluído: a linha fica verde" width="300"> |
-| Foco: uma luazinha | <img src="docs/images/thin-focus-pt.png" alt="Foco: uma luazinha" width="300"> |
-| Monitor do sistema: dois anéis pequenos, processador e memória | <img src="docs/images/thin-gauges-pt.png" alt="Monitor do sistema: dois anéis pequenos, processador e memória" width="300"> |
+| Claude trabalhando: um brilho corre por ela (amarelo ou vermelho conforme o limite enche) | <img src="docs/images/thin-claude-pt.gif" alt="Claude trabalhando: um brilho corre por ela (amarelo ou vermelho conforme o limite enche)" width="300"> |
+| Claude espera você: a linha pulsa | <img src="docs/images/thin-waiting-pt.gif" alt="Claude espera você: a linha pulsa" width="300"> |
+| Música: um equalizador pequeno na cor da capa | <img src="docs/images/thin-music-pt.gif" alt="Música: um equalizador pequeno na cor da capa" width="300"> |
+| Timer: a linha esvazia conforme o tempo acaba | <img src="docs/images/thin-timer-pt.gif" alt="Timer: a linha esvazia conforme o tempo acaba" width="300"> |
+| Um download, uma compilação ou um jogo da Steam: a linha enche com o progresso | <img src="docs/images/thin-progress-pt.gif" alt="Um download, uma compilação ou um jogo da Steam: a linha enche com o progresso" width="300"> |
+| Carregando: a linha enche com a carga | <img src="docs/images/thin-charging-pt.gif" alt="Carregando: a linha enche com a carga" width="300"> |
+| Gravação de tela (OBS ou Game Bar): uma linha vermelha fraca com um ponto piscando | <img src="docs/images/thin-recording-pt.gif" alt="Gravação de tela (OBS ou Game Bar): uma linha vermelha fraca com um ponto piscando" width="300"> |
+| Bateria baixa ou erro: a linha pulsa em vermelho | <img src="docs/images/thin-alert-pt.gif" alt="Bateria baixa ou erro: a linha pulsa em vermelho" width="300"> |
+| Sem internet: uma linha vermelha tracejada que pisca | <img src="docs/images/thin-offline-pt.gif" alt="Sem internet: uma linha vermelha tracejada que pisca" width="300"> |
+| Concluído: a linha fica verde | <img src="docs/images/thin-done-pt.gif" alt="Concluído: a linha fica verde" width="300"> |
+| Foco: uma luazinha | <img src="docs/images/thin-focus-pt.gif" alt="Foco: uma luazinha" width="300"> |
+| Monitor do sistema: dois anéis pequenos, processador e memória | <img src="docs/images/thin-gauges-pt.gif" alt="Monitor do sistema: dois anéis pequenos, processador e memória" width="300"> |
 | Microfone e câmera: pontos dentro da linha | <img src="docs/images/thin-privacy-pt.png" alt="Microfone e câmera: pontos dentro da linha" width="300"> |
-| Uma segunda atividade: uma bolinha pequena ao lado da linha | <img src="docs/images/thin-bubble-pt.png" alt="Uma segunda atividade: uma bolinha pequena ao lado da linha" width="300"> |
-| Troca de música: a capa, o nome e um símbolo | <img src="docs/images/thin-peek-pt.png" alt="Troca de música: a capa, o nome e um símbolo" width="300"> |
-| Volume ou brilho: uma barrinha | <img src="docs/images/thin-level-pt.png" alt="Volume ou brilho: uma barrinha" width="300"> |
+| Uma segunda atividade: uma bolinha pequena ao lado da linha | <img src="docs/images/thin-bubble-pt.gif" alt="Uma segunda atividade: uma bolinha pequena ao lado da linha" width="300"> |
+| Troca de música: a capa, o nome e um símbolo | <img src="docs/images/thin-peek-pt.gif" alt="Troca de música: a capa, o nome e um símbolo" width="300"> |
+| Volume ou brilho: uma barrinha | <img src="docs/images/thin-level-pt.gif" alt="Volume ou brilho: uma barrinha" width="300"> |
 
 ### Primeiro uso e Ajustes
 

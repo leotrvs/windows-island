@@ -77,26 +77,26 @@ A Dynamic Island for Windows. Music, Claude Code, its usage limits and your noti
 | State | Look |
 |---|---|
 | Idle | <img src="docs/images/idle-en.png" alt="Idle pill" width="260"> |
-| Music playing, with Claude working beside it | <img src="docs/images/musiccompact-en.png" alt="Compact music with the Claude bubble" width="380"> |
-| Claude working, with the time so far | <img src="docs/images/claudecompact-en.png" alt="Compact Claude activity" width="320"> |
-| Codex working | <img src="docs/images/codexcompact-en.png" alt="Compact Codex activity" width="320"> |
-| Claude finished or needs you | <img src="docs/images/banner-en.png" alt="Claude alert" width="420"> |
-| A Windows notification | <img src="docs/images/notification-en.png" alt="Notification banner" width="420"> |
-| Battery charging | <img src="docs/images/battery-charging-en.png" alt="Charging alert" width="420"> |
-| Battery low | <img src="docs/images/battery-low-en.png" alt="Low battery alert" width="420"> |
-| Claude expanded, with the limits | <img src="docs/images/claudeexpanded-en.png" alt="Claude expanded with usage rings" width="460"> |
-| Claude needs you (a permission or a question) | <img src="docs/images/banner-waiting-en.png" alt="Claude needs you (a permission or a question)" width="420"> |
-| Claude Code asks for a permission | <img src="docs/images/permission-en.png" alt="Claude Code asks for a permission" width="460"> |
-| Claude limit at 75% or 90% | <img src="docs/images/usage-90-en.png" alt="Claude limit at 75% or 90%" width="420"> |
-| Claude limit reached | <img src="docs/images/usage-100-en.png" alt="Claude limit reached" width="420"> |
-| Claude limit renewed | <img src="docs/images/usage-reset5-en.png" alt="Claude limit renewed" width="420"> |
-| Several chats working at once | <img src="docs/images/chats-working-compact-en.png" alt="Several chats working at once" width="320"> |
-| One of two chats waiting for you | <img src="docs/images/chats-waiting-compact-en.png" alt="One of two chats waiting for you" width="320"> |
-| The Claude page lists each chat | <img src="docs/images/chats-waiting-expanded-en.png" alt="The Claude page lists each chat" width="460"> |
-| System monitor: rings, bars or numbers | <img src="docs/images/systemcompact-en.png" alt="System monitor: rings, bars or numbers" width="260"> |
-|  | <img src="docs/images/systemcompact-bars-en.png" alt="System monitor: rings, bars or numbers" width="260"> |
-|  | <img src="docs/images/systemcompact-numbers-en.png" alt="System monitor: rings, bars or numbers" width="260"> |
-| Volume or brightness changing | <img src="docs/images/level-en.png" alt="Volume bar" width="260"> |
+| Music playing, with Claude working beside it | <img src="docs/images/musiccompact-en.gif" alt="Compact music with the Claude bubble" width="380"> |
+| Claude working, with the time so far | <img src="docs/images/claudecompact-en.gif" alt="Compact Claude activity" width="320"> |
+| Codex working | <img src="docs/images/codexcompact-en.gif" alt="Compact Codex activity" width="320"> |
+| Claude finished or needs you | <img src="docs/images/banner-en.gif" alt="Claude alert" width="420"> |
+| A Windows notification | <img src="docs/images/notification-en.gif" alt="Notification banner" width="420"> |
+| Battery charging | <img src="docs/images/battery-charging-en.gif" alt="Charging alert" width="420"> |
+| Battery low | <img src="docs/images/battery-low-en.gif" alt="Low battery alert" width="420"> |
+| Claude expanded, with the limits | <img src="docs/images/claudeexpanded-en.gif" alt="Claude expanded with usage rings" width="460"> |
+| Claude needs you (a permission or a question) | <img src="docs/images/banner-waiting-en.gif" alt="Claude needs you (a permission or a question)" width="420"> |
+| Claude Code asks for a permission | <img src="docs/images/permission-en.gif" alt="Claude Code asks for a permission" width="460"> |
+| Claude limit at 75% or 90% | <img src="docs/images/usage-90-en.gif" alt="Claude limit at 75% or 90%" width="420"> |
+| Claude limit reached | <img src="docs/images/usage-100-en.gif" alt="Claude limit reached" width="420"> |
+| Claude limit renewed | <img src="docs/images/usage-reset5-en.gif" alt="Claude limit renewed" width="420"> |
+| Several chats working at once | <img src="docs/images/chats-working-compact-en.gif" alt="Several chats working at once" width="320"> |
+| One of two chats waiting for you | <img src="docs/images/chats-waiting-compact-en.gif" alt="One of two chats waiting for you" width="320"> |
+| The Claude page lists each chat | <img src="docs/images/chats-waiting-expanded-en.gif" alt="The Claude page lists each chat" width="460"> |
+| System monitor: rings, bars or numbers | <img src="docs/images/systemcompact-en.gif" alt="System monitor: rings, bars or numbers" width="260"> |
+|  | <img src="docs/images/systemcompact-bars-en.gif" alt="System monitor: rings, bars or numbers" width="260"> |
+|  | <img src="docs/images/systemcompact-numbers-en.gif" alt="System monitor: rings, bars or numbers" width="260"> |
+| Volume or brightness changing | <img src="docs/images/level-en.gif" alt="Volume bar" width="260"> |
 
 ### The thin line
 
@@ -105,22 +105,22 @@ The collapsed island is a thin line by default (Settings, Behavior, "Thin line a
 | State | Look |
 |---|---|
 | At rest | <img src="docs/images/thin-idle-en.png" alt="At rest" width="300"> |
-| Claude working: a glow runs along it (yellow or red as the limit fills) | <img src="docs/images/thin-claude-en.png" alt="Claude working: a glow runs along it (yellow or red as the limit fills)" width="300"> |
-| Claude waits for you: the line pulses | <img src="docs/images/thin-waiting-en.png" alt="Claude waits for you: the line pulses" width="300"> |
-| Music: a tiny equalizer in the color of the cover | <img src="docs/images/thin-music-en.png" alt="Music: a tiny equalizer in the color of the cover" width="300"> |
-| Timer: the line empties as the time runs out | <img src="docs/images/thin-timer-en.png" alt="Timer: the line empties as the time runs out" width="300"> |
-| A download, a build or a Steam game: the line fills with the progress | <img src="docs/images/thin-progress-en.png" alt="A download, a build or a Steam game: the line fills with the progress" width="300"> |
-| Charging: the line fills with the charge | <img src="docs/images/thin-charging-en.png" alt="Charging: the line fills with the charge" width="300"> |
-| Screen recording (OBS or Game Bar): a dim red line with a blinking dot | <img src="docs/images/thin-recording-en.png" alt="Screen recording (OBS or Game Bar): a dim red line with a blinking dot" width="300"> |
-| Low battery or an error: the line pulses red | <img src="docs/images/thin-alert-en.png" alt="Low battery or an error: the line pulses red" width="300"> |
-| No internet: a dashed red line that blinks | <img src="docs/images/thin-offline-en.png" alt="No internet: a dashed red line that blinks" width="300"> |
-| Done: the line turns green | <img src="docs/images/thin-done-en.png" alt="Done: the line turns green" width="300"> |
-| Focus: a small moon | <img src="docs/images/thin-focus-en.png" alt="Focus: a small moon" width="300"> |
-| System monitor: two tiny rings, processor and memory | <img src="docs/images/thin-gauges-en.png" alt="System monitor: two tiny rings, processor and memory" width="300"> |
+| Claude working: a glow runs along it (yellow or red as the limit fills) | <img src="docs/images/thin-claude-en.gif" alt="Claude working: a glow runs along it (yellow or red as the limit fills)" width="300"> |
+| Claude waits for you: the line pulses | <img src="docs/images/thin-waiting-en.gif" alt="Claude waits for you: the line pulses" width="300"> |
+| Music: a tiny equalizer in the color of the cover | <img src="docs/images/thin-music-en.gif" alt="Music: a tiny equalizer in the color of the cover" width="300"> |
+| Timer: the line empties as the time runs out | <img src="docs/images/thin-timer-en.gif" alt="Timer: the line empties as the time runs out" width="300"> |
+| A download, a build or a Steam game: the line fills with the progress | <img src="docs/images/thin-progress-en.gif" alt="A download, a build or a Steam game: the line fills with the progress" width="300"> |
+| Charging: the line fills with the charge | <img src="docs/images/thin-charging-en.gif" alt="Charging: the line fills with the charge" width="300"> |
+| Screen recording (OBS or Game Bar): a dim red line with a blinking dot | <img src="docs/images/thin-recording-en.gif" alt="Screen recording (OBS or Game Bar): a dim red line with a blinking dot" width="300"> |
+| Low battery or an error: the line pulses red | <img src="docs/images/thin-alert-en.gif" alt="Low battery or an error: the line pulses red" width="300"> |
+| No internet: a dashed red line that blinks | <img src="docs/images/thin-offline-en.gif" alt="No internet: a dashed red line that blinks" width="300"> |
+| Done: the line turns green | <img src="docs/images/thin-done-en.gif" alt="Done: the line turns green" width="300"> |
+| Focus: a small moon | <img src="docs/images/thin-focus-en.gif" alt="Focus: a small moon" width="300"> |
+| System monitor: two tiny rings, processor and memory | <img src="docs/images/thin-gauges-en.gif" alt="System monitor: two tiny rings, processor and memory" width="300"> |
 | Microphone and camera: dots inside the line | <img src="docs/images/thin-privacy-en.png" alt="Microphone and camera: dots inside the line" width="300"> |
-| A second activity: a tiny bubble beside the line | <img src="docs/images/thin-bubble-en.png" alt="A second activity: a tiny bubble beside the line" width="300"> |
-| A change of song: the cover, the name and a symbol | <img src="docs/images/thin-peek-en.png" alt="A change of song: the cover, the name and a symbol" width="300"> |
-| Volume or brightness: a small bar | <img src="docs/images/thin-level-en.png" alt="Volume or brightness: a small bar" width="300"> |
+| A second activity: a tiny bubble beside the line | <img src="docs/images/thin-bubble-en.gif" alt="A second activity: a tiny bubble beside the line" width="300"> |
+| A change of song: the cover, the name and a symbol | <img src="docs/images/thin-peek-en.gif" alt="A change of song: the cover, the name and a symbol" width="300"> |
+| Volume or brightness: a small bar | <img src="docs/images/thin-level-en.gif" alt="Volume or brightness: a small bar" width="300"> |
 
 ### First run and settings
 
