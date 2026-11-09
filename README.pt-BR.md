@@ -100,6 +100,7 @@ Uma Dynamic Island para o Windows. Música, Claude Code, os limites de uso e sua
 | Brilho: um sol que acende, com os raios crescendo com o nível | <img src="docs/images/level-brightness-pt.gif" alt="Brilho: um sol que acende, com os raios crescendo com o nível" width="300"> |
 | Pomodoro: ciclos de foco e pausa, com o tempo contando | <img src="docs/images/pomodoro-pt.gif" alt="Pomodoro: ciclos de foco e pausa, com o tempo contando" width="300"> |
 | Pomodoro na ilha compacta | <img src="docs/images/pomodoro-compact-pt.gif" alt="Pomodoro na ilha compacta" width="300"> |
+| Página de atalhos: silenciar o microfone ou o alto-falante, tirar uma captura, ajustes de som e o volume | <img src="docs/images/quick-pt.gif" alt="Página de atalhos: silenciar o microfone ou o alto-falante, tirar uma captura, ajustes de som e o volume" width="300"> |
 
 ### A linha fina
 

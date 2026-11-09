@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.3.0
+
+- **Shortcuts page:** a new page when the island is open, with round buttons to mute the microphone or the speakers (red or white while muted), take a screenshot (Win+Shift+S), open Windows' sound settings, and a volume slider. Settings, Behavior, Pages has its switch and its place in the order. Only the default devices are touched
+- **Pomodoro:** dots on the timer page show the cycle you are on, and the thin line flashes (green for a break, orange for focus) when a phase changes. The thin line also flashes green when Claude finishes
+
 ## 4.2.4
 
 - **A downloaded `.exe` that is not the newest:** when you open it to install, it checks for a newer version first and offers to download and install that one instead (the same signature and hash checks as an update). And if a newer version than the file is already installed, it warns that this is a step back and asks, with "No" as the default

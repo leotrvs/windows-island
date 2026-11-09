@@ -2,6 +2,11 @@
 
 > Tradução de [CHANGELOG.md](CHANGELOG.md), que é o original em inglês.
 
+## 4.3.0
+
+- **Página de atalhos:** uma página nova com a ilha aberta, com botões redondos para silenciar o microfone ou o alto-falante (vermelho ou branco enquanto mudo), tirar uma captura (Win+Shift+S), abrir os ajustes de som do Windows, e um controle de volume. Em Ajustes, Comportamento, Páginas há o interruptor e o lugar na ordem. Só os dispositivos padrão são mexidos
+- **Pomodoro:** pontos na página do timer mostram o ciclo em que você está, e a linha fina pisca (verde na pausa, laranja no foco) quando uma fase muda. A linha fina também pisca em verde quando o Claude termina
+
 ## 4.2.4
 
 - **Um `.exe` baixado que não é o mais novo:** ao abri-lo para instalar, ele primeiro procura uma versão mais nova e oferece baixar e instalar essa no lugar (com as mesmas conferências de assinatura e hash de uma atualização). E se já houver instalada uma versão mais nova que o arquivo, ele avisa que isso é um retrocesso e pergunta, com "Não" como padrão

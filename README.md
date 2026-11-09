@@ -100,6 +100,7 @@ A Dynamic Island for Windows. Music, Claude Code, its usage limits and your noti
 | Brightness: a sun that lights up, its rays growing with the level | <img src="docs/images/level-brightness-en.gif" alt="Brightness: a sun that lights up, its rays growing with the level" width="300"> |
 | Pomodoro: focus and break cycles, with the time counting down | <img src="docs/images/pomodoro-en.gif" alt="Pomodoro: focus and break cycles, with the time counting down" width="300"> |
 | Pomodoro on the compact island | <img src="docs/images/pomodoro-compact-en.gif" alt="Pomodoro on the compact island" width="300"> |
+| Shortcuts page: mute the microphone or the speakers, take a screenshot, sound settings and the volume | <img src="docs/images/quick-en.gif" alt="Shortcuts page: mute the microphone or the speakers, take a screenshot, sound settings and the volume" width="300"> |
 
 ### The thin line
 

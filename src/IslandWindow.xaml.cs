@@ -18,8 +18,8 @@ namespace WindowsIsland
 {
     public partial class IslandWindow : Window
     {
-        enum View { Hidden, Minimal, MusicPeek, LevelMini, Idle, MusicCompact, ClaudeCompact, CodexCompact, TimerCompact, BatteryCompact, ExternalCompact, SystemCompact, MusicExpanded, ClaudeExpanded, TimerExpanded, SystemExpanded, ExternalExpanded, Banner, Toast, Level, Permission }
-        enum Activity { None, Music, Claude, Codex, Timer, Battery, System, External }
+        enum View { Hidden, Minimal, MusicPeek, LevelMini, QuickExpanded, Idle, MusicCompact, ClaudeCompact, CodexCompact, TimerCompact, BatteryCompact, ExternalCompact, SystemCompact, MusicExpanded, ClaudeExpanded, TimerExpanded, SystemExpanded, ExternalExpanded, Banner, Toast, Level, Permission }
+        enum Activity { None, Music, Claude, Codex, Timer, Battery, System, External, Quick }
 
         static readonly Dictionary<View, Size> Sizes = new Dictionary<View, Size>
         {
@@ -38,6 +38,7 @@ namespace WindowsIsland
             [View.ExternalExpanded] = new Size(372, 150),
             [View.MusicExpanded] = new Size(372, 152),
             [View.TimerExpanded] = new Size(372, 150),
+            [View.QuickExpanded] = new Size(372, 150),
             [View.SystemExpanded] = new Size(372, 150),
             [View.ClaudeExpanded] = new Size(372, 156),
             [View.Banner] = new Size(352, 74),
@@ -131,6 +132,7 @@ namespace WindowsIsland
             panels[View.SystemCompact] = SystemCompact;
             panels[View.ExternalExpanded] = ExternalExpanded;
             panels[View.TimerExpanded] = TimerExpanded;
+            panels[View.QuickExpanded] = QuickExpanded;
             panels[View.SystemExpanded] = SystemExpanded;
             panels[View.MusicExpanded] = MusicExpanded;
             panels[View.ClaudeExpanded] = ClaudeExpanded;
@@ -159,6 +161,13 @@ namespace WindowsIsland
             SetupButton(BtnStart, () => timer.StartCountdown(timer.ChosenMinutes));
             SetupButton(BtnWatch, timer.StartStopwatch);
             SetupButton(BtnPomodoro, () => { SyncPomodoro(); timer.StartPomodoro(); });
+            SetupButton(QuickMicButton, () => { if (!quickSample) AudioControl.SetMuted(AudioControl.Capture, !AudioControl.IsMuted(AudioControl.Capture)); UpdateQuick(true); });
+            SetupButton(QuickSpeakerButton, () => { if (!quickSample) AudioControl.SetMuted(AudioControl.Render, !AudioControl.IsMuted(AudioControl.Render)); UpdateQuick(true); });
+            SetupButton(QuickShotButton, () => { if (!quickSample) AudioControl.Screenshot(); });
+            SetupButton(QuickSoundButton, () => { if (!quickSample) AudioControl.OpenSoundSettings(); });
+            QuickVolumeArea.MouseLeftButtonDown += (s, e) => { e.Handled = true; QuickVolumeArea.CaptureMouse(); SetQuickVolume(e.GetPosition(QuickVolumeTrack).X); };
+            QuickVolumeArea.MouseMove += (s, e) => { if (QuickVolumeArea.IsMouseCaptured) SetQuickVolume(e.GetPosition(QuickVolumeTrack).X); };
+            QuickVolumeArea.MouseLeftButtonUp += (s, e) => QuickVolumeArea.ReleaseMouseCapture();
             SetupButton(BtnPause, timer.PauseOrResume);
             SetupButton(BtnStop, timer.Stop);
             Pill.MouseWheel += OnPillWheel;
@@ -611,6 +620,51 @@ namespace WindowsIsland
         }
 
         // What the timer page offers: choose a length and start, or pause and stop what is running.
+        // ---------- The shortcuts page ----------
+
+        bool quickSample;                       // README images: made-up states, the audio is not touched
+        bool quickMicMuted, quickSpeakerMuted;
+        int quickVolume = -1;
+        DateTime quickRead = DateTime.MinValue;
+        static readonly Brush QuickGray = Freeze(new SolidColorBrush(Color.FromRgb(0x2C, 0x2C, 0x2E)));
+        static readonly Brush QuickRed = Freeze(new SolidColorBrush(Color.FromRgb(0xFF, 0x45, 0x3A)));
+
+        void SetQuickVolume(double x)
+        {
+            double width = Math.Max(1, QuickVolumeTrack.ActualWidth);
+            int percent = (int)Math.Round(Math.Clamp(x / width, 0, 1) * 100);
+            quickVolume = percent;
+            if (!quickSample) AudioControl.SetVolume(percent);
+            UpdateQuick(true);
+        }
+
+        // Reads the switches again (a few times a second while the page is open) and draws them
+        void UpdateQuick(bool force)
+        {
+            if (!force && (DateTime.Now - quickRead).TotalMilliseconds < 250) return;
+            quickRead = DateTime.Now;
+            if (!quickSample)
+            {
+                quickMicMuted = AudioControl.IsMuted(AudioControl.Capture);
+                quickSpeakerMuted = AudioControl.IsMuted(AudioControl.Render);
+                int volume = AudioControl.Volume();
+                if (!QuickVolumeArea.IsMouseCaptured && volume >= 0) quickVolume = volume;
+            }
+            QuickTitleText.Text = Strings.QuickTitle;
+            QuickMicLabel.Text = quickMicMuted ? Strings.QuickMicMuted : Strings.QuickMic;
+            QuickSpeakerLabel.Text = quickSpeakerMuted ? Strings.QuickSpeakerMuted : Strings.QuickSpeaker;
+            QuickShotLabel.Text = Strings.QuickShot;
+            QuickSoundLabel.Text = Strings.QuickSoundSettings;
+            QuickMicButton.Background = quickMicMuted ? QuickRed : QuickGray;
+            QuickMicSlash.Visibility = quickMicMuted ? Visibility.Visible : Visibility.Collapsed;
+            QuickSpeakerButton.Background = quickSpeakerMuted ? Brushes.White : QuickGray;
+            QuickSpeakerGlyph.Foreground = quickSpeakerMuted ? Brushes.Black : Brushes.White;
+            QuickSpeakerGlyph.Text = quickSpeakerMuted ? "\uE74F" : "\uE767";
+            int shown = Math.Max(0, quickVolume);
+            QuickVolumeFill.Width = Math.Max(0, QuickVolumeTrack.ActualWidth > 0 ? QuickVolumeTrack.ActualWidth : 280) * shown / 100;
+            QuickVolumeText.Text = quickVolume < 0 ? "" : shown + "%";
+        }
+
         // The lengths chosen in Settings go to the timer
         void SyncPomodoro()
         {
@@ -634,6 +688,17 @@ namespace WindowsIsland
                                + (timer.Paused ? " · " + Strings.TimerPaused : "");
             BtnMinus.Visibility = running ? Visibility.Hidden : Visibility.Visible;
             BtnPlus.Visibility = !running || pomodoro ? Visibility.Visible : Visibility.Hidden; // A running pomodoro skips with it
+            TimerDots.Visibility = pomodoro ? Visibility.Visible : Visibility.Collapsed;
+            if (pomodoro)
+            {
+                TimerDots.Children.Clear();
+                for (int i = 1; i <= timer.CyclesBeforeLong; i++)
+                    TimerDots.Children.Add(new System.Windows.Shapes.Ellipse
+                    {
+                        Width = 6, Height = 6, Margin = new Thickness(0, 0, 4, 0),
+                        Fill = i < timer.Cycle || (i == timer.Cycle && timer.Current == TimerService.Phase.Focus) ? TimerOrange : (Brush)new SolidColorBrush(Color.FromRgb(0x48, 0x48, 0x4A)),
+                    });
+            }
             BtnPlusText.Text = pomodoro ? "\uE893" : "+";
             BtnPlusText.FontFamily = pomodoro ? FluentIcons : plusFont;
             BtnPlusText.FontSize = pomodoro ? 14 : 20;
@@ -1148,6 +1213,7 @@ namespace WindowsIsland
             levelClip("thin-level-brightness", View.Minimal, View.LevelMini, LevelService.Kind.Brightness);
 
             // A pomodoro: the time counts down, the phase shows
+            clips.Add(("quick", View.Idle, () => { quickSample = true; quickMicMuted = true; quickSpeakerMuted = false; quickVolume = 62; UpdateQuick(true); forced = View.QuickExpanded; Recompute(); }, 3.2));
             clips.Add(("pomodoro", View.Idle, () => { timer.FocusMinutes = 25; timer.BreakMinutes = 5; timer.LongBreakMinutes = 15; timer.StartPomodoro(); UpdateTimerPage(); forced = View.TimerExpanded; Recompute(); }, 3.4));
             clips.Add(("pomodoro-compact", View.Idle, () => { timer.StartPomodoro(); UpdateTimerPage(); forced = View.TimerCompact; Recompute(); }, 3.0));
 
@@ -1594,6 +1660,17 @@ namespace WindowsIsland
         bool renderThin, renderGauges, minimalFixed; // Only while drawing the README images and animation
         Activity renderBubble = Activity.None;
 
+        DateTime thinFlashUntil = DateTime.MinValue;
+        Color thinFlashColor = Colors.White;
+
+        // The thin line turns one color for a moment (a pomodoro phase changed, Claude finished)
+        internal void FlashThin(bool green)
+        {
+            thinFlashColor = green ? ThinGreen : ThinYellow;
+            thinFlashUntil = DateTime.Now.AddSeconds(1.6);
+            Recompute();
+        }
+
         bool UpdateMinimal(Activity primary)
         {
             minimalPrimaryNone = primary == Activity.None;
@@ -1647,6 +1724,7 @@ namespace WindowsIsland
                 kind = Thin.Focus;
             }
 
+            if (DateTime.Now < thinFlashUntil) { kind = Thin.Done; color = thinFlashColor; fraction = 0; }
             minimalKind = kind;
             minimalColor = color;
             minimalFraction = fraction;
@@ -1850,6 +1928,7 @@ namespace WindowsIsland
                 }
                 else if (name == "System" && settings.PageSystem) pages.Add(Activity.System);
                 else if (name == "Timer" && settings.PageTimer) pages.Add(Activity.Timer);
+                else if (name == "Quick" && settings.PageQuick) pages.Add(Activity.Quick);
             }
             return pages;
         }
@@ -1871,12 +1950,12 @@ namespace WindowsIsland
 
         static View ExpandedFor(Activity activity)
         {
-            return activity == Activity.Music ? View.MusicExpanded : activity == Activity.Timer ? View.TimerExpanded : activity == Activity.System ? View.SystemExpanded : activity == Activity.External ? View.ExternalExpanded : View.ClaudeExpanded;
+            return activity == Activity.Music ? View.MusicExpanded : activity == Activity.Timer ? View.TimerExpanded : activity == Activity.System ? View.SystemExpanded : activity == Activity.External ? View.ExternalExpanded : activity == Activity.Quick ? View.QuickExpanded : View.ClaudeExpanded;
         }
 
         static Activity ActivityOf(View value)
         {
-            return value == View.MusicExpanded ? Activity.Music : value == View.TimerExpanded ? Activity.Timer : value == View.SystemExpanded ? Activity.System : value == View.ExternalExpanded ? Activity.External : Activity.Claude;
+            return value == View.MusicExpanded ? Activity.Music : value == View.TimerExpanded ? Activity.Timer : value == View.SystemExpanded ? Activity.System : value == View.ExternalExpanded ? Activity.External : value == View.QuickExpanded ? Activity.Quick : Activity.Claude;
         }
 
         View? PickedPage()
@@ -1988,7 +2067,7 @@ namespace WindowsIsland
         {
             if (!settings.ShowClaude || !settings.ClaudeBanners) return;
             lastClaudeBanner = DateTime.Now;
-            if (!waiting) toastWaitingUntil = DateTime.MinValue; // Done: nothing waits any more
+            if (!waiting) { toastWaitingUntil = DateTime.MinValue; FlashThin(true); } // Done: nothing waits any more, and the line flashes green
             Enqueue(new BannerItem
             {
                 FromClaude = true,
@@ -2300,7 +2379,7 @@ namespace WindowsIsland
         // True while the user is looking at or using the island, so an update restart waits.
         internal bool IsBusy
         {
-            get { return hovering || view == View.Banner || view == View.Permission || view == View.MusicExpanded || view == View.ClaudeExpanded || view == View.TimerExpanded || view == View.SystemExpanded || view == View.ExternalExpanded; }
+            get { return hovering || view == View.Banner || view == View.Permission || view == View.MusicExpanded || view == View.ClaudeExpanded || view == View.TimerExpanded || view == View.QuickExpanded || view == View.SystemExpanded || view == View.ExternalExpanded; }
         }
 
         void Enqueue(BannerItem item)
@@ -2419,7 +2498,7 @@ namespace WindowsIsland
 
         static bool IsExpandedView(View value)
         {
-            return value == View.MusicExpanded || value == View.ClaudeExpanded || value == View.TimerExpanded || value == View.SystemExpanded || value == View.ExternalExpanded || value == View.Banner || value == View.Permission;
+            return value == View.MusicExpanded || value == View.ClaudeExpanded || value == View.TimerExpanded || value == View.QuickExpanded || value == View.SystemExpanded || value == View.ExternalExpanded || value == View.Banner || value == View.Permission;
         }
 
         void PlaceWindow()
@@ -2779,6 +2858,12 @@ namespace WindowsIsland
             if (presence[SystemExpanded].Value > 0.01)
             {
                 UpdateSystemPage();
+                keepGoing = true;
+            }
+
+            if (presence[QuickExpanded].Value > 0.01)
+            {
+                UpdateQuick(false);
                 keepGoing = true;
             }
 

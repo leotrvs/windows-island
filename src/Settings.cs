@@ -66,9 +66,10 @@ namespace WindowsIsland
         public bool PageClaude { get; set; } = true;
         public bool PageTimer { get; set; } = true;
         public bool PageSystem { get; set; } = true;
-        public string PageOrder { get; set; } = "Music,Claude,System,Timer"; // The order of the pages when the island is open
+        public bool PageQuick { get; set; } = true;     // The shortcuts page: mute the microphone or speakers, screenshot, volume
+        public string PageOrder { get; set; } = "Music,Claude,System,Timer,Quick"; // The order of the pages when the island is open
 
-        public static readonly string[] PageNames = { "Music", "Claude", "System", "Timer" };
+        public static readonly string[] PageNames = { "Music", "Claude", "System", "Timer", "Quick" };
 
         // The saved order, with anything missing or unknown fixed: every page exactly once.
         public System.Collections.Generic.List<string> PageOrderList()

@@ -7,8 +7,8 @@ namespace WindowsIsland
     // On each release that has something worth telling: change Key and Version and the text below (and CHANGELOG.md and CHANGELOG.pt-BR.md).
     static class WhatsNew
     {
-        public const string Key = "4.2";       // The release the card is about: dismissed once per Key
-        public const string Version = "4.2.0"; // Shown in the title
+        public const string Key = "4.3";       // The release the card is about: dismissed once per Key
+        public const string Version = "4.3.0"; // Shown in the title
 
         public static string Title { get { return Strings.T("What's new in version " + Version, "Novidades da versão " + Version, "Novedades de la versión " + Version, "Что нового в версии " + Version); } }
 
@@ -18,21 +18,21 @@ namespace WindowsIsland
             {
                 return new[]
                 {
-                    new[] { Strings.T("Pomodoro in the timer", "Pomodoro no timer", "Pomodoro en el temporizador", "Помодоро в таймере"),
-                            Strings.T("Focus and break cycles on the timer page, with an alert at each change. The lengths are in Behavior.",
-                                      "Ciclos de foco e pausa na página do timer, com um aviso a cada mudança. Os tempos ficam em Comportamento.",
-                                      "Ciclos de enfoque y pausa en la página del temporizador, con un aviso en cada cambio. Los tiempos están en Comportamiento.",
-                                      "Циклы фокуса и перерыва на странице таймера с оповещением при смене. Длительность — в разделе «Поведение».") },
-                    new[] { Strings.T("Smoother transitions", "Transições mais fluidas", "Transiciones más fluidas", "Более плавные переходы"),
-                            Strings.T("The thin line grows into a pill before its content appears, and what leaves slides up.",
-                                      "A linha fina cresce até virar pílula antes de o conteúdo aparecer, e o que sai desliza para cima.",
-                                      "La línea fina crece hasta ser píldora antes de que aparezca el contenido, y lo que sale se desliza hacia arriba.",
-                                      "Тонкая линия вырастает в капсулу до появления содержимого, а уходящее съезжает вверх.") },
-                    new[] { Strings.T("Brightness and volume", "Brilho e volume", "Brillo y volumen", "Яркость и громкость"),
-                            Strings.T("Brightness is a sun that lights up; volume gains waves, and a cross when muted.",
-                                      "O brilho é um sol que acende; o volume ganha ondas e um xis quando está mudo.",
-                                      "El brillo es un sol que se enciende; el volumen gana ondas, y una cruz si está en silencio.",
-                                      "Яркость — солнце, которое разгорается; у громкости появляются волны, а при отключении звука — крестик.") },
+                    new[] { Strings.T("Shortcuts page", "Página de atalhos", "Página de atajos", "Страница быстрых действий"),
+                            Strings.T("Mute the microphone or the speakers, take a screenshot, open the sound settings and set the volume, right from the island.",
+                                      "Silencie o microfone ou o alto-falante, tire uma captura, abra os ajustes de som e regule o volume, direto na ilha.",
+                                      "Silencia el micrófono o los altavoces, haz una captura, abre los ajustes de sonido y regula el volumen, desde la propia isla.",
+                                      "Отключайте микрофон или динамики, делайте снимок, открывайте настройки звука и меняйте громкость прямо на острове.") },
+                    new[] { Strings.T("Pomodoro, clearer", "Pomodoro mais claro", "Pomodoro más claro", "Помодоро нагляднее"),
+                            Strings.T("Dots show which cycle you are on, and the thin line flashes when a phase changes or Claude finishes.",
+                                      "Pontos mostram em que ciclo você está, e a linha fina pisca quando uma fase muda ou o Claude termina.",
+                                      "Unos puntos muestran en qué ciclo estás, y la línea fina parpadea al cambiar de fase o cuando Claude termina.",
+                                      "Точки показывают текущий цикл, а тонкая линия мигает при смене фазы или когда Claude закончил.") },
+                    new[] { Strings.T("Updates that get through", "Atualizações que chegam", "Actualizaciones que llegan", "Обновления доходят"),
+                            Strings.T("If GitHub's download address does not answer, the app tries another way; an old .exe offers the newest version.",
+                                      "Se o endereço de download do GitHub não responde, o app tenta outro caminho; um .exe antigo oferece a versão mais nova.",
+                                      "Si la dirección de descarga de GitHub no responde, la app prueba otro camino; un .exe antiguo ofrece la versión más nueva.",
+                                      "Если адрес загрузки GitHub не отвечает, приложение пробует другой путь; старый .exe предложит новую версию.") },
                 };
             }
         }

@@ -413,6 +413,15 @@ namespace WindowsIsland
                                             "Страницы, между которыми можно переключаться, когда остров открыт");
         public static string PageMusicLabel => T("Music page", "Página de música", "Página de música", "Страница музыки");
         public static string PageClaudeLabel => T("Claude and Codex page", "Página do Claude e Codex", "Página de Claude y Codex", "Страница Claude и Codex");
+        public static string PageQuickLabel => T("Shortcuts page", "Página de atalhos", "Página de atajos", "Страница быстрых действий");
+        public static string QuickTitle => T("Shortcuts", "Atalhos", "Atajos", "Быстрые действия");
+        public static string QuickMic => T("Microphone", "Microfone", "Micrófono", "Микрофон");
+        public static string QuickMicMuted => T("Mic muted", "Mic mudo", "Mic en silencio", "Микрофон выкл.");
+        public static string QuickSpeaker => T("Sound", "Som", "Sonido", "Звук");
+        public static string QuickSpeakerMuted => T("Muted", "Mudo", "Silencio", "Без звука");
+        public static string QuickShot => T("Capture", "Captura", "Captura", "Снимок");
+        public static string QuickSoundSettings => T("Settings", "Ajustes", "Ajustes", "Настройки");
+        public static string QuickVolume => T("Volume", "Volume", "Volumen", "Громкость");
         public static string PageTimerLabel => T("Timer page", "Página do timer", "Página del temporizador", "Страница таймера");
         public static string MenuDevices => T("Bluetooth and USB devices", "Dispositivos Bluetooth e USB", "Dispositivos Bluetooth y USB", "Устройства Bluetooth и USB");
         public static string HintDevices => T("A short note when headphones, drives and other devices connect or disconnect",

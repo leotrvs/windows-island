@@ -325,7 +325,11 @@ namespace WindowsIsland
             notifications.Arrived += n => { foreach (IslandWindow island in islands) island.ShowNotification(n); };
             timer.PhaseChanged += phase =>
             {
-                foreach (IslandWindow island in islands) island.ShowSystemBanner(phase == TimerService.Phase.Focus ? Strings.PomodoroFocusBanner : Strings.PomodoroBreakBanner, Strings.PhaseName(phase));
+                foreach (IslandWindow island in islands)
+                {
+                    island.ShowSystemBanner(phase == TimerService.Phase.Focus ? Strings.PomodoroFocusBanner : Strings.PomodoroBreakBanner, Strings.PhaseName(phase));
+                    island.FlashThin(phase != TimerService.Phase.Focus);
+                }
             };
             timer.Finished += () =>
             {

@@ -936,6 +936,7 @@ namespace WindowsIsland
                 if (name == "Music") Toggle("\uE8D6", Strings.PageMusicLabel, hint, () => settings.PageMusic, v => settings.PageMusic = v, arrows);
                 else if (name == "Claude") Toggle("img:claude", Strings.PageClaudeLabel, hint, () => settings.PageClaude, v => settings.PageClaude = v, arrows);
                 else if (name == "System") Toggle("\uE9D9", Strings.PageSystemLabel, hint, () => settings.PageSystem, v => settings.PageSystem = v, arrows);
+                else if (name == "Quick") Toggle("\uE713", Strings.PageQuickLabel, hint, () => settings.PageQuick, v => settings.PageQuick = v, arrows);
                 else Toggle("\uE916", Strings.PageTimerLabel, hint, () => settings.PageTimer, v => settings.PageTimer = v, arrows);
             }
         }
