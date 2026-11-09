@@ -300,6 +300,10 @@ namespace WindowsIsland
                             new SettingsWindow(new Settings { Theme = "Dark" }, () => { }, null, () => { }).SaveWindowShot(System.IO.Path.Combine(render, "win-essentials" + suffix + ".png"), "Essentials", 0);
                             new SettingsWindow(new Settings { Theme = "Dark" }, () => { }, null, () => { }).SaveWindowShot(System.IO.Path.Combine(render, "win-system" + suffix + ".png"), "Advanced", 3);
                         }
+                        // The tray menu, in both themes
+                        foreach (string menuTheme in new[] { "Dark", "Light" })
+                            TrayMenu.SaveImage(Tray.BuildItems(new Settings { AlwaysThin = false, IslandQuiet = true }, () => { }, () => { }, () => { }, () => { }), menuTheme,
+                                System.IO.Path.Combine(render, "tray-menu-" + menuTheme.ToLowerInvariant() + suffix + ".png"));
                         // The welcome steps, as images
                         for (int step = 0; step < 3; step++)
                         {

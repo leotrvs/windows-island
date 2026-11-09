@@ -138,7 +138,15 @@ namespace WindowsIsland
 
         internal void ShowMenu()
         {
-            List<TrayMenu.Item> items = new List<TrayMenu.Item>
+            POINT cursor;
+            GetCursorPos(out cursor);
+            TrayMenu.Open(BuildItems(settings, changed, openSettings, checkForUpdates, quit), new Point(cursor.X, cursor.Y), settings.Theme);
+        }
+
+        // The menu's items; the README images build them too, with nothing to run.
+        internal static List<TrayMenu.Item> BuildItems(Settings settings, Action changed, Action openSettings, Action checkForUpdates, Action quit)
+        {
+            return new List<TrayMenu.Item>
             {
                 new TrayMenu.Item { Icon = "\uE713", Text = Strings.MenuSettings, Click = openSettings },
                 new TrayMenu.Item { Separator = true },
@@ -161,9 +169,6 @@ namespace WindowsIsland
                 new TrayMenu.Item { Icon = "\uE895", Text = Strings.MenuCheckUpdates, Click = checkForUpdates },
                 new TrayMenu.Item { Icon = "\uE711", Text = Strings.MenuClose, Danger = true, Click = quit },
             };
-            POINT cursor;
-            GetCursorPos(out cursor);
-            TrayMenu.Open(items, new Point(cursor.X, cursor.Y), settings.Theme);
         }
 
         // A small dark pill with a light outline, readable on both light and dark taskbars.

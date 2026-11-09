@@ -151,6 +151,8 @@ To try it without installing, run `WindowsIsland.exe --portable`.
 3. **Click** an alert or notification to dismiss it.
 4. **Click** the tray icon, or open the Windows Island shortcut while it runs, to open **Settings**. Right-click the icon for a menu with the thin line, Do not disturb for the island (banners stay away; only what Claude asks still shows), the empty island, **Check for updates** and a red **Close**. Click the tray icon again to close Settings.
 
+<p><img src="docs/images/tray-menu-dark-en.png" alt="The tray menu, dark and light" width="270"> <img src="docs/images/tray-menu-light-en.png" alt="The tray menu, dark and light" width="270"></p>
+
 <img src="docs/images/settings-en.png" alt="The settings window" width="900">
 
 | Option | What it does |

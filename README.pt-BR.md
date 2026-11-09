@@ -151,6 +151,8 @@ Para testar sem instalar, rode `WindowsIsland.exe --portable`.
 3. **Clique** num aviso ou notificação para dispensar.
 4. **Clique** no ícone da bandeja, ou abra o atalho do Windows Island com ele rodando, para abrir os **Ajustes**. Clique com o botão direito no ícone para um menu com a linha fina, o Não perturbe da ilha (os avisos não aparecem; só o que o Claude pergunta continua aparecendo), a ilha vazia, **Procurar atualizações** e um **Fechar** em vermelho. Clique de novo no ícone da bandeja para fechar os Ajustes.
 
+<p><img src="docs/images/tray-menu-dark-pt.png" alt="O menu da bandeja, escuro e claro" width="270"> <img src="docs/images/tray-menu-light-pt.png" alt="O menu da bandeja, escuro e claro" width="270"></p>
+
 <img src="docs/images/settings-pt.png" alt="A janela de ajustes" width="900">
 
 | Opção | O que faz |

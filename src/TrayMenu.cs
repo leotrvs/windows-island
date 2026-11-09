@@ -7,6 +7,7 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Effects;
+using System.Windows.Media.Imaging;
 
 namespace WindowsIsland
 {
@@ -127,6 +128,38 @@ namespace WindowsIsland
             };
             KeyDown += (s, e) => { if (e.Key == Key.Escape) CloseAnimated(); };
             Closed += (s, e) => { if (current == this) current = null; };
+        }
+
+        // The menu as a PNG for the README (sample settings, nothing is shown on screen)
+        public static void SaveImage(List<Item> items, string theme, string file)
+        {
+            ApplyTheme(theme);
+            TrayMenu menu = new TrayMenu(items, new Point(600, 600), new Rect(0, 0, 1920, 1040));
+            menu.card.Opacity = 1;
+            menu.card.RenderTransform = Transform.Identity;
+            Size size = new Size(MenuWidth + Shadow * 2, double.PositiveInfinity);
+            menu.card.Measure(size);
+            Size wanted = menu.card.DesiredSize;
+            menu.card.Arrange(new Rect(wanted));
+            menu.card.UpdateLayout();
+
+            const double scale = 2, pad = 20;
+            double w = wanted.Width - Shadow * 2 + pad * 2, h = wanted.Height - Shadow * 2 + pad * 2;
+            DrawingVisual visual = new DrawingVisual();
+            using (DrawingContext context = visual.RenderOpen())
+            {
+                // The same soft wallpaper-like card as the other images, so it reads on both GitHub themes
+                LinearGradientBrush wallpaper = new LinearGradientBrush(Color.FromRgb(0xEE, 0xEC, 0xF6), Color.FromRgb(0xD5, 0xD9, 0xEA), 90);
+                context.DrawRoundedRectangle(wallpaper, null, new Rect(0, 0, w, h), 18, 18);
+                context.PushTransform(new TranslateTransform(pad - Shadow, pad - Shadow));
+                context.DrawRectangle(new VisualBrush(menu.card) { Stretch = Stretch.None, AlignmentX = AlignmentX.Left, AlignmentY = AlignmentY.Top, ViewboxUnits = BrushMappingMode.Absolute, Viewbox = new Rect(0, 0, wanted.Width, wanted.Height), ViewportUnits = BrushMappingMode.Absolute, Viewport = new Rect(0, 0, wanted.Width, wanted.Height) }, null, new Rect(0, 0, wanted.Width, wanted.Height));
+                context.Pop();
+            }
+            RenderTargetBitmap output = new RenderTargetBitmap((int)(w * scale), (int)(h * scale), 96 * scale, 96 * scale, PixelFormats.Pbgra32);
+            output.Render(visual);
+            PngBitmapEncoder encoder = new PngBitmapEncoder();
+            encoder.Frames.Add(BitmapFrame.Create(output));
+            using (System.IO.FileStream stream = System.IO.File.Create(file)) encoder.Save(stream);
         }
 
         // Keeps the menu's edge at the cursor however tall it grows (a submenu opening), inside the screen.
