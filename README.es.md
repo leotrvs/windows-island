@@ -32,7 +32,7 @@ Una Dynamic Island para Windows. La música, Claude Code, sus límites de uso y 
 <details>
 <summary><b>Todas las funciones</b></summary>
 
-- **Música** de cualquier reproductor que aparezca en los controles multimedia de Windows, como Spotify o un navegador: carátula, un ecualizador con el color de la carátula, una barra de progreso en la que puedes hacer clic para avanzar, y reproducir, pausar, siguiente y anterior
+- **Música** de cualquier reproductor que aparezca en los controles multimedia de Windows, como Spotify o un navegador: carátula, un ecualizador con el color de la carátula, una barra de progreso en la que puedes hacer clic para avanzar, y reproducir, pausar, siguiente y anterior. Cuando cambia la canción, la carátula y el nombre se deslizan al lado y el nombre se muestra un momento (en Ajustes puedes dejarlo siempre visible)
 - **Actividad en vivo de Claude Code:** el símbolo de Claude "piensa" mientras Claude trabaja, con el tiempo transcurrido, y late cuando te está esperando
 - **Uso de Claude:** anillos para los límites de **5 horas** y **semanal**, con la hora en que se renuevan
 - **Codex:** una actividad en vivo mientras Codex trabaja, sus límites de 5 horas y semanal, y un aviso cuando termina

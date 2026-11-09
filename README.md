@@ -32,7 +32,7 @@ A Dynamic Island for Windows. Music, Claude Code, its usage limits and your noti
 <details>
 <summary><b>All features</b></summary>
 
-- **Music** from any player in the Windows media controls, such as Spotify or a browser: artwork, an equalizer tinted by the artwork, a progress bar you can click to seek, and play, pause, next and previous
+- **Music** from any player in the Windows media controls, such as Spotify or a browser: artwork, an equalizer tinted by the artwork, a progress bar you can click to seek, and play, pause, next and previous. When the song changes, the cover and the name slide to the side and the name shows for a moment (you can keep it always visible in Settings).
 - **Claude Code live activity:** the Claude spark thinks while Claude works, with the time so far, and breathes when Claude is waiting for you
 - **Claude usage:** rings for the **5-hour** and **weekly** limits, with reset times
 - **Codex:** a live activity while Codex works, its 5-hour and weekly limits, and an alert when it finishes
