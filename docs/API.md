@@ -105,6 +105,7 @@ The installer puts `island.cmd` beside the app, in `%LOCALAPPDATA%\Programs\Wind
 ```
 island show <id> [--title T] [--text T] [--progress 0-100] [--icon NAME] [--state running|done|error]
 island done <id> [--text T]
+island run [--title T] -- <command...>   runs the command and shows it until it ends (done, or error with its exit code)
 island end <id>
 island alert <title> [--text T] [--icon NAME] [--seconds 2-15]
 island token

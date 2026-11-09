@@ -32,6 +32,7 @@ namespace WindowsIsland
         public bool ShowSteamDownloads { get; set; } = true; // Progress of Steam downloads and updates, read from Steam's manifest files
         public string IdleStyle { get; set; } = "Pill"; // When nothing is happening: Pill (the small pill) or Line (a thin line)
         public string MaximizedMode { get; set; } = "Thin"; // With a maximized window in front: Thin (a thin line), Normal (as always) or Hidden
+        public bool MaximizedActivitiesThin { get; set; } = false; // With a maximized window and the thin line: activities too become the thin line (hover to see them)
         public bool ShowScreenShare { get; set; } = true; // A blue dot while the screen is shared or recorded (needs the privacy dots)
         public bool LimitAt75 { get; set; } = true;     // Which limit alerts to show
         public bool LimitAt90 { get; set; } = true;

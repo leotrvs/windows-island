@@ -14,7 +14,7 @@ namespace WindowsIsland
     // the local API of the running island, so it needs the API turned on in Settings. Runs before any window opens.
     static class ApiCli
     {
-        static readonly string[] Commands = { "show", "done", "end", "alert", "token", "help", "permission-hook" };
+        static readonly string[] Commands = { "show", "done", "end", "alert", "token", "help", "run", "permission-hook" };
         const int STD_OUTPUT_HANDLE = -11, STD_ERROR_HANDLE = -12, ATTACH_PARENT_PROCESS = -1;
         const uint GENERIC_READ = 0x80000000, GENERIC_WRITE = 0x40000000, FILE_SHARE_READ = 1, FILE_SHARE_WRITE = 2, OPEN_EXISTING = 3;
         const int ConnectTimeoutMs = 2000, ReplyTimeoutMs = 6000, MaxReplyBytes = 16 * 1024;
@@ -33,6 +33,7 @@ namespace WindowsIsland
             "  island done <id> [--text T]\n" +
             "  island end <id>\n" +
             "  island alert <title> [--text T] [--icon NAME] [--seconds 2-15]\n" +
+            "  island run [--title T] -- <command...>   runs the command and shows it in the island until it ends\n" +
             "  island token      prints the API token (keep it secret)\n" +
             "  island help\n" +
             "\n" +
@@ -85,20 +86,93 @@ namespace WindowsIsland
             return CreateFile("CONOUT$", GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, IntPtr.Zero, OPEN_EXISTING, 0, IntPtr.Zero);
         }
 
+        static bool quiet; // "island run" says nothing of its own: the command's output is what counts
+
         static void Print(string text)
         {
-            Console.Out.WriteLine(text);
+            if (!quiet) Console.Out.WriteLine(text);
         }
 
         static void Fail(string text)
         {
-            Console.Error.WriteLine("island: " + text);
+            if (!quiet) Console.Error.WriteLine("island: " + text);
+        }
+
+        // island run [--title T] -- npm test: the command runs here, with its own output, and the island shows it
+        // as an activity until it ends (done, or error with the exit code). The exit code is the command's own.
+        static int RunCommand(string[] args)
+        {
+            string title = null;
+            int start = 1;
+            while (start < args.Length && args[start].StartsWith("--", StringComparison.Ordinal) && args[start] != "--")
+            {
+                if (!args[start].Equals("--title", StringComparison.OrdinalIgnoreCase) || start + 1 >= args.Length) return Wrong("Unknown or incomplete option: " + args[start] + ".");
+                title = args[start + 1];
+                start += 2;
+            }
+            if (start < args.Length && args[start] == "--") start++;
+            if (start >= args.Length) return Wrong("The run command needs a command to run.");
+
+            string[] command = new string[args.Length - start];
+            Array.Copy(args, start, command, 0, command.Length);
+            if (string.IsNullOrWhiteSpace(title)) title = string.Join(" ", command);
+            if (title.Length > 60) title = title.Substring(0, 57) + "...";
+            string id = "run-" + Environment.ProcessId;
+
+            quiet = true;
+            SendActivity(id, title, "running", null);
+            int code;
+            try
+            {
+                // Through cmd, so npm, dotnet and other .cmd tools are found like in a terminal
+                System.Diagnostics.ProcessStartInfo info = new System.Diagnostics.ProcessStartInfo("cmd.exe") { UseShellExecute = false };
+                StringBuilder line = new StringBuilder("/d /s /c \"");
+                foreach (string part in command) line.Append(part.IndexOfAny(new[] { ' ', '\t' }) >= 0 ? "\"" + part + "\"" : part).Append(' ');
+                info.Arguments = line.ToString().TrimEnd() + "\"";
+                using (System.Diagnostics.Process process = System.Diagnostics.Process.Start(info))
+                {
+                    process.WaitForExit();
+                    code = process.ExitCode;
+                }
+            }
+            catch (Exception)
+            {
+                code = 1;
+            }
+            SendActivity(id, title, code == 0 ? "done" : "error", code == 0 ? "Done" : "Failed (code " + code + ")");
+            return code;
+        }
+
+        static void SendActivity(string id, string title, string state, string text)
+        {
+            try
+            {
+                using (MemoryStream buffer = new MemoryStream())
+                {
+                    using (Utf8JsonWriter json = new Utf8JsonWriter(buffer))
+                    {
+                        json.WriteStartObject();
+                        json.WriteString("id", id);
+                        json.WriteString("title", title);
+                        json.WriteString("icon", "terminal");
+                        json.WriteString("state", state);
+                        if (text != null) json.WriteString("text", text);
+                        json.WriteEndObject();
+                    }
+                    Send("/v1/activity", buffer.ToArray());
+                }
+            }
+            catch (Exception)
+            {
+                // The island is not running: the command goes on without it
+            }
         }
 
         static int Execute(string[] args)
         {
             string command = args[0].ToLowerInvariant();
             if (command == "permission-hook") return PermissionHook.Run(); // Claude Code's hook: always exit code 0
+            if (command == "run") return RunCommand(args);
             if (command == "help")
             {
                 Print(Usage + string.Join(", ", LocalApi.IconNames));

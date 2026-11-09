@@ -1032,6 +1032,8 @@ namespace WindowsIsland
             else if (DateTime.Now < bannerUntil) next = View.Banner;
             else if (DateTime.Now < toastUntil) next = View.Toast;
             else if (DateTime.Now < levelUntil) next = View.Level;
+            // The same thin line for the activities too, when asked: hover to see them
+            else if (settings.MaximizedActivitiesThin && maximized && !IsBottom && settings.MaximizedMode == "Thin") next = View.Minimal;
             // With the system monitor on, it stays and the activity is the small bubble beside it
             else if (KeepsMonitor(primary)) next = View.SystemCompact;
             // Empty island: the collapsed island stays a plain pill. Activities only show when it expands.

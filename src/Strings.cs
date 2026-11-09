@@ -245,6 +245,11 @@ namespace WindowsIsland
                                     "Música, Claude e outros viram uma bolinha ao lado do monitor",
                                     "La música, Claude y otros pasan a ser una burbuja junto al monitor",
                                     "Музыка, Claude и другое становятся пузырём рядом с монитором");
+        public static string MenuMaxActivities => T("Activities become the line too", "Atividades também viram a linha", "Las actividades también son la línea", "Активности тоже становятся линией");
+        public static string HintMaxActivities => T("With a maximized window, music and others stay a thin line; hover to see them",
+                                    "Com janela maximizada, música e outras ficam numa linha fina; passe o mouse para ver",
+                                    "Con ventana maximizada, la música y otras quedan en una línea fina; pasa el ratón para verlas",
+                                    "С развёрнутым окном музыка и другое остаются тонкой линией; наведите мышь, чтобы увидеть");
         public static string MenuMaximized => T("With a maximized window in front", "Com uma janela maximizada na frente", "Con una ventana maximizada delante", "Если впереди развёрнутое окно");
         public static string HintMaximized => T("A thin line stays out of the way of tab strips. Hidden suits games that fill the screen",
                                     "A linha fina sai do caminho das abas. Escondida serve para jogos que ocupam a tela",

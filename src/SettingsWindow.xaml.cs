@@ -531,6 +531,7 @@ namespace WindowsIsland
                 SegmentBar(new[] { Strings.MaxThin, Strings.MaxNormal, Strings.MaxHidden },
                     Math.Max(0, Array.FindIndex(maxValues, v => string.Equals(v, settings.MaximizedMode, StringComparison.OrdinalIgnoreCase))),
                     i => settings.MaximizedMode = maxValues[i]));
+            Toggle("\uE740", Strings.MenuMaxActivities, Strings.HintMaxActivities, () => settings.MaximizedActivitiesThin, v => settings.MaximizedActivitiesThin = v);
             Toggle("\uE765", Strings.MenuHotkey, Strings.HintHotkey, () => settings.HotkeyEnabled, v => { settings.HotkeyEnabled = v; Dispatcher.BeginInvoke(new Action(Rebuild), DispatcherPriority.Background); });
             if (settings.HotkeyEnabled) HotkeyRow();
             Group("\uE916", Strings.GroupTimes, () =>

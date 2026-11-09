@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.10.0
+
+- **`island run`:** `island run --title Tests -- npm test` runs the command and shows it in the island until it ends (done, or error with the exit code, which `island run` returns as its own)
+- **Settings:** with a maximized window and the thin line, "Activities become the line too" makes music, Claude and the others a thin line as well (hover to see them). Off by default
+
 ## 2.9.1
 
 - **Settings:** shorter descriptions
