@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows.Threading;
 using Microsoft.Win32;
@@ -19,6 +20,7 @@ namespace WindowsIsland
         readonly Dictionary<string, DateTime> seen = new Dictionary<string, DateTime>(StringComparer.OrdinalIgnoreCase); // manifest path -> last write read
         readonly Dictionary<string, string> active = new Dictionary<string, string>(); // app id -> name, while it works
         readonly Dictionary<string, SteamManifest> last = new Dictionary<string, SteamManifest>();
+        readonly Dictionary<string, DateTime> lastWrites = new Dictionary<string, DateTime>(); // When each manifest was last written (UTC)
         List<string> libraries = new List<string>();
         DateTime librariesAt = DateTime.MinValue;
 
@@ -93,6 +95,7 @@ namespace WindowsIsland
         long logLength = -1;
         DateTime logWrite;
         Dictionary<string, string> logStates = new Dictionary<string, string>();
+        Dictionary<string, DateTime> logTimes = new Dictionary<string, DateTime>();
 
         void ReadLog()
         {
@@ -111,10 +114,14 @@ namespace WindowsIsland
                     if (stream.Length > Tail) stream.Seek(-Tail, SeekOrigin.End);
                     using (StreamReader reader = new StreamReader(stream))
                     {
-                        Dictionary<string, string> found = SteamManifest.States(reader.ReadToEnd());
+                        string text = reader.ReadToEnd();
+                        Dictionary<string, string> found = SteamManifest.States(text);
+                        Dictionary<string, DateTime> foundTimes = SteamManifest.StateTimes(text);
                         // Keep what an older read knew about games that did not change in this tail
                         foreach (KeyValuePair<string, string> old in logStates) if (!found.ContainsKey(old.Key)) found[old.Key] = old.Value;
+                        foreach (KeyValuePair<string, DateTime> old in logTimes) if (!foundTimes.ContainsKey(old.Key)) foundTimes[old.Key] = old.Value;
                         logStates = found;
+                        logTimes = foundTimes;
                     }
                 }
             }
@@ -128,8 +135,73 @@ namespace WindowsIsland
         sealed class Sample { public long Value; public DateTime At; public double Rate; public bool Downloading; }
         readonly Dictionary<string, Sample> samples = new Dictionary<string, Sample>();
 
+        // ---- Bytes Steam has written to disk (its process counters): the progress between two manifest writes ----
+
+        [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
+        struct IoCounters { public ulong Reads, Writes, Others, ReadBytes, WriteBytes, OtherBytes; }
+        [System.Runtime.InteropServices.DllImport("kernel32.dll")] static extern IntPtr OpenProcess(uint access, bool inherit, int pid);
+        [System.Runtime.InteropServices.DllImport("kernel32.dll")] static extern bool CloseHandle(IntPtr handle);
+        [System.Runtime.InteropServices.DllImport("kernel32.dll")] static extern bool GetProcessIoCounters(IntPtr process, out IoCounters counters);
+
+        static long SteamWrites()
+        {
+            try
+            {
+                foreach (Process process in Process.GetProcessesByName("steam"))
+                {
+                    using (process)
+                    {
+                        IntPtr handle = OpenProcess(0x0400, false, process.Id); // Query information
+                        if (handle == IntPtr.Zero) continue;
+                        try
+                        {
+                            IoCounters counters;
+                            if (GetProcessIoCounters(handle, out counters)) return (long)Math.Min(counters.WriteBytes, (ulong)long.MaxValue);
+                        }
+                        finally
+                        {
+                            CloseHandle(handle);
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // No counters: the manifest numbers are used
+            }
+            return -1;
+        }
+
+        sealed class Anchor { public long Staged; public long Writes; public bool Valid; public long ManifestStaged = -1; }
+        readonly Dictionary<string, Anchor> anchors = new Dictionary<string, Anchor>();
+
+        // Progress from the bytes written since the manifest was last written (at the start of the run), or -1 when it cannot be told.
+        int FromWrites(SteamManifest manifest, DateTime manifestWrite)
+        {
+            if (manifest.BytesToStage <= 0) return -2; // Nothing to count against: use the manifest
+            long writes = SteamWrites();
+            if (writes < 0) return -2;
+            Anchor anchor;
+            if (!anchors.TryGetValue(manifest.AppId, out anchor) || manifest.BytesStaged != anchor.ManifestStaged)
+            {
+                // The manifest was just written (the run started, or Steam saved where it was): count from here. It only counts if
+                // it was written when the run started; joining a run in progress leaves it unknown
+                DateTime stateAt;
+                bool fresh = logTimes.TryGetValue(manifest.AppId, out stateAt) && manifestWrite.ToLocalTime() >= stateAt - TimeSpan.FromSeconds(3);
+                if (anchor == null) anchor = anchors[manifest.AppId] = new Anchor { Valid = fresh };
+                else if (fresh) anchor.Valid = true;
+                anchor.Staged = manifest.BytesStaged;
+                anchor.ManifestStaged = manifest.BytesStaged;
+                anchor.Writes = writes;
+            }
+            if (!anchor.Valid) return -1;
+            return SteamManifest.EstimateFromWrites(anchor.Staged, writes - anchor.Writes, manifest.BytesToStage);
+        }
+
         int Percent(SteamManifest manifest)
         {
+            int written = FromWrites(manifest, lastWrites.TryGetValue(manifest.AppId, out DateTime stamp) ? stamp : DateTime.MinValue);
+            if (written != -2) return written;
             Sample sample;
             DateTime now = DateTime.UtcNow;
             if (!samples.TryGetValue(manifest.AppId, out sample) || sample.Downloading != manifest.IsDownloading || manifest.Current < sample.Value)
@@ -169,6 +241,7 @@ namespace WindowsIsland
                         SteamManifest manifest = SteamManifest.Parse(ReadShared(file));
                         if (manifest == null) continue;
                         last[manifest.AppId] = manifest;
+                        lastWrites[manifest.AppId] = write;
                     }
                 }
 
@@ -188,6 +261,7 @@ namespace WindowsIsland
                         if (!active.TryGetValue(manifest.AppId, out name)) continue;
                         active.Remove(manifest.AppId);
                         samples.Remove(manifest.AppId);
+                        anchors.Remove(manifest.AppId);
                         bool done = logStates.TryGetValue(manifest.AppId, out state) ? SteamManifest.StateIsDone(state) : (manifest.StateFlags & 6) == 4;
                         Progress?.Invoke(manifest.AppId, name, done ? 100 : -1, true); // 100 and finished: done; -1 and finished: gone (paused or cancelled)
                     }

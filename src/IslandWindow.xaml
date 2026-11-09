@@ -146,19 +146,19 @@
                 </Grid>
 
                 <!-- The thin line: a tiny icon of what is happening and a rail that fills -->
-                <Grid x:Name="MinimalPanel" Width="76" Height="16">
-                    <Border x:Name="MinimalBase" Height="6" VerticalAlignment="Top" CornerRadius="3" Opacity="0"/>
-                    <Border x:Name="MinimalTrack" Height="6" VerticalAlignment="Top" CornerRadius="3" Background="#26FFFFFF" Visibility="Collapsed">
-                        <Border x:Name="MinimalFill" HorizontalAlignment="Left" CornerRadius="3" Width="0" Background="White"/>
+                <Grid x:Name="MinimalPanel" Width="108" Height="18">
+                    <Border x:Name="MinimalBase" Height="9" VerticalAlignment="Top" CornerRadius="4.5" Opacity="0"/>
+                    <Border x:Name="MinimalTrack" Height="9" VerticalAlignment="Top" CornerRadius="4.5" Background="#26FFFFFF" Visibility="Collapsed">
+                        <Border x:Name="MinimalFill" HorizontalAlignment="Left" CornerRadius="4.5" Width="0" Background="White"/>
                     </Border>
-                    <StackPanel x:Name="MinimalBars" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Top" Height="6" Visibility="Collapsed"/>
-                    <StackPanel x:Name="MinimalDots" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Top" Height="6" IsHitTestVisible="False">
-                        <Ellipse x:Name="ThinMic" Width="4.5" Height="4.5" Fill="#E0922A" Margin="2,0" Visibility="Collapsed"/>
-                        <Ellipse x:Name="ThinCam" Width="4.5" Height="4.5" Fill="#3FBF5F" Margin="2,0" Visibility="Collapsed"/>
-                        <Ellipse x:Name="ThinScreen" Width="4.5" Height="4.5" Fill="#3B8CFF" Margin="2,0" Visibility="Collapsed"/>
+                    <StackPanel x:Name="MinimalBars" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Top" Height="9" Visibility="Collapsed"/>
+                    <StackPanel x:Name="MinimalDots" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Top" Height="9" IsHitTestVisible="False">
+                        <Ellipse x:Name="ThinMic" Width="6" Height="6" Fill="#E0922A" Margin="2,0" Visibility="Collapsed"/>
+                        <Ellipse x:Name="ThinCam" Width="6" Height="6" Fill="#3FBF5F" Margin="2,0" Visibility="Collapsed"/>
+                        <Ellipse x:Name="ThinScreen" Width="6" Height="6" Fill="#3B8CFF" Margin="2,0" Visibility="Collapsed"/>
                     </StackPanel>
-                    <Ellipse x:Name="MinimalUnread" Width="4" Height="4" Fill="White" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="8,1,0,0" Visibility="Collapsed"/>
-                    <TextBlock x:Name="MinimalGlyph" FontSize="9" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,2,0,0" Visibility="Collapsed"/>
+                    <Ellipse x:Name="MinimalUnread" Width="5" Height="5" Fill="White" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="12,2,0,0" Visibility="Collapsed"/>
+                    <TextBlock x:Name="MinimalGlyph" FontSize="11" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,3,0,0" Visibility="Collapsed"/>
                 </Grid>
 
                 <!-- A change in the music (pause, play, next, previous) while the island is a thin line -->

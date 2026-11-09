@@ -62,6 +62,31 @@ namespace WindowsIsland
             return states;
         }
 
+        // When Steam last logged a state change for each game (local time).
+        static readonly Regex StateTime = new Regex("\\[(?<t>\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2})\\] AppID (?<id>\\d+) state changed : ", RegexOptions.CultureInvariant);
+
+        public static Dictionary<string, DateTime> StateTimes(string log)
+        {
+            Dictionary<string, DateTime> times = new Dictionary<string, DateTime>();
+            if (string.IsNullOrEmpty(log)) return times;
+            foreach (Match match in StateTime.Matches(log))
+            {
+                DateTime at;
+                if (DateTime.TryParseExact(match.Groups["t"].Value, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out at))
+                    times[match.Groups["id"].Value] = at;
+            }
+            return times;
+        }
+
+        // Steam keeps the progress of a download in its memory and writes it to the manifest only when something changes, so
+        // while it runs the manifest says "nothing done". What Steam writes to disk while it works is the files going in place,
+        // so the progress is what the manifest said at the start plus the bytes Steam has written since, over the whole.
+        public static int EstimateFromWrites(long stagedAtStart, long bytesWrittenSince, long totalToStage)
+        {
+            if (totalToStage <= 0) return -1;
+            return Percent(stagedAtStart + Math.Max(0, bytesWrittenSince), totalToStage);
+        }
+
         public static bool StateIsRunning(string state)
         {
             return state != null && state.Contains("Update Running") && !state.Contains("Suspended");

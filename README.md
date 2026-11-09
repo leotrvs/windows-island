@@ -46,12 +46,13 @@ A Dynamic Island for Windows. Music, Claude Code, its usage limits and your noti
 - **Answer permissions on the island (experimental, off by default):** when Claude Code is about to ask for a permission, such as reading a database or applying a migration, the island shows the tool and what it wants to do with **Allow** and **Deny**. It uses a hook that you turn on in Settings; if you do not click in time, Claude asks as usual
 - **Website icons:** with the browser extension, web audio shows the site's own icon, and website notifications show the site's icon and name
 - **Fluid motion:** shape and content morph with springs, never with fixed-time fades
+- **The thin line is the default look:** a thin line that shows, on itself, what matters most: a glow while Claude works, a tiny equalizer for music, a fill for a timer, a download or the charge, a pulse when Claude waits for you or when you are recording, and two tiny rings for the processor and memory
 - **Discreet:** it never takes focus, clicks around it reach the window below, it shrinks to a thin line when a maximized window is in front and it hides in fullscreen
 - **Light:** about 40 MB of memory and under 1% CPU while music plays
 - Installs for your user only, with Start menu and Desktop shortcuts and start with Windows
 - English and Brazilian Portuguese
 - Signed automatic updates
-- **Never reads your Claude login or token**. Its only connections are checking this repository for updates and, if you use the browser extension, one small icon download per site
+- **Never reads your Claude login or token**. Its only connections are checking this repository for updates and, if you use the browser extension, one small icon download per site and, only if you turn on **Football score**, the public scoreboard of ESPN
 
 ## States
 
@@ -78,6 +79,29 @@ A Dynamic Island for Windows. Music, Claude Code, its usage limits and your noti
 |  | <img src="docs/images/systemcompact-bars-en.png" alt="System monitor: rings, bars or numbers" width="260"> |
 |  | <img src="docs/images/systemcompact-numbers-en.png" alt="System monitor: rings, bars or numbers" width="260"> |
 | Volume or brightness changing | <img src="docs/images/level-en.png" alt="Volume bar" width="260"> |
+
+### The thin line
+
+The collapsed island is a thin line by default (Settings, Behavior, "Thin line always"). It shows only the state that matters most, drawn on the line itself; hover to open the island.
+
+| State | Look |
+|---|---|
+| At rest | <img src="docs/images/thin-idle-en.png" alt="At rest" width="300"> |
+| Claude working: a glow runs along it (yellow or red as the limit fills) | <img src="docs/images/thin-claude-en.png" alt="Claude working: a glow runs along it (yellow or red as the limit fills)" width="300"> |
+| Claude waits for you: the line pulses | <img src="docs/images/thin-waiting-en.png" alt="Claude waits for you: the line pulses" width="300"> |
+| Music: a tiny equalizer in the color of the cover | <img src="docs/images/thin-music-en.png" alt="Music: a tiny equalizer in the color of the cover" width="300"> |
+| Timer: the line empties as the time runs out | <img src="docs/images/thin-timer-en.png" alt="Timer: the line empties as the time runs out" width="300"> |
+| A download, a build or a Steam game: the line fills with the progress | <img src="docs/images/thin-progress-en.png" alt="A download, a build or a Steam game: the line fills with the progress" width="300"> |
+| Charging: the line fills with the charge | <img src="docs/images/thin-charging-en.png" alt="Charging: the line fills with the charge" width="300"> |
+| Screen recording (OBS or Game Bar) or low battery: the line pulses red | <img src="docs/images/thin-alert-en.png" alt="Screen recording (OBS or Game Bar) or low battery: the line pulses red" width="300"> |
+| No internet: a dashed red line that blinks | <img src="docs/images/thin-offline-en.png" alt="No internet: a dashed red line that blinks" width="300"> |
+| Done: the line turns green | <img src="docs/images/thin-done-en.png" alt="Done: the line turns green" width="300"> |
+| Focus: a small moon | <img src="docs/images/thin-focus-en.png" alt="Focus: a small moon" width="300"> |
+| System monitor: two tiny rings, processor and memory | <img src="docs/images/thin-gauges-en.png" alt="System monitor: two tiny rings, processor and memory" width="300"> |
+| Microphone and camera: dots inside the line | <img src="docs/images/thin-privacy-en.png" alt="Microphone and camera: dots inside the line" width="300"> |
+| A second activity: a tiny bubble beside the line | <img src="docs/images/thin-bubble-en.png" alt="A second activity: a tiny bubble beside the line" width="300"> |
+| A change of song: the cover, the name and a symbol | <img src="docs/images/thin-peek-en.png" alt="A change of song: the cover, the name and a symbol" width="300"> |
+| Volume or brightness: a small bar | <img src="docs/images/thin-level-en.png" alt="Volume or brightness: a small bar" width="300"> |
 
 ## Install
 

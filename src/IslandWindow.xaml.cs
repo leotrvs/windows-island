@@ -24,7 +24,7 @@ namespace WindowsIsland
         static readonly Dictionary<View, Size> Sizes = new Dictionary<View, Size>
         {
             [View.Hidden] = new Size(90, 24),
-            [View.Minimal] = new Size(76, 6),
+            [View.Minimal] = new Size(108, 9),
             [View.MusicPeek] = new Size(236, 36),
             [View.LevelMini] = new Size(104, 20),
             [View.Idle] = new Size(112, 30),
@@ -643,7 +643,7 @@ namespace WindowsIsland
             if (value == View.Banner) return new Size(Banner.Width, Banner.Height);
             if (value == View.Permission) return new Size(372, permissionHeight);
             if (value == View.SystemCompact) return new Size(monitorWidth, 34);
-            if (value == View.Minimal && minimalHasContent) return new Size(76, 16);
+            if (value == View.Minimal && minimalHasContent) return new Size(108, 18);
             return Sizes[value];
         }
 
@@ -911,11 +911,102 @@ namespace WindowsIsland
             SaveSnapshot(System.IO.Path.Combine(folder, "permission" + suffix + ".png"));
             sample.Cancel();
             settings.PermissionPrompts = false;
+
+            RenderThinStates(folder, suffix);
+        }
+
+        // Puts the thin line into one state (for the README images and animation), with made-up data.
+        void SetThin(Thin kind, Color color, double fraction, bool gauges = false, Activity bubbleActivity = Activity.None, bool privacyDots = false)
+        {
+            renderThin = true;
+            renderGauges = gauges;
+            renderBubble = bubbleActivity;
+            minimalFixed = true;
+            minimalKind = kind;
+            minimalColor = color;
+            minimalFraction = fraction;
+            minimalHasContent = kind == Thin.Focus;
+            ApplyTargets();
+            if (gauges)
+            {
+                ThinCpuRing.Data = Arc(34, 14, 1.6);
+                ThinMemRing.Data = Arc(61, 14, 1.6);
+                ThinCpuRing.Stroke = MonitorBlue;
+                ThinMemRing.Stroke = MonitorGreen;
+            }
+            if (privacyDots)
+            {
+                ThinMic.Visibility = Visibility.Visible;
+                ThinCam.Visibility = Visibility.Visible;
+            }
+        }
+
+        void ThinShot(string folder, string suffix, string name, Thin kind, Color color, double fraction, double at, bool gauges = false, Activity bubbleActivity = Activity.None, bool privacyDots = false)
+        {
+            renderThin = true;
+            renderGauges = gauges;
+            renderBubble = bubbleActivity;
+            forced = View.Minimal;
+            Recompute();
+            SetThin(kind, color, fraction, gauges, bubbleActivity, privacyDots);
+            clock = at;
+            SnapAll();
+            ApplyFrame();
+            bubbleShift.Snap(bubbleShift.Target);
+            AnimateMinimal();
+            ApplyFrame();
+            Root.UpdateLayout();
+            AnimateMinimal();
+            ApplyFrame();
+            Root.UpdateLayout();
+            SaveSnapshot(System.IO.Path.Combine(folder, "thin-" + name + suffix + ".png"));
+        }
+
+        // Every state of the thin line, one image each
+        void RenderThinStates(string folder, string suffix)
+        {
+            ThinShot(folder, suffix, "idle", Thin.None, Colors.White, 0, 0);
+            ThinShot(folder, suffix, "claude", Thin.ClaudeWorking, ThinClay, 0, 0.55);
+            ThinShot(folder, suffix, "waiting", Thin.ClaudeWaiting, ThinClay, 0, 0);
+            ThinShot(folder, suffix, "music", Thin.Music, media.Accent, 0, 0.3);
+            ThinShot(folder, suffix, "timer", Thin.Timer, ThinYellow, 0.58, 0);
+            ThinShot(folder, suffix, "progress", Thin.Progress, ThinBlue, 0.64, 0);
+            ThinShot(folder, suffix, "charging", Thin.Charging, ThinGreen, 0.54, 0);
+            ThinShot(folder, suffix, "alert", Thin.Alert, ThinRed, 0, 0);
+            ThinShot(folder, suffix, "offline", Thin.Offline, ThinRed, 0, 0);
+            ThinShot(folder, suffix, "done", Thin.Done, ThinGreen, 0, 0);
+            ThinShot(folder, suffix, "focus", Thin.Focus, Colors.White, 0, 0);
+            ThinShot(folder, suffix, "gauges", Thin.None, Colors.White, 0, 0, true);
+            ThinShot(folder, suffix, "privacy", Thin.None, Colors.White, 0, 0, false, Activity.None, true);
+            ThinShot(folder, suffix, "bubble", Thin.ClaudeWorking, ThinClay, 0, 0.55, false, Activity.Music);
+
+            // A change in the music, and the volume, on the thin line
+            PeekGlyph.Text = "\uE893";
+            PeekTitle.Text = media.Title;
+            forced = View.MusicPeek;
+            Recompute();
+            SnapAll();
+            ApplyFrame();
+            Root.UpdateLayout();
+            ApplyFrame();
+            SaveSnapshot(System.IO.Path.Combine(folder, "thin-peek" + suffix + ".png"));
+
+            LevelMiniGlyph.Text = "\uE767";
+            LevelMiniFill.Width = 64.0 * 0.65;
+            forced = View.LevelMini;
+            Recompute();
+            SnapAll();
+            ApplyFrame();
+            Root.UpdateLayout();
+            ApplyFrame();
+            SaveSnapshot(System.IO.Path.Combine(folder, "thin-level" + suffix + ".png"));
+            renderThin = false;
+            minimalFixed = false;
         }
 
         void SnapAll()
         {
-            foreach (Spring spring in new[] { width, height, shown, stateScale, bubbleScale, bubbleOpacity, privacyOpacity, sessionArc, weeklyArc })
+            foreach (Spring spring in new[] { width, height, shown, stateScale, bubbleScale, bubbleOpacity, privacyOpacity, thinGaugesOpacity, sessionArc, weeklyArc })
                 spring.Snap(spring.Target);
             foreach (Spring spring in presence.Values) spring.Snap(spring.Target);
         }
@@ -927,10 +1018,18 @@ namespace WindowsIsland
             BannerTitle.Text = Strings.ClaudeDone;
             BannerSubtitle.Text = Strings.SampleSession;
             const int fps = 20, substeps = 3;
-            (View view, double seconds)[] script =
+            (View view, double seconds, Action setup)[] script =
             {
-                (View.Idle, 0.8), (View.MusicCompact, 2.2), (View.MusicExpanded, 2.4), (View.ClaudeExpanded, 2.6),
-                (View.TimerExpanded, 1.8), (View.ClaudeCompact, 2.4), (View.Banner, 2.4), (View.Idle, 1.0),
+                (View.Idle, 0.8, null), (View.MusicCompact, 2.2, null), (View.MusicExpanded, 2.4, null), (View.ClaudeExpanded, 2.6, null),
+                (View.TimerExpanded, 1.8, null), (View.ClaudeCompact, 2.4, null), (View.Banner, 2.4, null),
+                // The thin line: Claude working, music, a change of song, the monitor's rings, the volume and a download
+                (View.Minimal, 2.2, () => SetThin(Thin.ClaudeWorking, ThinClay, 0)),
+                (View.Minimal, 1.8, () => SetThin(Thin.Music, media.Accent, 0)),
+                (View.MusicPeek, 1.8, () => { PeekGlyph.Text = "\uE893"; PeekTitle.Text = media.Title; }),
+                (View.Minimal, 1.6, () => SetThin(Thin.None, Colors.White, 0, true)),
+                (View.LevelMini, 1.4, () => { LevelMiniGlyph.Text = "\uE767"; LevelMiniFill.Width = 64.0 * 0.65; }),
+                (View.Minimal, 1.4, () => SetThin(Thin.Progress, ThinBlue, 0.64)),
+                (View.Idle, 1.0, null),
             };
             forced = View.Idle;
             Recompute();
@@ -938,10 +1037,13 @@ namespace WindowsIsland
             ApplyFrame();
             Root.UpdateLayout();
             int frame = 0;
-            foreach ((View view, double seconds) step in script)
+            foreach ((View view, double seconds, Action setup) step in script)
             {
+                renderThin = step.setup != null;
+                if (!renderThin) { minimalFixed = false; renderGauges = false; renderBubble = Activity.None; }
                 forced = step.view;
                 Recompute();
+                step.setup?.Invoke();
                 int count = (int)Math.Round(step.seconds * fps);
                 for (int i = 0; i < count; i++)
                 {
@@ -984,6 +1086,8 @@ namespace WindowsIsland
             Rect bounds = Pill.TransformToAncestor(Root).TransformBounds(new Rect(Pill.RenderSize));
             if (Bubble.Opacity > 0.01)
                 bounds.Union(Bubble.TransformToAncestor(Root).TransformBounds(new Rect(Bubble.RenderSize)));
+            if (ThinGauges.Opacity > 0.01)
+                bounds.Union(ThinGauges.TransformToAncestor(Root).TransformBounds(new Rect(ThinGauges.RenderSize)));
             bounds.Inflate(padding + 12, padding);
             bounds.Intersect(new Rect(Root.RenderSize));
 
@@ -1150,6 +1254,7 @@ namespace WindowsIsland
             if (next == View.SystemCompact && KeepsMonitor(primary)) nextBubble = primary; // The monitor keeps its place, the activity is the bubble
             bool minimalChanged = next == View.Minimal ? UpdateMinimal(primary) : ClearMinimal();
             bool gauges = next == View.Minimal && settings.SystemMonitor && (primary == Activity.None || (settings.MonitorKeepsPlace && !settings.EmptyIsland));
+            if (renderThin && next == View.Minimal) { gauges = renderGauges; nextBubble = renderBubble; }
             bool gaugesChanged = gauges != thinGauges;
             thinGauges = gauges;
             if (next != view || nextBubble != bubble || minimalChanged || gaugesChanged)
@@ -1185,7 +1290,7 @@ namespace WindowsIsland
         static readonly Color ThinRed = Color.FromRgb(0xFF, 0x45, 0x3A);
         static readonly Brush ThinMoon = Freeze(new SolidColorBrush(Color.FromRgb(0xB4, 0xB4, 0xFF)));
         readonly LinearGradientBrush sweep = new LinearGradientBrush { StartPoint = new Point(0, 0.5), EndPoint = new Point(1, 0.5), SpreadMethod = GradientSpreadMethod.Repeat };
-        readonly System.Windows.Shapes.Rectangle[] thinBars = new System.Windows.Shapes.Rectangle[8];
+        readonly System.Windows.Shapes.Rectangle[] thinBars = new System.Windows.Shapes.Rectangle[10];
 
         bool ClearMinimal()
         {
@@ -1198,6 +1303,8 @@ namespace WindowsIsland
 
         // Returns true when the line has to change size (the moon needs a little more room).
         bool minimalPrimaryNone;
+        bool renderThin, renderGauges, minimalFixed; // Only while drawing the README images and animation
+        Activity renderBubble = Activity.None;
 
         bool UpdateMinimal(Activity primary)
         {
@@ -1269,7 +1376,7 @@ namespace WindowsIsland
             {
                 for (int i = 0; i < thinBars.Length; i++)
                 {
-                    thinBars[i] = new System.Windows.Shapes.Rectangle { Width = 2, Height = 2, RadiusX = 1, RadiusY = 1, Margin = new Thickness(1, 0, 1, 0), VerticalAlignment = VerticalAlignment.Center, Fill = new SolidColorBrush(ThinPink) };
+                    thinBars[i] = new System.Windows.Shapes.Rectangle { Width = 2.4, Height = 2, RadiusX = 1.2, RadiusY = 1.2, Margin = new Thickness(1.3, 0, 1.3, 0), VerticalAlignment = VerticalAlignment.Center, Fill = new SolidColorBrush(ThinPink) };
                     MinimalBars.Children.Add(thinBars[i]);
                 }
             }
@@ -1330,28 +1437,28 @@ namespace WindowsIsland
                     return false;
                 case Thin.Timer:
                 {
-                    double left = timer.Fraction;
+                    double left = minimalFixed ? minimalFraction : timer.Fraction;
                     MinimalFill.Background = new SolidColorBrush(left < 0.1 ? ThinRed : ThinYellow);
-                    MinimalFill.Width = 76 * left;
+                    MinimalFill.Width = 108 * left;
                     return timer.Running && !timer.Paused;
                 }
                 case Thin.Progress:
                 case Thin.Charging:
                     MinimalFill.Background = new SolidColorBrush(minimalColor);
-                    MinimalFill.Width = 76 * Math.Clamp(minimalFraction, 0, 1);
+                    MinimalFill.Width = 108 * Math.Clamp(minimalFraction, 0, 1);
                     return false;
                 case Thin.Music:
                 {
                     bool playing = media.IsPlaying;
                     for (int i = 0; i < thinBars.Length; i++)
                     {
-                        thinBars[i].Height = playing ? 1.5 + 3.5 * Math.Abs(Math.Sin(clock * (4.5 + i * 1.1) + i * 0.9)) : 1.5;
+                        thinBars[i].Height = playing ? 2 + 5 * Math.Abs(Math.Sin(clock * (4.5 + i * 1.1) + i * 0.9)) : 2;
                         ((SolidColorBrush)thinBars[i].Fill).Color = media.Accent;
                     }
                     if (settings.MinimalMusicPosition && media.Duration > TimeSpan.Zero)
                     {
                         MinimalFill.Background = new SolidColorBrush(Color.FromArgb(0x70, media.Accent.R, media.Accent.G, media.Accent.B));
-                        MinimalFill.Width = 76 * Math.Clamp(media.Position.TotalSeconds / media.Duration.TotalSeconds, 0, 1);
+                        MinimalFill.Width = 108 * Math.Clamp(media.Position.TotalSeconds / media.Duration.TotalSeconds, 0, 1);
                     }
                     return playing;
                 }
@@ -2206,7 +2313,7 @@ namespace WindowsIsland
             double bubbleSize = thinLine ? BubbleSize * 0.42 : BubbleSize, bubbleGap = thinLine ? 5 + (thinGauges ? 34 : 0) : BubbleGap; // Beyond the rings, when they are there
             bubbleShift.Target = (bubble != Activity.None ? w / 2 + bubbleGap + bubbleSize / 2 : w / 2 - BubbleSize / 2 - 2) * s;
             BubbleShift.X = bubbleShift.Value;
-            BubbleShift.Y = thinLine ? (bottom ? 17 - 3 * s : 3 * s - 17) // Level with the thin line
+            BubbleShift.Y = thinLine ? (bottom ? 17 - 4.5 * s : 4.5 * s - 17) // Level with the thin line
                                      : (bottom ? -1 : 1) * BubbleSize / 2 * (s - 1); // Keeps it level with the scaled island
             BubbleScale.ScaleX = BubbleScale.ScaleY = Math.Max(0, bubbleScale.Value * s);
             Bubble.Opacity = Math.Clamp(bubbleOpacity.Value, 0, 1) * visible;
@@ -2217,7 +2324,7 @@ namespace WindowsIsland
             double dotsBase = away ? SizeOf(View.Idle).Width : w;
             ThinGaugesScale.ScaleX = ThinGaugesScale.ScaleY = s;
             ThinGaugesShift.X = (w / 2 + 5 + 15.5) * s;
-            ThinGaugesShift.Y = bottom ? 7 - 3 * s : 3 * s - 7; // Level with the thin line
+            ThinGaugesShift.Y = bottom ? 7 - 4.5 * s : 4.5 * s - 7; // Level with the thin line
             ThinGauges.Opacity = Math.Clamp(thinGaugesOpacity.Value, 0, 1) * visible;
             PrivacyShift.X = -(dotsBase / 2 + BubbleGap + PrivacyDots.Width / 2) * s; // Straight to its place: it follows the island's own spring
             PrivacyShift.Y = (bottom ? -1 : 1) * (Math.Min(h, 34) * s - PrivacyDots.Height) / 2; // Level with a compact island

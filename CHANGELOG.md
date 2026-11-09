@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.0.9
+
+- **Steam downloads, in real time:** Steam writes a download's progress to its files only now and then (a new install stayed at 0% until it was paused and resumed). The island now counts the bytes Steam writes to disk while it works, starting from what its files said when the run began, so the percent moves while the download runs. When the island opens in the middle of a download it shows an ellipsis until the run is paused and resumed, instead of a wrong 0%
+- **The thin line is bigger:** wider and taller (108 x 9), with larger dots and a bigger equalizer
+- **README, images and animation:** the four READMEs describe every state of the thin line, and all images and the animation were redrawn with them
+
 ## 3.0.8
 
 - **Screen recording:** the Windows Game Bar's recording (Win+Alt+R) now shows in the island, with its time, as OBS does (a pulsing red line on the thin line). It is noticed by the video the Game Bar writes in Videos\Captures while it records. The switch is now "Screen recording" (OBS and Game Bar)

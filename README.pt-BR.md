@@ -46,12 +46,13 @@ Uma Dynamic Island para o Windows. Música, Claude Code, os limites de uso e sua
 - **Responder permissões pela ilha (experimental, desligado por padrão):** quando o Claude Code vai pedir uma permissão, como ler um banco de dados ou aplicar uma migration, a ilha mostra a ferramenta e o que ela quer fazer com **Permitir** e **Negar**. Usa um gancho que você liga nos Ajustes; se você não clicar a tempo, o Claude pergunta como sempre
 - **Ícones de sites:** com a extensão de navegador, o áudio da web mostra o ícone do próprio site, e as notificações de sites mostram o ícone e o nome do site
 - **Movimento fluido:** forma e conteúdo mudam com molas, nunca com transições de tempo fixo
+- **A linha fina é o visual padrão:** uma linha fina que mostra nela mesma o que mais importa: um brilho enquanto o Claude trabalha, um equalizador pequeno para a música, um preenchimento para o timer, um download ou a carga, um pulso quando o Claude espera você ou quando você está gravando, e dois anéis pequenos para o processador e a memória
 - **Discreta:** nunca rouba o foco, cliques ao redor chegam à janela de baixo, vira uma linha fina quando há uma janela maximizada na frente e some em tela cheia
 - **Leve:** cerca de 40 MB de memória e menos de 1% de CPU com música tocando
 - Instala só para o seu usuário, com atalhos no menu Iniciar e na Área de Trabalho e início com o Windows
 - Inglês e português do Brasil
 - Atualizações automáticas assinadas
-- **Nunca lê seu login ou token do Claude**. As únicas conexões são a verificação de atualizações neste repositório e, se você usa a extensão de navegador, o download de um ícone pequeno por site
+- **Nunca lê seu login ou token do Claude**. As únicas conexões são a verificação de atualizações neste repositório e, se você usa a extensão de navegador, o download de um ícone pequeno por site e, só se você ligar o **Placar de futebol**, o placar público da ESPN
 
 ## Estados
 
@@ -78,6 +79,29 @@ Uma Dynamic Island para o Windows. Música, Claude Code, os limites de uso e sua
 |  | <img src="docs/images/systemcompact-bars-pt.png" alt="Monitor do sistema: anéis, barras ou números" width="260"> |
 |  | <img src="docs/images/systemcompact-numbers-pt.png" alt="Monitor do sistema: anéis, barras ou números" width="260"> |
 | Volume ou brilho mudando | <img src="docs/images/level-pt.png" alt="Volume bar" width="260"> |
+
+### A linha fina
+
+A ilha recolhida é uma linha fina por padrão (Ajustes, Comportamento, "Linha fina sempre"). Ela mostra só o estado mais importante, desenhado na própria linha; passe o mouse para abrir a ilha.
+
+| Estado | Visual |
+|---|---|
+| Em repouso | <img src="docs/images/thin-idle-pt.png" alt="Em repouso" width="300"> |
+| Claude trabalhando: um brilho corre por ela (amarelo ou vermelho conforme o limite enche) | <img src="docs/images/thin-claude-pt.png" alt="Claude trabalhando: um brilho corre por ela (amarelo ou vermelho conforme o limite enche)" width="300"> |
+| Claude espera você: a linha pulsa | <img src="docs/images/thin-waiting-pt.png" alt="Claude espera você: a linha pulsa" width="300"> |
+| Música: um equalizador pequeno na cor da capa | <img src="docs/images/thin-music-pt.png" alt="Música: um equalizador pequeno na cor da capa" width="300"> |
+| Timer: a linha esvazia conforme o tempo acaba | <img src="docs/images/thin-timer-pt.png" alt="Timer: a linha esvazia conforme o tempo acaba" width="300"> |
+| Um download, uma compilação ou um jogo da Steam: a linha enche com o progresso | <img src="docs/images/thin-progress-pt.png" alt="Um download, uma compilação ou um jogo da Steam: a linha enche com o progresso" width="300"> |
+| Carregando: a linha enche com a carga | <img src="docs/images/thin-charging-pt.png" alt="Carregando: a linha enche com a carga" width="300"> |
+| Gravação de tela (OBS ou Game Bar) ou bateria baixa: a linha pulsa em vermelho | <img src="docs/images/thin-alert-pt.png" alt="Gravação de tela (OBS ou Game Bar) ou bateria baixa: a linha pulsa em vermelho" width="300"> |
+| Sem internet: uma linha vermelha tracejada que pisca | <img src="docs/images/thin-offline-pt.png" alt="Sem internet: uma linha vermelha tracejada que pisca" width="300"> |
+| Concluído: a linha fica verde | <img src="docs/images/thin-done-pt.png" alt="Concluído: a linha fica verde" width="300"> |
+| Foco: uma luazinha | <img src="docs/images/thin-focus-pt.png" alt="Foco: uma luazinha" width="300"> |
+| Monitor do sistema: dois anéis pequenos, processador e memória | <img src="docs/images/thin-gauges-pt.png" alt="Monitor do sistema: dois anéis pequenos, processador e memória" width="300"> |
+| Microfone e câmera: pontos dentro da linha | <img src="docs/images/thin-privacy-pt.png" alt="Microfone e câmera: pontos dentro da linha" width="300"> |
+| Uma segunda atividade: uma bolinha pequena ao lado da linha | <img src="docs/images/thin-bubble-pt.png" alt="Uma segunda atividade: uma bolinha pequena ao lado da linha" width="300"> |
+| Troca de música: a capa, o nome e um símbolo | <img src="docs/images/thin-peek-pt.png" alt="Troca de música: a capa, o nome e um símbolo" width="300"> |
+| Volume ou brilho: uma barrinha | <img src="docs/images/thin-level-pt.png" alt="Volume ou brilho: uma barrinha" width="300"> |
 
 ## Instalar
 

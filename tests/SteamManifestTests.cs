@@ -104,6 +104,24 @@ namespace WindowsIsland.Tests
         }
 
         [Fact]
+        public void TheProgressIsWhatTheManifestSaidPlusTheBytesWrittenSince()
+        {
+            Assert.Equal(60, SteamManifest.EstimateFromWrites(6000, 0, 10000));
+            Assert.Equal(75, SteamManifest.EstimateFromWrites(6000, 1500, 10000));
+            Assert.Equal(99, SteamManifest.EstimateFromWrites(6000, 99999, 10000)); // never 100 before it is done
+            Assert.Equal(60, SteamManifest.EstimateFromWrites(6000, -500, 10000));
+            Assert.Equal(-1, SteamManifest.EstimateFromWrites(0, 100, 0));
+        }
+
+        [Fact]
+        public void TheTimeOfTheLastStateChangeIsRead()
+        {
+            string log = "[2026-11-08 23:46:25] AppID 239140 state changed : Update Required,Update Running,\n[2026-11-08 23:50:00] AppID 239140 state changed : Fully Installed,\n";
+            Dictionary<string, System.DateTime> times = SteamManifest.StateTimes(log);
+            Assert.Equal(new System.DateTime(2026, 11, 8, 23, 50, 0), times["239140"]);
+        }
+
+        [Fact]
         public void BetweenManifestWritesTheProgressCarriesOnButNotFar()
         {
             Assert.Equal(10, SteamManifest.Estimate(1000, 10000, 100, 0));
