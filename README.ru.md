@@ -86,6 +86,9 @@ Dynamic Island для Windows. Музыка, Claude Code, его лимиты и
 | Низкий заряд | <img src="docs/images/battery-low-en.gif" alt="Оповещение о низком заряде" width="420"> |
 | Claude развёрнут, с лимитами | <img src="docs/images/claudeexpanded-en.gif" alt="Развёрнутый Claude с кольцами использования" width="460"> |
 | Claude ждёт вас (разрешение или вопрос) | <img src="docs/images/banner-waiting-en.gif" alt="Claude ждёт вас (разрешение или вопрос)" width="420"> |
+| Поиск обновления (из меню в трее) | <img src="docs/images/update-checking-en.gif" alt="Поиск обновления (из меню в трее)" width="420"> |
+| Новая версия с кнопкой «Скачать» | <img src="docs/images/update-found-en.gif" alt="Новая версия с кнопкой «Скачать»" width="420"> |
+| У вас последняя версия | <img src="docs/images/update-uptodate-en.gif" alt="У вас последняя версия" width="420"> |
 | Claude Code запрашивает разрешение | <img src="docs/images/permission-en.gif" alt="Claude Code запрашивает разрешение" width="460"> |
 | Лимит Claude на 75% или 90% | <img src="docs/images/usage-90-en.gif" alt="Лимит Claude на 75% или 90%" width="420"> |
 | Лимит Claude исчерпан | <img src="docs/images/usage-100-en.gif" alt="Лимит Claude исчерпан" width="420"> |

@@ -1223,6 +1223,18 @@ namespace WindowsIsland
             clips.Add(("banner", View.Idle, () => { forced = View.Banner; Recompute(); }, 3.2));
             clips.Add(("notification", View.Idle, () => { forced = View.Banner; Recompute(); banners.Enqueue(new BannerItem { App = "Mail", Title = Strings.SampleNotificationTitle, Subtitle = Strings.SampleNotificationBody, Seconds = 5 }); NextBanner(); }, 3.4));
             clips.Add(("banner-waiting", View.Idle, () => { forced = View.Banner; Recompute(); banners.Enqueue(new BannerItem { FromClaude = true, Title = Strings.ClaudeNeedsYou, Subtitle = Strings.SampleQuestion, Seconds = 5 }); NextBanner(); }, 3.4));
+            // The update on the island: looking (a turning arrow), a new version (with its button), up to date (a check that pops)
+            clips.Add(("update-checking", View.Idle, () => { forced = View.Banner; Recompute(); ShowStatus("checking", Strings.UpdateChecking); }, 3.0));
+            steps["update-checking"] = tt => { BannerGlyph.RenderTransformOrigin = new Point(0.5, 0.5); BannerGlyph.RenderTransform = new RotateTransform(360 * 2 * tt); };
+            clips.Add(("update-found", View.Idle, () => { forced = View.Banner; Recompute(); ShowQuestion(Strings.UpdateAskTitle("4.5.0"), Strings.UpdateAskBody, () => { }); }, 3.0));
+            clips.Add(("update-uptodate", View.Idle, () => { forced = View.Banner; Recompute(); ShowStatus("uptodate", Strings.UpToDate); }, 3.0));
+            steps["update-uptodate"] = tt =>
+            {
+                double grow = Math.Min(1, tt / 0.2);
+                double scale = 0.2 + 0.8 * grow + (grow >= 1 ? 0 : 0.15 * Math.Sin(grow * Math.PI));
+                BannerGlyph.RenderTransformOrigin = new Point(0.5, 0.5);
+                BannerGlyph.RenderTransform = new ScaleTransform(scale, scale);
+            };
             foreach (string kind in new[] { "charging", "low" })
             {
                 string k = kind;

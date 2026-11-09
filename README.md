@@ -86,6 +86,9 @@ A Dynamic Island for Windows. Music, Claude Code, its usage limits and your noti
 | Battery low | <img src="docs/images/battery-low-en.gif" alt="Low battery alert" width="420"> |
 | Claude expanded, with the limits | <img src="docs/images/claudeexpanded-en.gif" alt="Claude expanded with usage rings" width="460"> |
 | Claude needs you (a permission or a question) | <img src="docs/images/banner-waiting-en.gif" alt="Claude needs you (a permission or a question)" width="420"> |
+| Looking for an update (from the tray menu) | <img src="docs/images/update-checking-en.gif" alt="Looking for an update (from the tray menu)" width="420"> |
+| A new version, with its Download button | <img src="docs/images/update-found-en.gif" alt="A new version, with its Download button" width="420"> |
+| You have the latest version | <img src="docs/images/update-uptodate-en.gif" alt="You have the latest version" width="420"> |
 | Claude Code asks for a permission | <img src="docs/images/permission-en.gif" alt="Claude Code asks for a permission" width="460"> |
 | Claude limit at 75% or 90% | <img src="docs/images/usage-90-en.gif" alt="Claude limit at 75% or 90%" width="420"> |
 | Claude limit reached | <img src="docs/images/usage-100-en.gif" alt="Claude limit reached" width="420"> |
