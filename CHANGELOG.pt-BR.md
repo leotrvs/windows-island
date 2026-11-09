@@ -2,6 +2,10 @@
 
 > Tradução de [CHANGELOG.md](CHANGELOG.md), que é o original em inglês.
 
+## 4.5.1
+
+- **Linha fina por padrão:** com uma janela maximizada na frente a ilha vira a linha fina, e as atividades (música e o resto) também viram a linha fina, para nunca cobrir as abas do navegador. Instalações novas já começam assim, e as cópias já instaladas ganham as duas opções ligadas uma vez (dá para desligar de novo nos Ajustes)
+
 ## 4.5.0
 
 - **Contorno do timer:** no timer compacto (e no Pomodoro), um anel corre em volta da pílula: cheio no começo, e some no sentido horário conforme o tempo acaba (laranja no foco, verde na pausa), sobre um trilho fraquinho

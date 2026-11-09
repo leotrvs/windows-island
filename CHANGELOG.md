@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.5.1
+
+- **Thin line by default:** with a maximized window in front the island is the thin line, and activities (music and the rest) become the thin line too, so it never covers the browser tabs. New installs start this way, and copies already installed get both switched on once (you can turn them off again in Settings)
+
 ## 4.5.0
 
 - **Timer outline:** on the compact timer (and the Pomodoro), a ring runs around the pill: full at the start, fading away clockwise as the time runs out (orange for focus, green for a break), over a faint rail

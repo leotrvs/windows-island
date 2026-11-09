@@ -47,7 +47,8 @@ namespace WindowsIsland
         public int PomodoroBreak { get; set; } = 5;
         public int PomodoroLong { get; set; } = 15;
         public bool MinimalMusicPosition { get; set; } = false; // The thin line fills along the song while music plays
-        public bool MaximizedActivitiesThin { get; set; } = false; // With a maximized window and the thin line: activities too become the thin line (hover to see them)
+        public bool ThinDefaultsApplied { get; set; } = false; // From 4.5.1: copies from before get "thin line with a maximized window" and "activities too" switched on once
+        public bool MaximizedActivitiesThin { get; set; } = true; // With a maximized window and the thin line: activities too become the thin line (hover to see them)
         public bool ShowScreenShare { get; set; } = true; // A blue dot while the screen is shared or recorded (needs the privacy dots)
         public bool LimitAt75 { get; set; } = true;     // Which limit alerts to show
         public bool LimitAt90 { get; set; } = true;
@@ -131,6 +132,14 @@ namespace WindowsIsland
                 {
                     Settings loaded = JsonSerializer.Deserialize<Settings>(File.ReadAllText(FilePath)) ?? new Settings();
                     if (loaded.SettingsVersion < CurrentVersion) loaded = Started(loaded);
+                    if (!loaded.ThinDefaultsApplied)
+                    {
+                        // Once: the thin line stays out of the way of the tabs when a window is maximized, and activities become the line too
+                        loaded.MaximizedMode = "Thin";
+                        loaded.MaximizedActivitiesThin = true;
+                        loaded.ThinDefaultsApplied = true;
+                        loaded.Save();
+                    }
                     return loaded.Sanitized();
                 }
             }
