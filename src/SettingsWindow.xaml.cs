@@ -1437,33 +1437,79 @@ namespace WindowsIsland
             }
         }
 
-        // Draws the whole settings page to a PNG for the README, at its full height.
+        // Draws the settings to a PNG for the README: each tab as a column, side by side (a single column for the welcome).
         public void SaveSnapshot(string file)
         {
-            const double scale = 2, width = 440;
-            Content.Children.Clear();
-            Build(AllTabs);
-            Content.Margin = new Thickness(20, 18, 20, 28);
-            Content.Measure(new Size(width, double.PositiveInfinity));
-            Size size = new Size(width, Content.DesiredSize.Height);
-            Content.Arrange(new Rect(size));
-            Content.UpdateLayout();
-
-            // The brush covers the panel without its margin, so it is placed inside the margin.
-            Thickness margin = Content.Margin;
-            Rect inner = new Rect(margin.Left, margin.Top, Content.ActualWidth, Content.ActualHeight);
-            DrawingVisual page = new DrawingVisual();
-            using (DrawingContext context = page.RenderOpen())
+            const double scale = 2, colWidth = 440, gap = 16, margin = 22, partGap = 14;
+            string mode = settings.SettingsMode;
+            settings.SettingsMode = "Advanced";
+            try
             {
-                context.DrawRoundedRectangle(new SolidColorBrush(SettingsTheme.WindowBack), null, new Rect(size), 16, 16);
-                context.DrawRectangle(new VisualBrush(Content) { Stretch = Stretch.Fill }, null, inner);
+                Action[] builds = welcome ? new Action[] { () => BuildWelcome() } : new Action[] { BuildActivities, BuildBehavior, BuildAppearance, BuildSystem };
+                System.Collections.Generic.List<System.Windows.Media.Imaging.RenderTargetBitmap> parts = new System.Collections.Generic.List<System.Windows.Media.Imaging.RenderTargetBitmap>();
+                System.Collections.Generic.List<double> heights = new System.Collections.Generic.List<double>();
+                foreach (Action build in builds)
+                {
+                    Content.Children.Clear();
+                    showTitles = !welcome;
+                    Content.Margin = new Thickness(0);
+                    Content.Width = colWidth; // Each column is exactly this wide, whatever the window is
+                    build();
+                    Content.Measure(new Size(colWidth, double.PositiveInfinity));
+                    Size size = new Size(colWidth, Content.DesiredSize.Height);
+                    Content.Arrange(new Rect(size));
+                    Content.UpdateLayout();
+                    DrawingVisual part = new DrawingVisual();
+                    using (DrawingContext context = part.RenderOpen())
+                        context.DrawRectangle(new VisualBrush(Content) { Stretch = Stretch.Fill }, null, new Rect(0, 0, Content.ActualWidth, Content.ActualHeight));
+                    System.Windows.Media.Imaging.RenderTargetBitmap piece = new System.Windows.Media.Imaging.RenderTargetBitmap(
+                        (int)(size.Width * scale), (int)Math.Ceiling(size.Height * scale), 96 * scale, 96 * scale, PixelFormats.Pbgra32);
+                    piece.Render(part);
+                    parts.Add(piece);
+                    heights.Add(size.Height);
+                }
+
+                // Each piece goes to the shortest column, in order
+                int columns = welcome ? 1 : 3;
+                double[] used = new double[columns];
+                double[] top = new double[parts.Count];
+                int[] where = new int[parts.Count];
+                double title = welcome ? 0 : 46;
+                for (int i = 0; i < parts.Count; i++)
+                {
+                    int c = 0;
+                    for (int k = 1; k < columns; k++) if (used[k] < used[c]) c = k;
+                    where[i] = c;
+                    top[i] = used[c];
+                    used[c] += heights[i] + partGap;
+                }
+                double totalWidth = margin * 2 + columns * colWidth + (columns - 1) * gap;
+                double totalHeight = margin * 2 + title + (used.Max() - partGap);
+                DrawingVisual page = new DrawingVisual();
+                using (DrawingContext context = page.RenderOpen())
+                {
+                    context.DrawRoundedRectangle(new SolidColorBrush(SettingsTheme.WindowBack), null, new Rect(0, 0, totalWidth, totalHeight), 16, 16);
+                    if (!welcome)
+                    {
+                        FormattedText heading = new FormattedText(Strings.SettingsTitle, CultureInfo.CurrentUICulture, FlowDirection.LeftToRight,
+                            new Typeface(new FontFamily("Segoe UI"), FontStyles.Normal, FontWeights.Bold, FontStretches.Normal), 30, new SolidColorBrush(SettingsTheme.Text), 1.0);
+                        context.DrawText(heading, new Point(margin + 4, margin - 4));
+                    }
+                    for (int i = 0; i < parts.Count; i++)
+                        context.DrawImage(parts[i], new Rect(margin + where[i] * (colWidth + gap), margin + title + top[i], colWidth, heights[i]));
+                }
+                System.Windows.Media.Imaging.RenderTargetBitmap bitmap = new System.Windows.Media.Imaging.RenderTargetBitmap(
+                    (int)(totalWidth * scale), (int)(totalHeight * scale), 96 * scale, 96 * scale, PixelFormats.Pbgra32);
+                bitmap.Render(page);
+                System.Windows.Media.Imaging.PngBitmapEncoder encoder = new System.Windows.Media.Imaging.PngBitmapEncoder();
+                encoder.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(bitmap));
+                using (System.IO.FileStream stream = System.IO.File.Create(file)) encoder.Save(stream);
             }
-            System.Windows.Media.Imaging.RenderTargetBitmap bitmap = new System.Windows.Media.Imaging.RenderTargetBitmap(
-                (int)(size.Width * scale), (int)(size.Height * scale), 96 * scale, 96 * scale, PixelFormats.Pbgra32);
-            bitmap.Render(page);
-            System.Windows.Media.Imaging.PngBitmapEncoder encoder = new System.Windows.Media.Imaging.PngBitmapEncoder();
-            encoder.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(bitmap));
-            using (System.IO.FileStream stream = System.IO.File.Create(file)) encoder.Save(stream);
+            finally
+            {
+                settings.SettingsMode = mode;
+                Content.Width = double.NaN;
+            }
         }
 
         static string Percent(double value) { return Math.Round(value * 100) + "%"; }

@@ -16,6 +16,22 @@ Uma Dynamic Island para o Windows. Música, Claude Code, os limites de uso e sua
 
 ## Recursos
 
+<table>
+<tr>
+<td width="33%" valign="top"><b>Música</b><br>Capa, um equalizador nas cores da capa, barra de progresso e os controles, de qualquer player</td>
+<td width="33%" valign="top"><b>Claude e Codex</b><br>Atividade ao vivo, limites de uso, avisos e permissões respondidas direto na ilha</td>
+<td width="33%" valign="top"><b>Atividades ao vivo</b><br>Downloads da Steam e do navegador, gravação do OBS e do Game Bar, atualizações do Windows, o placar do seu time, timers</td>
+</tr>
+<tr>
+<td width="33%" valign="top"><b>A linha fina</b><br>Recolhida, a ilha é uma linha fina que mostra o que mais importa; passe o mouse para abrir</td>
+<td width="33%" valign="top"><b>Privacidade</b><br>Pontos de microfone, câmera, compartilhamento de tela e gravação, com o nome do app</td>
+<td width="33%" valign="top"><b>Do seu jeito</b><br>Ajustes Essenciais e Avançado, boas-vindas no primeiro uso, quatro idiomas, Ajustes claro ou escuro</td>
+</tr>
+</table>
+
+<details>
+<summary><b>Todos os recursos</b></summary>
+
 - **Música** de qualquer player que aparece nos controles de mídia do Windows, como Spotify ou um navegador: capa, equalizador na cor da capa, barra de progresso que avança ao clicar, e tocar, pausar, próxima e anterior
 - **Atividade ao vivo do Claude Code:** o símbolo do Claude "pensa" enquanto ele trabalha, com o tempo decorrido, e pulsa quando ele está esperando você
 - **Uso do Claude:** anéis dos limites de **5 horas** e **semanal**, com o horário em que renovam
@@ -53,6 +69,8 @@ Uma Dynamic Island para o Windows. Música, Claude Code, os limites de uso e sua
 - Inglês e português do Brasil
 - Atualizações automáticas assinadas
 - **Nunca lê seu login ou token do Claude**. As únicas conexões são a verificação de atualizações neste repositório e, se você usa a extensão de navegador, o download de um ícone pequeno por site e, só se você ligar o **Placar de futebol**, o placar público da ESPN
+
+</details>
 
 ## Estados
 
@@ -125,7 +143,7 @@ Para testar sem instalar, rode `WindowsIsland.exe --portable`.
 3. **Clique** num aviso ou notificação para dispensar.
 4. **Clique** no ícone da bandeja, ou abra o atalho do Windows Island com ele rodando, para abrir os **Ajustes**. Clique com o botão direito no ícone para as ações rápidas e **Sair**. Clique de novo no ícone da bandeja para fechar os Ajustes.
 
-<img src="docs/images/settings-pt.png" alt="A janela de ajustes" width="320">
+<img src="docs/images/settings-pt.png" alt="A janela de ajustes" width="900">
 
 | Opção | O que faz |
 |---|---|

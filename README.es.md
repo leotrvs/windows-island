@@ -16,6 +16,22 @@ Una Dynamic Island para Windows. La música, Claude Code, sus límites de uso y 
 
 ## Funciones
 
+<table>
+<tr>
+<td width="33%" valign="top"><b>Música</b><br>Portada, un ecualizador con los colores de la portada, barra de progreso y los controles, de cualquier reproductor</td>
+<td width="33%" valign="top"><b>Claude y Codex</b><br>Actividad en vivo, límites de uso, avisos y permisos respondidos en la propia isla</td>
+<td width="33%" valign="top"><b>Actividades en vivo</b><br>Descargas de Steam y del navegador, grabación de OBS y de la Game Bar, actualizaciones de Windows, el marcador de tu equipo, temporizadores</td>
+</tr>
+<tr>
+<td width="33%" valign="top"><b>La línea fina</b><br>Recogida, la isla es una línea fina que muestra lo más importante; pasa el ratón para abrirla</td>
+<td width="33%" valign="top"><b>Privacidad</b><br>Puntos de micrófono, cámara, pantalla compartida y grabación, con el nombre de la app</td>
+<td width="33%" valign="top"><b>A tu manera</b><br>Ajustes Esenciales y Avanzado, una bienvenida en el primer uso, cuatro idiomas, Ajustes claros u oscuros</td>
+</tr>
+</table>
+
+<details>
+<summary><b>Todas las funciones</b></summary>
+
 - **Música** de cualquier reproductor que aparezca en los controles multimedia de Windows, como Spotify o un navegador: carátula, un ecualizador con el color de la carátula, una barra de progreso en la que puedes hacer clic para avanzar, y reproducir, pausar, siguiente y anterior
 - **Actividad en vivo de Claude Code:** el símbolo de Claude "piensa" mientras Claude trabaja, con el tiempo transcurrido, y late cuando te está esperando
 - **Uso de Claude:** anillos para los límites de **5 horas** y **semanal**, con la hora en que se renuevan
@@ -53,6 +69,8 @@ Una Dynamic Island para Windows. La música, Claude Code, sus límites de uso y 
 - Inglés y portugués de Brasil
 - Actualizaciones automáticas firmadas
 - **Nunca lee tu inicio de sesión ni tu token de Claude**. Sus únicas conexiones son buscar actualizaciones en este repositorio y, si usas la extensión del navegador, la descarga de un icono pequeño por sitio y, solo si activas el **Marcador de fútbol**, el marcador público de ESPN
+
+</details>
 
 ## Estados
 
@@ -125,7 +143,7 @@ Para probarla sin instalar, ejecuta `WindowsIsland.exe --portable`.
 3. **Haz clic** en un aviso o notificación para descartarlo.
 4. **Haz clic** en el icono de la bandeja, o abre el acceso directo de Windows Island mientras se ejecuta, para abrir **Settings**. Haz clic derecho en el icono para las acciones rápidas y **Salir**. Haz clic de nuevo en el icono de la bandeja para cerrar Settings.
 
-<img src="docs/images/settings-en.png" alt="La ventana de ajustes" width="320">
+<img src="docs/images/settings-en.png" alt="La ventana de ajustes" width="900">
 
 | Opción | Qué hace |
 |---|---|

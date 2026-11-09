@@ -16,6 +16,22 @@ A Dynamic Island for Windows. Music, Claude Code, its usage limits and your noti
 
 ## Features
 
+<table>
+<tr>
+<td width="33%" valign="top"><b>Music</b><br>Artwork, an equalizer in the cover's colors, a seek bar and the controls, from any player</td>
+<td width="33%" valign="top"><b>Claude and Codex</b><br>Live activity, usage limits, alerts, and permissions answered right on the island</td>
+<td width="33%" valign="top"><b>Live activities</b><br>Steam and browser downloads, OBS and Game Bar recording, Windows updates, the score of your team, timers</td>
+</tr>
+<tr>
+<td width="33%" valign="top"><b>A thin line</b><br>Collapsed, the island is a thin line that shows what matters most; hover to open it</td>
+<td width="33%" valign="top"><b>Privacy</b><br>Dots for the microphone, camera, screen sharing and recording, with the name of the app</td>
+<td width="33%" valign="top"><b>Yours to adjust</b><br>Essentials and Advanced settings, a welcome on the first run, four languages, light or dark Settings</td>
+</tr>
+</table>
+
+<details>
+<summary><b>All features</b></summary>
+
 - **Music** from any player in the Windows media controls, such as Spotify or a browser: artwork, an equalizer tinted by the artwork, a progress bar you can click to seek, and play, pause, next and previous
 - **Claude Code live activity:** the Claude spark thinks while Claude works, with the time so far, and breathes when Claude is waiting for you
 - **Claude usage:** rings for the **5-hour** and **weekly** limits, with reset times
@@ -53,6 +69,8 @@ A Dynamic Island for Windows. Music, Claude Code, its usage limits and your noti
 - English and Brazilian Portuguese
 - Signed automatic updates
 - **Never reads your Claude login or token**. Its only connections are checking this repository for updates and, if you use the browser extension, one small icon download per site and, only if you turn on **Football score**, the public scoreboard of ESPN
+
+</details>
 
 ## States
 
@@ -125,7 +143,7 @@ To try it without installing, run `WindowsIsland.exe --portable`.
 3. **Click** an alert or notification to dismiss it.
 4. **Click** the tray icon, or open the Windows Island shortcut while it runs, to open **Settings**. Right-click the icon for quick actions and **Quit**. Click the tray icon again to close Settings.
 
-<img src="docs/images/settings-en.png" alt="The settings window" width="320">
+<img src="docs/images/settings-en.png" alt="The settings window" width="900">
 
 | Option | What it does |
 |---|---|

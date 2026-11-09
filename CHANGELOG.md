@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.0.3
+
+- **Thin line:** the dots (recording, microphone, camera, screen sharing and the unread notification) now sit at the left end of the line, always, instead of in the middle
+- **README:** the features start with six highlights and the full list is folded below them; the Settings image shows the tabs as columns side by side
+
 ## 4.0.2
 
 - **Settings, Essentials:** without the theme (it is in Advanced, Appearance), without the long description under Windows notifications and with a shorter one under "Thin line always"
