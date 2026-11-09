@@ -2,6 +2,10 @@
 
 > Tradução de [CHANGELOG.md](CHANGELOG.md), que é o original em inglês.
 
+## 4.3.1
+
+- **Windows Update:** "Instalando atualizações" aparecia quando nada estava sendo instalado (o Windows usa o processo de manutenção, o TiWorker, para limpeza e quando a página do Update procura atualizações). Agora é preciso que o próprio registro do cliente de atualização diga que uma instalação começou e ainda não terminou, além do TiWorker trabalhando
+
 ## 4.3.0
 
 - **Página de atalhos:** uma página nova com a ilha aberta, com botões redondos para silenciar o microfone ou o alto-falante (vermelho ou branco enquanto mudo), tirar uma captura (Win+Shift+S), abrir os ajustes de som do Windows, e um controle de volume. Em Ajustes, Comportamento, Páginas há o interruptor e o lugar na ordem. Só os dispositivos padrão são mexidos

@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Windows.Threading;
+using System.Diagnostics.Eventing.Reader;
 using Microsoft.Win32;
 
 namespace WindowsIsland
@@ -199,6 +200,25 @@ namespace WindowsIsland
             installing = false;
         }
 
+        // The Windows Update client's own log: an update started installing (43) and nothing finished it (19 success, 20 failure) in
+        // the last hour and a half. TiWorker alone proves nothing: Windows runs it for maintenance and when the Update page looks
+        // for updates, with nothing being installed.
+        static bool InstallStarted()
+        {
+            try
+            {
+                string query = "*[System[(EventID=43 or EventID=19 or EventID=20) and TimeCreated[timediff(@SystemTime) <= 5400000]]]";
+                EventLogQuery request = new EventLogQuery("Microsoft-Windows-WindowsUpdateClient/Operational", PathType.LogName, query) { ReverseDirection = true };
+                using (EventLogReader reader = new EventLogReader(request))
+                using (EventRecord last = reader.ReadEvent())
+                    return last != null && last.Id == 43;
+            }
+            catch (Exception)
+            {
+                return false; // The log cannot be read: nothing is claimed
+            }
+        }
+
         static bool RebootNeeded()
         {
             try
@@ -215,11 +235,10 @@ namespace WindowsIsland
         {
             try
             {
-                // TiWorker is Windows' servicing process: busy for a good while means updates are going in
+                // Installing: the update client said an install started and has not said it finished, and Windows' servicing
+                // process is working on it
                 bool busy = Process.GetProcessesByName("TiWorker").Length > 0;
-                if (busy && busySince == DateTime.MinValue) busySince = DateTime.Now;
-                if (!busy) busySince = DateTime.MinValue;
-                bool now = busy && DateTime.Now - busySince > TimeSpan.FromSeconds(30);
+                bool now = busy && InstallStarted();
                 if (now)
                     Updated?.Invoke(new WatchedActivity { Id = "wu-install", App = "Windows", Title = Strings.WuInstalling, Glyph = "" });
                 else if (installing)

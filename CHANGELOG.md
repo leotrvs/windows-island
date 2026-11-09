@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.3.1
+
+- **Windows Update:** "Installing updates" showed up when nothing was installing (Windows runs its servicing process, TiWorker, for maintenance and when the Update page looks for updates). It now needs the update client's own log to say an installation started and not yet finished, as well as TiWorker working
+
 ## 4.3.0
 
 - **Shortcuts page:** a new page when the island is open, with round buttons to mute the microphone or the speakers (red or white while muted), take a screenshot (Win+Shift+S), open Windows' sound settings, and a volume slider. Settings, Behavior, Pages has its switch and its place in the order. Only the default devices are touched
