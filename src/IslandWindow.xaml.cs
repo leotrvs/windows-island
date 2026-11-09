@@ -747,9 +747,22 @@ namespace WindowsIsland
             }
         }
 
+        // The Claude app said it needs you (its own Windows notice) and the island had not noticed by itself: it counts as waiting for a while
+        DateTime toastWaitingUntil = DateTime.MinValue;
+        bool ToastWaiting { get { return DateTime.Now < toastWaitingUntil; } }
+        bool ClaudeWaitingNow { get { return claude.Waiting > 0 || ToastWaiting; } }
+
+        static bool AsksForYou(IslandNotification n)
+        {
+            string text = ((n.Title ?? "") + " " + (n.Body ?? "")).ToLowerInvariant();
+            foreach (string word in new[] { "contribui", "precisa", "permiss", "aprova", "pergunt", "aguard", "esperando", "input", "needs", "permission", "approve", "question", "waiting", "your answer" })
+                if (text.Contains(word)) return true;
+            return false;
+        }
+
         bool ClaudeActive
         {
-            get { return settings.ShowClaude && (claude.Busy > 0 || claude.Waiting > 0); }
+            get { return settings.ShowClaude && (claude.Busy > 0 || claude.Waiting > 0 || ToastWaiting); }
         }
 
         // Shows one state for screenshots and design work, e.g. --preview=MusicExpanded.
@@ -1184,19 +1197,19 @@ namespace WindowsIsland
 
         void Recompute()
         {
-            if (hovering) unreadAt = DateTime.MinValue; // Looked at
+            if (hovering) { unreadAt = DateTime.MinValue; toastWaitingUntil = DateTime.MinValue; } // Looked at
             bool music = MusicActive;
             bool working = ClaudeActive;
 
             // Priority: Claude waiting for you, then music, then Claude working, then Codex working.
             List<Activity> active = new List<Activity>();
-            if (working && claude.Waiting > 0) active.Add(Activity.Claude);
+            if (working && ClaudeWaitingNow) active.Add(Activity.Claude);
             if (music) active.Add(Activity.Music);
-            if (working && claude.Waiting == 0) active.Add(Activity.Claude);
+            if (working && !ClaudeWaitingNow) active.Add(Activity.Claude);
             if (CodexActive) active.Add(Activity.Codex);
             if (ApiActive) active.Add(Activity.External);
             if (BatteryActive) active.Add(Activity.Battery);
-            if (timer.Running) active.Insert(working && claude.Waiting > 0 ? 1 : 0, Activity.Timer);
+            if (timer.Running) active.Insert(working && ClaudeWaitingNow ? 1 : 0, Activity.Timer);
             Activity primary = active.Count > 0 ? active[0] : Activity.None;
             lastPrimary = primary;
             if (tucked)
@@ -1324,7 +1337,7 @@ namespace WindowsIsland
 
             if (primary == Activity.Claude)
             {
-                kind = claude.Waiting > 0 ? Thin.ClaudeWaiting : Thin.ClaudeWorking;
+                kind = ClaudeWaitingNow ? Thin.ClaudeWaiting : Thin.ClaudeWorking;
                 int percent = claude.Session != null && claude.Session.Percent.HasValue ? claude.Session.EffectivePercent : 0;
                 color = percent >= 90 ? ThinRed : percent >= 75 ? ThinYellow : ThinClay; // The limit tints it
             }
@@ -1701,6 +1714,7 @@ namespace WindowsIsland
         {
             if (!settings.ShowClaude || !settings.ClaudeBanners) return;
             lastClaudeBanner = DateTime.Now;
+            if (!waiting) toastWaitingUntil = DateTime.MinValue; // Done: nothing waits any more
             Enqueue(new BannerItem
             {
                 FromClaude = true,
@@ -1724,7 +1738,11 @@ namespace WindowsIsland
                 wait.Tick += (s, e) =>
                 {
                     wait.Stop();
-                    if (lastClaudeBanner < arrived.AddSeconds(-8)) EnqueueNotification(notification);
+                    if (lastClaudeBanner < arrived.AddSeconds(-8))
+                    {
+                        EnqueueNotification(notification);
+                        if (AsksForYou(notification)) { toastWaitingUntil = DateTime.Now.AddMinutes(3); Recompute(); } // The line pulses until you look
+                    }
                 };
                 wait.Start();
                 return;
