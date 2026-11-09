@@ -90,7 +90,7 @@ namespace WindowsIsland
             System.Windows.Media.RenderOptions.ProcessRenderMode = System.Windows.Interop.RenderMode.SoftwareOnly;
 
             string preview = null, render = null, frames = null, clips = null;
-            bool portable = false, uninstall = false, afterUpdate = false;
+            bool portable = false, uninstall = false, afterUpdate = false, afterCrash = false;
             for (int i = 0; i < e.Args.Length; i++)
             {
                 string arg = e.Args[i];
@@ -101,10 +101,19 @@ namespace WindowsIsland
                 else if (arg.Equals("--portable", StringComparison.OrdinalIgnoreCase)) portable = true;
                 else if (arg.Equals("--uninstall", StringComparison.OrdinalIgnoreCase)) uninstall = true;
                 else if (arg.Equals("--after-update", StringComparison.OrdinalIgnoreCase)) afterUpdate = true;
+                else if (arg.Equals("--after-crash", StringComparison.OrdinalIgnoreCase)) afterCrash = true;
                 else if (arg.StartsWith("--lang=", StringComparison.OrdinalIgnoreCase))
                     CultureInfo.CurrentUICulture = CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo(arg.Substring(7));
             }
             bool sample = preview != null || render != null || frames != null || clips != null;
+
+            int report = Array.IndexOf(e.Args, "--report"); // Writes the report that Settings copies for a problem, then quits
+            if (report >= 0 && report + 1 < e.Args.Length)
+            {
+                System.IO.File.WriteAllText(e.Args[report + 1], Diagnostics.Report(Settings.Load()));
+                Shutdown();
+                return;
+            }
 
             int diagnose = Array.IndexOf(e.Args, "--diagnose-codex");
             if (diagnose >= 0 && diagnose + 1 < e.Args.Length)
@@ -134,8 +143,9 @@ namespace WindowsIsland
             }
 
             bool dev = Array.IndexOf(e.Args, "--dev") >= 0; // A development copy that can run beside the installed one
+            if (!sample) Diagnostics.Install(this, dev);
             singleInstance = new Mutex(true, sample || dev ? @"Local\WindowsIsland.Preview." + Guid.NewGuid() : @"Local\WindowsIsland.SingleInstance", out ownsMutex);
-            if (!ownsMutex && afterUpdate) ownsMutex = WaitForPreviousVersion();
+            if (!ownsMutex && (afterUpdate || afterCrash)) ownsMutex = WaitForPreviousVersion();
             if (!ownsMutex)
             {
                 // Opening the shortcut while the island runs brings up its settings.
@@ -436,6 +446,8 @@ namespace WindowsIsland
             Updater.CleanUp();
             if (afterUpdate)
                 MainIsland.Loaded += (s, a) => MainIsland.ShowSystemBanner(Installer.Name, Strings.UpdatedTo(Installer.Version));
+            if (afterCrash)
+                MainIsland.Loaded += (s, a) => MainIsland.ShowSystemBanner(Installer.Name, Strings.ReopenedAfterFailure);
             updateTimer = new DispatcherTimer { Interval = FirstUpdateCheck };
             updateTimer.Tick += (s, a) =>
             {

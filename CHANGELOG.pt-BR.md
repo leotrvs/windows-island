@@ -2,6 +2,11 @@
 
 > Tradução de [CHANGELOG.md](CHANGELOG.md), que é o original em inglês.
 
+## 4.1.0
+
+- **Problemas:** o app guarda um registro das próprias falhas em `crash.log` (na pasta de configurações, só neste PC, sem enviar para lugar nenhum) e, depois de uma falha, reabre sozinho (no máximo 3 vezes em 5 minutos) com um aviso. Em Ajustes, Sistema, há **Copiar relatório de um problema** (versão, sistema, os ajustes diferentes do padrão e as últimas falhas, sem nomes nem chaves) e **Relatar um problema no GitHub**, que abre a página de issues para colar o relatório
+- **Testes automáticos no GitHub:** um fluxo compila o app e roda os testes a cada envio e a cada pull request
+
 ## 4.0.6
 
 - **Pedidos de permissão na ilha:** um comando longo não é mais "longo demais para aprovar": ele aparece inteiro (até 1.800 caracteres) e rola dentro da ilha, e o Permitir continua disponível (só some quando os argumentos não dá para ler como comando, arquivo ou endereço)

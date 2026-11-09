@@ -824,6 +824,23 @@ namespace WindowsIsland
             ApiRows();
             UpdateRow();
             LanguageRow();
+            // Help: a short report to copy (nothing is sent) and the page to open an issue
+            Button copyReport = new Button { Content = Strings.DiagCopy, Style = (Style)FindResource("LinkButton"), HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Center };
+            copyReport.Click += (s, e) =>
+            {
+                try { Clipboard.SetText(Diagnostics.Report(settings)); copyReport.Content = Strings.DiagCopied; }
+                catch (Exception) { copyReport.Content = Strings.DiagCopy; }
+                DispatcherTimer back = new DispatcherTimer { Interval = TimeSpan.FromSeconds(4) };
+                back.Tick += (a, b) => { back.Stop(); copyReport.Content = Strings.DiagCopy; };
+                back.Start();
+            };
+            Row("\uE8C8", null, null, null, null, copyReport);
+            ((StackPanel)card.Children[card.Children.Count - 1]).Children.Add(new TextBlock { Text = Strings.DiagHint, FontSize = 12, Foreground = (Brush)FindResource("Secondary"), TextWrapping = TextWrapping.Wrap, Margin = new Thickness(58, 0, 14, 10) });
+            ActionRow("\uE897", Strings.DiagReport, () =>
+            {
+                try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("https://github.com/leotrvs/windows-island/issues/new") { UseShellExecute = true })?.Dispose(); }
+                catch (Exception) { }
+            });
             ActionRow("\uE8A5", Strings.MenuOpenSettings, () =>
             {
                 settings.Save();

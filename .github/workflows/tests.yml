@@ -1,0 +1,21 @@
+name: Tests
+
+# Builds the app and runs its unit tests on every push and pull request. It only checks: releases are made by hand
+# (see docs/RELEASING.md), never from here.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  tests:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Build the app
+        run: dotnet build src/WindowsIsland.csproj -c Release
+      - name: Unit tests
+        run: dotnet test tests

@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.1.0
+
+- **Problems:** the app keeps a record of its own failures in `crash.log` (in the settings folder, only on this PC, sent nowhere) and, after a failure, reopens itself (at most 3 times in 5 minutes) with a note. Settings, System has **Copy report for a problem** (version, system, the settings that differ from the defaults and the last failures, without names or keys) and **Report a problem on GitHub**, which opens the issues page to paste it into
+- **Automatic tests on GitHub:** a workflow builds the app and runs the unit tests on every push and pull request
+
 ## 4.0.6
 
 - **Permission prompts on the island:** a long command is no longer "too long to approve": it is shown whole (up to 1,800 characters) and scrolls inside the island, and Allow stays available (it is only left out when the arguments are not readable as a command, a file or an address)

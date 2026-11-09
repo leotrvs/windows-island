@@ -107,7 +107,7 @@ namespace WindowsIsland
         const string RunKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
         const string RunValue = "WindowsIsland";
 
-        static string Folder
+        public static string Folder
         {
             get { return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "WindowsIsland"); }
         }
