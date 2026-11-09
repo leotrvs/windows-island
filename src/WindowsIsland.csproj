@@ -13,7 +13,7 @@
     <Product>Windows Island</Product>
     <ApplicationIcon>Assets/app.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <Version>3.0.10</Version>
+    <Version>3.0.11</Version>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <!-- A small always-on overlay: favor a low memory footprint over GC throughput -->
     <ConcurrentGarbageCollection>false</ConcurrentGarbageCollection>

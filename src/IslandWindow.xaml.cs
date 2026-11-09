@@ -406,8 +406,12 @@ namespace WindowsIsland
         // ---- Live activities pushed by scripts and apps through the local API ----
         LocalApi api;
         DiscordService discord;
-        void OnApiActivity(ApiActivity activity) { UpdateExternal(); Recompute(); }
-        void OnApiEnded(string id) { UpdateExternal(); Recompute(); }
+        void OnApiActivity(ApiActivity activity) { UpdateExternal(); UpdatePrivacy(); Recompute(); }
+        void OnApiEnded(string id) { UpdateExternal(); UpdatePrivacy(); Recompute(); }
+
+        // A screen recording (OBS or the Game Bar) is also a red dot, like the microphone's, so it stays in sight
+        // when music and Claude take the island's two places
+        bool RecordingOn { get { return (renderThin && minimalKind == Thin.Recording) || (api != null && api.Activities.Any(a => a.State == "running" && IsRecording(a))); } }
         bool ApiActive { get { return api != null && api.Activities.Count > 0; } }
 
         static readonly Brush ApiBlue = Freeze(new SolidColorBrush(Color.FromRgb(0x0A, 0x84, 0xFF)));
@@ -544,7 +548,9 @@ namespace WindowsIsland
             ThinMic.Visibility = mic && thin ? Visibility.Visible : Visibility.Collapsed;
             ThinCam.Visibility = cam && thin ? Visibility.Visible : Visibility.Collapsed;
             ThinScreen.Visibility = screen && thin ? Visibility.Visible : Visibility.Collapsed;
-            if (thin) { mic = cam = screen = false; } // Nothing of them beside the island, no name either
+            bool rec = RecordingOn;
+            RecDot.Visibility = rec && !thin ? Visibility.Visible : Visibility.Collapsed;
+            if (thin) { mic = cam = screen = false; rec = false; } // Nothing of them beside the island, no name either (the line has its own recording dot)
             // Muted or deafened in Discord, while the Discord option is on and connected
             bool deaf = settings.DiscordEnabled && discord != null && discord.Deafened;
             bool muted = settings.DiscordEnabled && discord != null && discord.Muted && !deaf;
@@ -554,7 +560,7 @@ namespace WindowsIsland
 
             // Hovering over the dots (not the island) shows the name of the app using the microphone or camera; a new app also shows it by itself if the setting asks for it.
             string label = mic || cam || screen ? PrivacyLabel() : "";
-            bool anything = mic || cam || screen || discordShown;
+            bool anything = mic || cam || screen || discordShown || rec;
             if (label != privacyLabel)
             {
                 bool added = label.Length > 0;
@@ -574,7 +580,7 @@ namespace WindowsIsland
             }
             bool showName = label.Length > 0 && (dotHover || DateTime.Now < privacyNameUntil);
             PrivacyDots.IsHitTestVisible = anything; // Only while a dot is there, so the spot is empty the rest of the time
-            double dotsWidth = 10 + 10 * ((mic ? 1 : 0) + (cam ? 1 : 0) + (screen ? 1 : 0)) + (discordShown ? 17 : 0), nameWidth = 0;
+            double dotsWidth = 10 + 10 * ((mic ? 1 : 0) + (cam ? 1 : 0) + (screen ? 1 : 0) + (rec ? 1 : 0)) + (discordShown ? 17 : 0), nameWidth = 0;
             PrivacyName.Visibility = showName ? Visibility.Visible : Visibility.Collapsed;
             if (showName)
             {
@@ -1386,7 +1392,7 @@ namespace WindowsIsland
             }
 
             bool glow = minimalKind == Thin.ClaudeWorking || minimalKind == Thin.Busy;
-            bool recordingNow = minimalKind == Thin.Recording;
+            bool recordingNow = RecordingOn;
             MinimalRec.Visibility = recordingNow ? Visibility.Visible : Visibility.Collapsed;
             if (recordingNow) MinimalRec.Opacity = clock % 1.2 < 0.7 ? 1 : 0.15; // Blinks like a recording light
             bool solid = minimalKind == Thin.Recording || minimalKind == Thin.ClaudeWaiting || minimalKind == Thin.Alert || minimalKind == Thin.Done || minimalKind == Thin.Offline;
@@ -2365,7 +2371,7 @@ namespace WindowsIsland
         {
             bool keepGoing = false;
 
-            if (presence[MinimalPanel].Value > 0.01) keepGoing |= AnimateMinimal();
+            if (presence[MinimalPanel].Value > 0.01) keepGoing |= AnimateMinimal() || RecordingOn;
 
             bool musicVisible = presence[MusicCompact].Value > 0.01 || presence[MusicExpanded].Value > 0.01;
             if (musicVisible) keepGoing |= AnimateEqualizer(dt);

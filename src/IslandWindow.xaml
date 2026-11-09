@@ -95,6 +95,7 @@
                 HorizontalAlignment="Center" VerticalAlignment="Top" Opacity="0" IsHitTestVisible="False">
             <Border.RenderTransform><TranslateTransform x:Name="PrivacyShift"/></Border.RenderTransform>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Ellipse x:Name="RecDot" Width="6" Height="6" Fill="#FF453A" Margin="2.5,0" Visibility="Collapsed"/>
                 <Ellipse x:Name="MicDot" Width="6" Height="6" Fill="#E0922A" Margin="2.5,0"/>
                 <Ellipse x:Name="CamDot" Width="6" Height="6" Fill="#3FBF5F" Margin="2.5,0"/>
                 <Ellipse x:Name="ScreenDot" Width="6" Height="6" Fill="#3B8CFF" Margin="2.5,0"/>

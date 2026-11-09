@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.0.11
+
+- **Screen recording stays in sight:** a red dot for a recording (OBS or the Game Bar) sits with the microphone and camera dots (inside the line on the thin line), so it no longer disappears when music and Claude take the island's two places
+
 ## 3.0.10
 
 - **Screen recording (OBS and Game Bar):** the icon on the normal island is red, not blue; on the thin line it is a dim red line with a blinking dot, no longer the red pulse that means an error or a low battery
