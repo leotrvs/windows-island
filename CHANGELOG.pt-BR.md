@@ -2,6 +2,10 @@
 
 > Tradução de [CHANGELOG.md](CHANGELOG.md), que é o original em inglês.
 
+## 4.6.8
+
+- **Um aviso quando o timer acaba:** a ilha agora mostra "Timer terminou" com um ícone de timer por pelo menos dez segundos, passa na frente de qualquer outro aviso e toca um som curto (opção nova nos Ajustes, em Tempos: "Som quando o timer acaba"). Ele aparece também sobre um jogo ou vídeo em tela cheia, que escondem a ilha para todo o resto. O mesmo vale para o Pomodoro passando do foco para a pausa e de volta. O não perturbe da ilha também não o esconde, e um clique o fecha
+
 ## 4.6.7
 
 - **Troca de música sem piscar:** a capa, o título e o artista não somem mais por completo para depois voltar. Uma imagem do antigo sai (para cima, ou para baixo quando a música voltou) enquanto o novo chega do outro lado, os dois ao mesmo tempo e um depois do outro, e o novo espera fora de vista até a vez dele, em vez de aparecer pronto por um instante antes. O nome que abre ao lado da capa na ilha normal entra do mesmo jeito

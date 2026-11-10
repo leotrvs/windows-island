@@ -331,13 +331,15 @@ namespace WindowsIsland
             {
                 foreach (IslandWindow island in islands)
                 {
-                    island.ShowSystemBanner(phase == TimerService.Phase.Focus ? Strings.PomodoroFocusBanner : Strings.PomodoroBreakBanner, Strings.PhaseName(phase));
+                    island.ShowSystemBanner(phase == TimerService.Phase.Focus ? Strings.PomodoroFocusBanner : Strings.PomodoroBreakBanner, Strings.PhaseName(phase), "timer", true);
                     island.FlashThin(phase != TimerService.Phase.Focus);
                 }
+                if (settings.TimerSound && !sample) System.Media.SystemSounds.Exclamation.Play();
             };
             timer.Finished += () =>
             {
-                foreach (IslandWindow island in islands) island.ShowSystemBanner(Strings.TimerFinished, "");
+                foreach (IslandWindow island in islands) island.ShowSystemBanner(Strings.TimerFinished, "", "timer", true);
+                if (settings.TimerSound && !sample) System.Media.SystemSounds.Exclamation.Play();
             };
             devices.Changed += (kind, name, connected) =>
             {

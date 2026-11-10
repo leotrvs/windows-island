@@ -99,6 +99,7 @@ namespace WindowsIsland
         public bool SystemMonitor { get; set; } = false; // CPU and memory on the collapsed island when nothing else is happening
         public string MonitorStyle { get; set; } = "Rings"; // Rings, Bars or Numbers
         public bool HideWindowsOsd { get; set; } = false; // Experimental: hide Windows' own volume popup
+        public bool TimerSound { get; set; } = true; // A short sound when a timer ends
         public bool ShowLevels { get; set; } = true; // Volume and brightness while they change
         public bool ShowPrivacyDots { get; set; } = true;
         public int PrivacyNameSeconds { get; set; } = 0; // How long the app's name shows by itself when an app starts recording (0 = only on hover)

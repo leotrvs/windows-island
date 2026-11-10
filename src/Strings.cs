@@ -505,6 +505,11 @@ namespace WindowsIsland
                                     "Mostra só a barra da ilha. Precisa da barra de volume acima. Desligue para a barra do Windows voltar",
                                     "Muestra solo la barra de la isla. Requiere la barra de volumen de arriba. Desactívalo para recuperar la del Windows",
                                     "Показывает только полосу острова. Нужна полоса громкости выше. Выключите, чтобы вернуть окно Windows");
+        public static string MenuTimerSound => T("Sound when the timer ends", "Som quando o timer acaba", "Sonido cuando termina el temporizador", "Звук, когда таймер закончился");
+        public static string HintTimerSound => T("A short sound. The alert shows over a fullscreen game or video too",
+                                                 "Um som curto. O aviso aparece também sobre um jogo ou vídeo em tela cheia",
+                                                 "Un sonido corto. El aviso también aparece sobre un juego o vídeo a pantalla completa",
+                                                 "Короткий звук. Оповещение показывается и поверх полноэкранной игры или видео");
         public static string MenuLevels => T("Volume and brightness", "Volume e brilho", "Volumen y brillo", "Громкость и яркость");
         public static string HintLevels => T("A small bar while you change the volume or the screen brightness (laptop screens only)",
                                              "Uma barrinha enquanto você muda o volume ou o brilho da tela (só telas de notebook)",

@@ -1669,7 +1669,7 @@ namespace WindowsIsland
 
             View next;
             if (forced.HasValue) next = forced.Value;
-            else if (fullscreen && settings.HideInFullscreen) next = View.Hidden;
+            else if (fullscreen && settings.HideInFullscreen && !UrgentShowing) next = View.Hidden;
             else if (permission != null) next = View.Permission; // A question that waits for a click comes first
             else if (tucked) next = View.Hidden;
             else if (DateTime.Now < bannerUntil && currentBanner?.OnClick != null) next = View.Banner; // A question waits for its button, even under the mouse
@@ -2199,6 +2199,7 @@ namespace WindowsIsland
             public Action OnClick;     // A banner that asks: a click answers yes
             public bool Spin;          // The glyph turns (looking, downloading)
             public bool Pop;           // The glyph pops in (done)
+            public bool Urgent;        // A timer that ended: it shows over a fullscreen window, past quiet mode, and goes first
         }
 
         readonly Queue<BannerItem> banners = new Queue<BannerItem>();
@@ -2522,11 +2523,11 @@ namespace WindowsIsland
             Enqueue(item, true);
         }
 
-        internal void ShowSystemBanner(string title, string body, string kind = null)
+        internal void ShowSystemBanner(string title, string body, string kind = null, bool urgent = false)
         {
-            BannerItem item = new BannerItem { App = Installer.Name, Title = title, Subtitle = body, Seconds = settings.AlertSeconds };
+            BannerItem item = new BannerItem { App = Installer.Name, Title = title, Subtitle = body, Seconds = urgent ? Math.Max(settings.AlertSeconds, 10) : settings.AlertSeconds, Urgent = urgent };
             ApplyKind(item, kind);
-            if (kind != null) { item.Side = item.Subtitle; item.Subtitle = null; } // Battery: the percentage goes big on the right
+            if (kind != null && kind != "timer") { item.Side = item.Subtitle; item.Subtitle = null; } // Battery: the percentage goes big on the right
             Enqueue(item);
         }
 
@@ -2539,6 +2540,7 @@ namespace WindowsIsland
                 case "full": item.Glyph = "\uE83F"; item.GlyphBrush = Green; break;
                 case "low": item.Glyph = "\uE850"; item.GlyphBrush = Red; break;
                 case "unplugged": item.Glyph = "\uE83F"; break;
+                case "timer": item.Glyph = "\uE916"; item.GlyphBrush = TimerOrange; break;
             }
         }
 
@@ -2550,12 +2552,28 @@ namespace WindowsIsland
 
         void Enqueue(BannerItem item, bool always = false)
         {
-            if (fullscreen && settings.HideInFullscreen) return;
+            if (item.Urgent) always = true;
+            else if (fullscreen && settings.HideInFullscreen) return;
             if (settings.IslandQuiet && !always && !item.FromClaude && !item.FromCodex) return; // Do not disturb for the island: only what Claude asks still shows
+            bool questionWaiting = DateTime.Now < bannerUntil && currentBanner?.OnClick != null; // A question keeps its place
+            if (item.Urgent && !questionWaiting)
+            {
+                // A timer that ended does not wait behind other banners
+                List<BannerItem> rest = new List<BannerItem>(banners);
+                banners.Clear();
+                banners.Enqueue(item);
+                foreach (BannerItem other in rest) banners.Enqueue(other);
+                bannerUntil = DateTime.MinValue;
+                NextBanner();
+                return;
+            }
             if (banners.Count >= 5) banners.Dequeue(); // A burst of notifications never piles up for minutes
             banners.Enqueue(item);
             if (DateTime.Now >= bannerUntil) NextBanner();
         }
+
+        // True while an urgent banner is on screen, so a fullscreen window does not hide it.
+        bool UrgentShowing { get { return DateTime.Now < bannerUntil && currentBanner != null && currentBanner.Urgent; } }
 
         void NextBanner()
         {

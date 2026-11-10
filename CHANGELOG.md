@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.6.8
+
+- **An alert when the timer ends:** the island now shows "Timer finished" with a timer icon for at least ten seconds, goes in front of any other banner, and plays a short sound (new option in Settings, Times: "Sound when the timer ends"). It also shows over a fullscreen game or video, which hide the island for everything else. The same goes for the Pomodoro changing from focus to a break and back. Do not disturb for the island does not hide it either, and a click closes it
+
 ## 4.6.7
 
 - **Song change without the blink:** the cover, the title and the artist no longer fade out to nothing and fade back in. A picture of the old one leaves (up, or down when the song went back) while the new one arrives from the other side, both at once and one piece after the other, and the new one waits out of sight until its turn instead of showing the finished thing for a moment first. The name that opens beside the cover on the normal island comes in the same way
