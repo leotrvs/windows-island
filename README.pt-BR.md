@@ -169,6 +169,14 @@ Para testar sem instalar, rode `WindowsIsland.exe --portable`.
 | Mostrar notificações do Windows | Mostra as notificações novas na ilha. Vem ligado |
 | Tamanho dos avisos | Avisos e notificações pequenos ou normais |
 | Aviso de captura de tela | Uma nota bem pequena quando você tira um print com Print Screen ou Win+Shift+S |
+| Previsão do limite | Um aviso quando o ritmo indica que o limite do Claude vai acabar antes de renovar |
+| Hoje na página do Claude | Sessões e tempo de trabalho do dia, em uma linha |
+| Área de transferência rápida | Uma página com os últimos 5 textos copiados. Desligada por padrão, só em memória, ignora gerenciadores de senha |
+| Avisos de download | Um aviso pequeno quando um arquivo grande termina de baixar |
+| Lembretes | Uma página onde você digita "ligar pro João 15h" e recebe o aviso na hora, até sobre tela cheia |
+| Só no monitor ativo | Com uma ilha por monitor, os avisos aparecem só onde você está |
+| Modo apresentação | Enquanto a tela é compartilhada, só o timer aparece |
+| Som do timer | Nenhum, suave, sino ou bipe, para o timer, o Pomodoro e os lembretes |
 | Cor dos anéis de uso | Azul, verde ou roxo. Os anéis ficam amarelos e vermelhos perto do limite |
 | Idioma | Segue o Windows por padrão. Inglês, português, espanhol e russo |
 | Ilha vazia | Mantém a ilha recolhida como uma pílula simples, sem atividades. Passe o mouse ou clique para vê-las |

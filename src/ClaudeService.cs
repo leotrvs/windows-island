@@ -39,6 +39,8 @@ namespace WindowsIsland
             public string Status;
             public string Question;
             public DateTime StatusSince;
+            public int Pid;
+            public bool Desktop;
         }
 
 
@@ -68,7 +70,16 @@ namespace WindowsIsland
             public bool Waiting;
             public DateTime Since;
             public string Question; // What a waiting chat asks, when it asked a question
+            public int Pid;         // The process of the session, to bring its window to the front
+            public bool Desktop;    // A chat of the Claude desktop app (otherwise Claude Code in a terminal)
         }
+
+        // When, at the current pace, each limit would run out before it renews (null when it would not or there is too little data)
+        public DateTime? SessionLimitAt { get; private set; }
+        public DateTime? WeeklyLimitAt { get; private set; }
+        // At this pace the limit runs out: weekly?, when, when it renews
+        public event Action<bool, DateTime, DateTime?> Forecast;
+        public DayStats Day { get; private set; } = new DayStats(Path.Combine(Settings.Folder, "day.json"));
         public string LastQuestion { get; private set; } // The question of the chat that just started waiting
         public List<ActiveSession> Active { get; private set; } = new List<ActiveSession>();
         public string WaitingName { get; private set; }
@@ -130,6 +141,8 @@ namespace WindowsIsland
             BusyName = Strings.SampleSession;
             Session = new UsageWindow { Percent = 42, ResetsAt = DateTime.Now.Date.AddHours(DateTime.Now.Hour + 2).AddMinutes(30) };
             Weekly = new UsageWindow { Percent = 18, ResetsAt = DateTime.Now.Date.AddDays(3).AddHours(9) };
+            SessionLimitAt = DateTime.Now.AddMinutes(95);
+            Day.UseSample();
         }
 
         // Several made-up chats, for the README images: how many are working and how many wait for you.
@@ -146,6 +159,8 @@ namespace WindowsIsland
             BusyName = Strings.SampleSession;
             WaitingName = waiting > 0 ? Strings.SampleSessionTwo : null;
             if (waiting == 0) Active.Add(new ActiveSession { Name = Strings.SampleSessionTwo, Since = now.AddSeconds(-31) });
+            SessionLimitAt = now.AddMinutes(95);
+            Day.UseSample();
             Active.Sort((a, b) => a.Waiting != b.Waiting ? (a.Waiting ? -1 : 1) : a.Since.CompareTo(b.Since));
         }
 
@@ -186,7 +201,7 @@ namespace WindowsIsland
             {
                 present.Add(session.Id);
                 if (session.Status == "busy" || session.Status == "waiting")
-                    active.Add(new ActiveSession { Name = session.Name, Waiting = session.Status == "waiting", Since = session.StatusSince, Question = session.Question });
+                    active.Add(new ActiveSession { Name = session.Name, Waiting = session.Status == "waiting", Since = session.StatusSince, Question = session.Question, Pid = session.Pid, Desktop = session.Desktop });
                 if (session.Status == "busy")
                 {
                     busy++;
@@ -221,6 +236,10 @@ namespace WindowsIsland
             foreach (string id in new List<string>(seen.Keys))
                 if (!present.Contains(id)) seen.Remove(id);
             primed = true;
+
+            List<string> busyIds = new List<string>();
+            foreach (SessionInfo session in sessions) if (session.Status == "busy") busyIds.Add(session.Id);
+            Day.Tick(DateTime.Now, busyIds);
 
             active.Sort((a, b) => a.Waiting != b.Waiting ? (a.Waiting ? -1 : 1) : a.Since.CompareTo(b.Since));
             Active = active;
@@ -257,6 +276,43 @@ namespace WindowsIsland
             limitPercent[index] = percent;
             int announce = LimitMath.Announce(before, level, beforePercent, percent);
             if (announce >= 0) LimitAlert?.Invoke(index == 1, announce, percent, window.EffectiveReset);
+        }
+
+        // The readings of each limit in its current window, and what was already announced for that window.
+        sealed class ForecastState
+        {
+            public readonly List<LimitMath.Sample> Samples = new List<LimitMath.Sample>();
+            public DateTime? Resets;       // The window these readings belong to
+            public DateTime? Announced;    // The limit time announced for this window
+            public DateTime? Predicted;    // The latest forecast
+        }
+
+        ForecastState sessionLimitAt = new ForecastState();
+        ForecastState weeklyLimitAt = new ForecastState();
+
+        void CheckForecast(int index, UsageWindow window, double hours, ref ForecastState state, TimeSpan threshold)
+        {
+            state.Predicted = null;
+            if (window == null || !window.Percent.HasValue || !window.EffectiveReset.HasValue) return;
+            DateTime now = DateTime.Now;
+            DateTime resets = window.EffectiveReset.Value;
+            // The reset time wobbles by seconds between readings; a different window is a clearly different reset time
+            if (!state.Resets.HasValue || (resets - state.Resets.Value).Duration() > TimeSpan.FromMinutes(10))
+            {
+                state.Samples.Clear();
+                state.Announced = null;
+            }
+            state.Resets = resets;
+            state.Samples.Add(new LimitMath.Sample { Time = now, Percent = window.Percent.Value });
+            DateTime start = resets.AddHours(-hours);
+            state.Samples.RemoveAll(s => s.Time < start);
+
+            DateTime? when = LimitMath.Forecast(window.Percent.Value, resets, hours, state.Samples, now);
+            state.Predicted = when;
+            if (!when.HasValue) return;
+            if (!LimitMath.ShouldAnnounceForecast(state.Announced, when.Value, threshold)) return;
+            state.Announced = when;
+            Forecast?.Invoke(index == 1, when.Value, resets);
         }
 
         // Called when the user opens the Claude panel, so the limits are fresh when someone looks.
@@ -298,6 +354,10 @@ namespace WindowsIsland
             Interlocked.Exchange(ref usageTakenTicks, usage.TakenUtc.Ticks);
             Session = usage.Session;
             Weekly = usage.Weekly;
+            CheckForecast(0, Session, 5, ref sessionLimitAt, TimeSpan.FromMinutes(60));
+            CheckForecast(1, Weekly, 7 * 24, ref weeklyLimitAt, TimeSpan.FromHours(12));
+            SessionLimitAt = sessionLimitAt.Predicted;
+            WeeklyLimitAt = weeklyLimitAt.Predicted;
             usageVersion++;
             signature = null;
             Changed?.Invoke();
@@ -344,6 +404,8 @@ namespace WindowsIsland
 
                         SessionInfo session = new SessionInfo();
                         session.Id = Text(root, "sessionId") ?? file;
+                        session.Pid = processId;
+                        session.Desktop = (Text(root, "entrypoint") ?? "").IndexOf("desktop", StringComparison.OrdinalIgnoreCase) >= 0;
                         session.Status = Text(root, "status") ?? "idle";
                         session.Name = Text(root, "name");
                         if (string.IsNullOrWhiteSpace(session.Name)) session.Name = "Claude Code";

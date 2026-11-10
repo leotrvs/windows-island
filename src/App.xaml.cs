@@ -58,8 +58,14 @@ namespace WindowsIsland
         DiscordService discord;
         internal DiscordService Discord { get { return discord; } } // Muted or deafened in Discord
         ScreenshotService screenshots;
+        ClipboardService clipboard;
+        DownloadWatcher downloads;
+        ReminderService reminders;
+        internal ReminderService Reminders { get { return reminders; } } // The reminders: text and time kept in reminders.json on this PC
+        internal ClipboardService ClipboardList { get { return clipboard; } } // The quick clipboard: the last texts copied, in memory only
         readonly List<IslandWindow> islands = new List<IslandWindow>();
         readonly DispatcherTimer followTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(300) };
+        readonly DispatcherTimer muteTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(400) }; // Which island is active, only with "only on the active monitor"
         DispatcherTimer updateTimer;
         UpdateFlow updates;
         SettingsWindow settingsWindow;
@@ -236,6 +242,9 @@ namespace WindowsIsland
             hotkey = new HotkeyService();
             hotkey.Pressed += () => MainIsland?.ToggleOpen();
             screenshots = new ScreenshotService();
+            clipboard = new ClipboardService(Dispatcher);
+            downloads = new DownloadWatcher();
+            reminders = new ReminderService(Dispatcher);
             api = new LocalApi(Dispatcher);
             if (sample)
             {
@@ -323,48 +332,70 @@ namespace WindowsIsland
                 ReconcileIslands();
                 Microsoft.Win32.SystemEvents.DisplaySettingsChanged += (s, a) => Dispatcher.BeginInvoke(new Action(ReconcileIslands));
                 followTimer.Tick += (s, a) => FollowMouse();
+                muteTimer.Tick += (s, a) => UpdateMuted();
             }
 
             NotificationService notifications = new NotificationService(Dispatcher);
-            notifications.Arrived += n => { foreach (IslandWindow island in islands) island.ShowNotification(n); };
+            notifications.Arrived += n => { foreach (IslandWindow island in Targets()) island.ShowNotification(n); };
             timer.PhaseChanged += phase =>
             {
-                foreach (IslandWindow island in islands)
+                foreach (IslandWindow island in Targets())
                 {
                     island.ShowSystemBanner(phase == TimerService.Phase.Focus ? Strings.PomodoroFocusBanner : Strings.PomodoroBreakBanner, Strings.PhaseName(phase), "timer", true);
                     island.FlashThin(phase != TimerService.Phase.Focus);
                 }
-                if (settings.TimerSound && !sample) System.Media.SystemSounds.Exclamation.Play();
+                if (!sample) TimerSounds.Play(settings);
             };
             timer.Finished += () =>
             {
-                foreach (IslandWindow island in islands) island.ShowSystemBanner(Strings.TimerFinished, "", "timer", true);
-                if (settings.TimerSound && !sample) System.Media.SystemSounds.Exclamation.Play();
+                foreach (IslandWindow island in Targets()) island.ShowSystemBanner(Strings.TimerFinished, "", "timer", true);
+                if (!sample) TimerSounds.Play(settings);
             };
             devices.Changed += (kind, name, connected) =>
             {
                 if (kind == DeviceService.Kind.Network)
                     foreach (IslandWindow island in islands) island.SetOnline(connected);
                 if (kind == DeviceService.Kind.Network)
-                    MainIsland?.ShowToast(connected ? Strings.NetworkOnline : Strings.NetworkOffline, connected ? "\uE701" : "\uF384", 2.6);
+                    Notifier?.ShowToast(connected ? Strings.NetworkOnline : Strings.NetworkOffline, connected ? "\uE701" : "\uF384", 2.6);
                 else
-                    MainIsland?.ShowToast(connected ? Strings.DeviceConnected(name) : Strings.DeviceDisconnected(name), kind == DeviceService.Kind.Bluetooth ? "\uE702" : "\uE88E", 2.6);
+                    Notifier?.ShowToast(connected ? Strings.DeviceConnected(name) : Strings.DeviceDisconnected(name), kind == DeviceService.Kind.Bluetooth ? "\uE702" : "\uE88E", 2.6);
             };
             if (api != null)
             {
-                api.AlertReceived += a => MainIsland?.ShowApiAlert(a);
+                api.AlertReceived += a => Notifier?.ShowApiAlert(a);
                 api.MediaHint += h => media.ApplyHint(h);
             }
-            levels.Changed += (kind, percent, muted) => MainIsland?.ShowLevel(kind, percent, muted);
-            claude.LimitAlert += (weekly, level, percent, resets) => MainIsland?.ShowLimitAlert(weekly, level, percent, resets);
-            if (api != null) api.PermissionAsked += p => { if (MainIsland != null) MainIsland.ShowPermission(p); else p.Resolve("none"); };
-            screenshots.Taken += () => MainIsland?.ShowToast(Strings.ScreenshotTaken, "\uE722", 2.2);
-            battery.Alert += (title, body, kind) => MainIsland?.ShowSystemBanner(title, body, kind);
+            levels.Changed += (kind, percent, muted) => Notifier?.ShowLevel(kind, percent, muted);
+            claude.LimitAlert += (weekly, level, percent, resets) => Notifier?.ShowLimitAlert(weekly, level, percent, resets);
+            claude.Forecast += (weekly, when, resets) => Notifier?.ShowLimitForecast(weekly, when, resets);
+            if (api != null) api.PermissionAsked += p => { if (Notifier != null) Notifier.ShowPermission(p); else p.Resolve("none"); };
+            screenshots.Taken += () => Notifier?.ShowToast(Strings.ScreenshotTaken, "\uE722", 2.2);
+            downloads.Completed += (path, size) => Dispatcher.BeginInvoke(new Action(() =>
+            {
+                // While the screen is shared the file name stays out of sight
+                string name = privacy.Screen ? "" : DownloadTracker.ShortName(System.IO.Path.GetFileName(path), 36);
+                Notifier?.ShowDownloadBanner(privacy.Screen ? Strings.DownloadDoneHidden : Strings.DownloadDone, name, DownloadTracker.FormatSize(size), () => DownloadWatcher.Reveal(path));
+            }));
+            reminders.Due += (text, late) =>
+            {
+                foreach (IslandWindow island in Targets()) island.ShowSystemBanner(Strings.ReminderBanner, late ? text + " " + Strings.ReminderLate : text, "reminder", true);
+                if (!sample) TimerSounds.Play(settings);
+            };
+            battery.Alert += (title, body, kind) => Notifier?.ShowSystemBanner(title, body, kind);
             Action applySettings = () =>
             {
                 if (!sample) Strings.Use(settings.Language);
-                if (settings.ShowPrivacyDots && !sample) { privacy.Start(); privacy.Refresh(); }
+                // The quick clipboard also needs to know when the screen is shared, to hide its texts then
+                if ((settings.ShowPrivacyDots || settings.ClipboardHistory || settings.ShowDownloadAlerts || settings.PresentationMode) && !sample) { privacy.Start(); privacy.Refresh(); }
                 else privacy.Stop();
+                downloads.MinMb = settings.DownloadMinMb;
+                if (settings.ShowDownloadAlerts && !sample) downloads.Start();
+                else downloads.Stop();
+                if (settings.ShowReminders && !sample) reminders.Start();
+                else reminders.Stop();
+                clipboard.SetKeep(settings.ClipboardForgetMinutes);
+                if (settings.ClipboardHistory && !sample) clipboard.Start();
+                else clipboard.Stop(); // Turned off: the list is emptied
                 battery.AlertsOn = settings.BatteryAlerts;
                 if ((settings.BatteryAlerts || settings.BatteryActivity) && !sample) battery.Start();
                 else battery.Stop();
@@ -424,7 +455,12 @@ namespace WindowsIsland
             updates.Ask = (version, yes) => MainIsland.ShowQuestion(Strings.UpdateAskTitle(version), Strings.UpdateAskBody, yes);
             if (dev && Array.IndexOf(e.Args, "--show-menu") >= 0) Dispatcher.BeginInvoke(new Action(() => tray.ShowMenu()), DispatcherPriority.Background); // For looking at the tray menu
             if (sample) return;
-            if (settings.ShowPrivacyDots) privacy.Start();
+            if (settings.ShowPrivacyDots || settings.ClipboardHistory || settings.ShowDownloadAlerts || settings.PresentationMode) privacy.Start();
+            clipboard.SetKeep(settings.ClipboardForgetMinutes);
+            if (settings.ClipboardHistory) clipboard.Start();
+            downloads.MinMb = settings.DownloadMinMb;
+            if (settings.ShowDownloadAlerts) downloads.Start();
+            if (settings.ShowReminders) reminders.Start();
             battery.AlertsOn = settings.BatteryAlerts;
             if (settings.BatteryAlerts || settings.BatteryActivity) battery.Start();
             if (settings.HotkeyEnabled) HotkeyFailed = !hotkey.Apply(true, settings.HotkeyCombo);
@@ -491,6 +527,43 @@ namespace WindowsIsland
             wait.Start();
         }
 
+        // "Only on the monitor you are using": with one island per monitor, a new alert goes to the island of the monitor
+        // with the mouse. Nobody is left out when none matches.
+        bool ActiveOnly
+        {
+            get { return settings.ActiveMonitorOnly && islands.Count > 1 && string.Equals(settings.Monitor, "All", StringComparison.OrdinalIgnoreCase); }
+        }
+
+        bool IsActiveIsland(IslandWindow island, string cursorId)
+        {
+            return island.Target?.Id == cursorId;
+        }
+
+        // The islands that get a new alert.
+        IEnumerable<IslandWindow> Targets()
+        {
+            if (!ActiveOnly) return islands.ToArray();
+            string id = Displays.UnderCursor().Id;
+            bool any = islands.Exists(i => IsActiveIsland(i, id));
+            return islands.Where(i => IslandRules.GetsAlert(true, IsActiveIsland(i, id), any)).ToArray();
+        }
+
+        // The island that gets a single alert (a toast, a level, a limit): the active one, else the main one.
+        IslandWindow Notifier
+        {
+            get { return Targets().FirstOrDefault() ?? (islands.Count > 0 ? MainIsland : null); }
+        }
+
+        // The other islands stay quiet (no music, no Claude) while the option is on.
+        void UpdateMuted()
+        {
+            bool on = ActiveOnly;
+            string id = on ? Displays.UnderCursor().Id : null;
+            bool any = on && islands.Exists(i => IsActiveIsland(i, id));
+            foreach (IslandWindow island in islands) island.SetMuted(on && !IslandRules.GetsAlert(true, IsActiveIsland(island, id), any));
+            muteTimer.IsEnabled = on;
+        }
+
         // The island on the primary monitor (or the only one) speaks for the app, such as update messages.
         IslandWindow MainIsland
         {
@@ -531,6 +604,7 @@ namespace WindowsIsland
                 islands.Sort((a, b) => wanted.FindIndex(d => d.Id == a.Target?.Id).CompareTo(wanted.FindIndex(d => d.Id == b.Target?.Id)));
             }
             followTimer.IsEnabled = follow;
+            UpdateMuted();
         }
 
         void OpenIsland(Display display)
@@ -567,6 +641,9 @@ namespace WindowsIsland
         {
             tray?.Dispose();
             screenshots?.Dispose();
+            clipboard?.Dispose(); // Forgets the copied texts
+            downloads?.Dispose();
+            reminders?.Dispose();
             api?.Stop();
             discord?.Stop();
             steam?.Stop();

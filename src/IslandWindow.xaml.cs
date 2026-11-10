@@ -18,8 +18,8 @@ namespace WindowsIsland
 {
     public partial class IslandWindow : Window
     {
-        enum View { Hidden, Minimal, MusicPeek, LevelMini, QuickExpanded, Idle, MusicCompact, ClaudeCompact, CodexCompact, TimerCompact, BatteryCompact, ExternalCompact, SystemCompact, MusicExpanded, ClaudeExpanded, TimerExpanded, SystemExpanded, ExternalExpanded, Banner, Toast, Level, Permission }
-        enum Activity { None, Music, Claude, Codex, Timer, Battery, System, External, Quick }
+        enum View { Hidden, Minimal, MusicPeek, LevelMini, QuickExpanded, ClipboardExpanded, ReminderExpanded, Idle, MusicCompact, ClaudeCompact, CodexCompact, TimerCompact, BatteryCompact, ExternalCompact, SystemCompact, MusicExpanded, ClaudeExpanded, TimerExpanded, SystemExpanded, ExternalExpanded, Banner, Toast, Level, Permission }
+        enum Activity { None, Music, Claude, Codex, Timer, Battery, System, External, Quick, Clipboard, Reminder }
 
         static readonly Dictionary<View, Size> Sizes = new Dictionary<View, Size>
         {
@@ -39,6 +39,8 @@ namespace WindowsIsland
             [View.MusicExpanded] = new Size(372, 152),
             [View.TimerExpanded] = new Size(372, 150),
             [View.QuickExpanded] = new Size(372, 150),
+            [View.ClipboardExpanded] = new Size(372, 150),
+            [View.ReminderExpanded] = new Size(372, 172),
             [View.SystemExpanded] = new Size(372, 150),
             [View.ClaudeExpanded] = new Size(372, 156),
             [View.Banner] = new Size(352, 74),
@@ -135,6 +137,8 @@ namespace WindowsIsland
             panels[View.ExternalExpanded] = ExternalExpanded;
             panels[View.TimerExpanded] = TimerExpanded;
             panels[View.QuickExpanded] = QuickExpanded;
+            panels[View.ClipboardExpanded] = ClipboardExpanded;
+            panels[View.ReminderExpanded] = ReminderExpanded;
             panels[View.SystemExpanded] = SystemExpanded;
             panels[View.MusicExpanded] = MusicExpanded;
             panels[View.ClaudeExpanded] = ClaudeExpanded;
@@ -200,6 +204,7 @@ namespace WindowsIsland
             PermOpen.MouseLeftButtonDown += (s, e) => e.Handled = true;
             OpenClaudeLink.MouseLeftButtonUp += (s, e) => { e.Handled = true; OpenClaudeNeedsInput(); };
             OpenClaudeLink.MouseLeftButtonDown += (s, e) => e.Handled = true;
+            WireChatLines();
             // Resting the mouse on the small second activity opens the island straight on that activity's page
             bubbleTimer.Tick += (s, e) =>
             {
@@ -231,6 +236,10 @@ namespace WindowsIsland
             if (api != null) { api.ActivityUpdated += OnApiActivity; api.ActivityEnded += OnApiEnded; }
             focusState = (Application.Current as App)?.Focus;
             if (focusState != null) focusState.Changed += OnFocusChanged;
+            clipboardList = (Application.Current as App)?.ClipboardList;
+            if (clipboardList != null) clipboardList.Changed += OnClipboardChanged;
+            SetupButton(ClipboardClearButton, () => { if (!clipboardSample) clipboardList?.Clear(); });
+            WireReminders();
 
             SourceInitialized += (s, e) =>
             {
@@ -305,7 +314,7 @@ namespace WindowsIsland
         void OnClaudeChanged() { UpdateClaude(); Recompute(); }
 
         void OnTimerChanged() { UpdateTimerPage(); Recompute(); }
-        void OnPrivacyChanged() { UpdatePrivacy(); Recompute(); }
+        void OnPrivacyChanged() { UpdatePrivacy(); UpdateClipboard(true); Recompute(); }
 
         // Muting or unmuting in Discord brings the island back for a moment, even if it was put away or auto-hidden,
         // so the change is noticed; the crossed icon stays beside it while you are muted.
@@ -532,8 +541,20 @@ namespace WindowsIsland
             if (battery != null && battery.HasBattery) BatteryCompactText.Text = battery.Percent + "%";
         }
 
-        bool ScreenOn { get { return settings.ShowPrivacyDots && settings.ShowScreenShare && privacy.Screen; } }
-        bool PrivacyOn { get { return settings.ShowPrivacyDots && (privacy.Microphone || privacy.Camera || ScreenOn); } }
+        // Presentation mode: while the screen is shared or recorded, only the timer (and its alert) shows. No dots either.
+        bool Presenting { get { return IslandRules.Presenting(settings.PresentationMode, privacy.Screen); } }
+
+        // True on an island that is not on the active monitor ("only on the monitor you are using"): no music or Claude here.
+        bool muted;
+        internal void SetMuted(bool value)
+        {
+            if (muted == value) return;
+            muted = value;
+            Recompute();
+        }
+
+        bool ScreenOn { get { return !Presenting && settings.ShowPrivacyDots && settings.ShowScreenShare && privacy.Screen; } }
+        bool PrivacyOn { get { return !Presenting && settings.ShowPrivacyDots && (privacy.Microphone || privacy.Camera || ScreenOn); } }
 
         string privacyLabel = "";
         bool dotHover; // The mouse is over the dots themselves: that is what shows the app name
@@ -556,7 +577,7 @@ namespace WindowsIsland
         void UpdatePrivacy()
         {
             UpdateFocusMoon();
-            bool mic = privacy.Microphone && settings.ShowPrivacyDots, cam = privacy.Camera && settings.ShowPrivacyDots, screen = ScreenOn;
+            bool mic = privacy.Microphone && settings.ShowPrivacyDots && !Presenting, cam = privacy.Camera && settings.ShowPrivacyDots && !Presenting, screen = ScreenOn;
             // On the thin line the dots sit inside it; otherwise they sit beside the island
             bool thin = view == View.Minimal;
             MicDot.Visibility = mic && !thin ? Visibility.Visible : Visibility.Collapsed;
@@ -714,6 +735,229 @@ namespace WindowsIsland
             QuickVolumeText.Text = quickVolume < 0 ? "" : shown + "%";
         }
 
+        // ---------- The quick clipboard page ----------
+        // The last texts copied, one line each; a click puts one back on the clipboard (the user pastes it with Ctrl+V).
+        // The texts come from ClipboardService and stay in memory; while the screen is shared they are masked.
+
+        ClipboardService clipboardList;
+        bool clipboardSample;                                  // README images: made-up texts, the clipboard is not touched
+        List<ClipboardHistory.Item> clipboardSampleItems;
+        string clipboardCopiedText;                            // The row that was just copied shows "Copied" for a moment
+        DateTime clipboardCopiedUntil = DateTime.MinValue;
+        DateTime clipboardRead = DateTime.MinValue;
+        string clipboardDrawn;
+        static readonly Brush ClipboardHover = Freeze(new SolidColorBrush(Color.FromArgb(0x1A, 0xFF, 0xFF, 0xFF)));
+
+        void OnClipboardChanged() { UpdateClipboard(true); Recompute(); }
+
+        bool ClipboardMasked { get { return privacy.Screen; } } // Any screen capture or share Windows reports, whatever the dot settings
+
+        IReadOnlyList<ClipboardHistory.Item> ClipboardItems
+        {
+            get
+            {
+                if (clipboardSample) return clipboardSampleItems;
+                return clipboardList != null ? clipboardList.Items : new List<ClipboardHistory.Item>();
+            }
+        }
+
+        void UpdateClipboard(bool force)
+        {
+            if (!force && (DateTime.Now - clipboardRead).TotalMilliseconds < 1000) return; // The "12 s ago" texts, once a second
+            clipboardRead = DateTime.Now;
+            IReadOnlyList<ClipboardHistory.Item> items = ClipboardItems;
+            bool masked = ClipboardMasked && !clipboardSample;
+            DateTime now = DateTime.Now;
+            bool copiedShown = now < clipboardCopiedUntil;
+            // Redrawn only when something visible changed
+            System.Text.StringBuilder key = new System.Text.StringBuilder(Strings.Current + (masked ? "|m" : "|") + (copiedShown ? clipboardCopiedText?.GetHashCode().ToString() : ""));
+            foreach (ClipboardHistory.Item item in items) key.Append('|').Append(item.Text.GetHashCode()).Append(':').Append(Strings.ClipboardAgo(now - item.Copied));
+            string drawn = key.ToString();
+            if (!force && drawn == clipboardDrawn) return;
+            clipboardDrawn = drawn;
+
+            ClipboardTitleText.Text = Strings.ClipboardTitle;
+            ClipboardClearText.Text = Strings.ClipboardClear;
+            ClipboardHiddenText.Text = "· " + Strings.ClipboardHidden;
+            ClipboardHiddenText.Visibility = masked && items.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+            ClipboardClearButton.Visibility = items.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+            ClipboardEmptyText.Text = Strings.ClipboardEmpty;
+            ClipboardEmptyText.Visibility = items.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+            ClipboardList.Children.Clear();
+            foreach (ClipboardHistory.Item item in items)
+            {
+                string text = item.Text;
+                Border row = new Border { Height = 19, CornerRadius = new CornerRadius(5), Background = Brushes.Transparent, Cursor = Cursors.Hand, Margin = new Thickness(-6, 0, -6, 0), Padding = new Thickness(6, 0, 6, 0) };
+                Grid line = new Grid();
+                line.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                line.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+                line.Children.Add(new TextBlock
+                {
+                    Text = masked ? ClipboardHistory.Masked : ClipboardHistory.OneLine(text),
+                    FontSize = 12.5, TextTrimming = TextTrimming.CharacterEllipsis, VerticalAlignment = VerticalAlignment.Center,
+                });
+                bool copied = copiedShown && text == clipboardCopiedText;
+                TextBlock side = new TextBlock
+                {
+                    Text = copied ? Strings.ClipboardCopied : Strings.ClipboardAgo(now - item.Copied),
+                    FontSize = 10.5, Margin = new Thickness(10, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center,
+                    Foreground = copied ? Green : (Brush)FindResource("Secondary"),
+                };
+                Grid.SetColumn(side, 1);
+                line.Children.Add(side);
+                row.Child = line;
+                row.MouseEnter += (s, e) => row.Background = ClipboardHover;
+                row.MouseLeave += (s, e) => row.Background = Brushes.Transparent;
+                row.MouseLeftButtonDown += (s, e) => e.Handled = true;
+                row.MouseLeftButtonUp += async (s, e) =>
+                {
+                    e.Handled = true;
+                    if (clipboardSample || clipboardList == null) return;
+                    if (!await clipboardList.CopyBack(text)) return;
+                    clipboardCopiedText = text;
+                    clipboardCopiedUntil = DateTime.Now.AddSeconds(1.5);
+                    UpdateClipboard(true);
+                };
+                ClipboardList.Children.Add(row);
+            }
+        }
+
+        // ---------- The reminders page ----------
+        // A field to type in ("call John 3pm") and the next 5 reminders. The island is a no-activate overlay, so a click on the
+        // field lifts that style and brings the window forward (Native.TakeFocus); Enter, Esc or leaving the field gives it
+        // back and returns the focus to the window that had it. The island stays open while the field has the focus.
+
+        ReminderService reminders;
+        bool reminderSample;                                   // README images: made-up reminders, nothing is saved
+        List<ReminderStore.Item> reminderSampleItems;
+        string reminderDrawn;
+        bool typing;                                           // The field has the keyboard
+        IntPtr typingPrevious;                                 // The window that had the focus before
+        DispatcherTimer reminderMessageTimer;
+
+        IReadOnlyList<ReminderStore.Item> ReminderItems
+        {
+            get
+            {
+                if (reminderSample) return reminderSampleItems;
+                return reminders != null ? reminders.Items : new List<ReminderStore.Item>();
+            }
+        }
+
+        void WireReminders()
+        {
+            reminders = (Application.Current as App)?.Reminders;
+            if (reminders != null) reminders.Changed += OnRemindersChanged;
+            ReminderInput.PreviewMouseLeftButtonDown += (s, e) => BeginTyping();
+            ReminderInput.PreviewKeyDown += (s, e) =>
+            {
+                if (e.Key == Key.Escape) { e.Handled = true; ReminderInput.Text = ""; EndTyping(true); }
+                else if (e.Key == Key.Enter) { e.Handled = true; SubmitReminder(); }
+            };
+            ReminderInput.TextChanged += (s, e) => ReminderPlaceholder.Visibility = ReminderInput.Text.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
+            ReminderInput.LostKeyboardFocus += (s, e) => { if (typing) EndTyping(true); };
+            Deactivated += (s, e) => { if (typing) EndTyping(false); }; // The user clicked another window: it keeps the focus
+            ReminderInputBorder.MouseLeftButtonDown += (s, e) => { if (!ReminderInput.IsKeyboardFocused) { BeginTyping(); ReminderInput.Focus(); } e.Handled = true; };
+        }
+
+        void OnRemindersChanged() { UpdateReminders(true); }
+
+        void BeginTyping()
+        {
+            if (typing || reminderSample) return;
+            typingPrevious = Native.Foreground();
+            typing = true;
+            leaveTimer.Stop();
+            Native.TakeFocus(hwnd);
+            Activate();
+            Dispatcher.BeginInvoke(new Action(() => { if (typing) { ReminderInput.Focus(); Keyboard.Focus(ReminderInput); } }), DispatcherPriority.Input);
+        }
+
+        void EndTyping(bool giveBack, bool recompute = true)
+        {
+            if (!typing) return;
+            typing = false;
+            Native.ReleaseFocus(hwnd, giveBack ? typingPrevious : IntPtr.Zero);
+            typingPrevious = IntPtr.Zero;
+            if (!Pill.IsMouseOver) leaveTimer.Start(); // Nobody is pointing at the island: it can close now
+            if (recompute) Recompute();
+        }
+
+        void SubmitReminder()
+        {
+            string input = ReminderInput.Text;
+            if (string.IsNullOrWhiteSpace(input)) return;
+            ReminderParser.Result parsed = ReminderParser.Parse(input, DateTime.Now);
+            if (!parsed.Ok) { ShowReminderMessage(Strings.ReminderNoTime); return; }
+            if (reminders == null || !reminders.Add(parsed.Text, parsed.When)) { ShowReminderMessage(Strings.ReminderNoTime); return; }
+            ReminderInput.Text = "";
+            EndTyping(true);
+        }
+
+        void ShowReminderMessage(string text)
+        {
+            ReminderMessageText.Text = text;
+            ReminderMessageText.Visibility = Visibility.Visible;
+            if (reminderMessageTimer == null)
+            {
+                reminderMessageTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
+                reminderMessageTimer.Tick += (s, e) => { reminderMessageTimer.Stop(); ReminderMessageText.Visibility = Visibility.Collapsed; };
+            }
+            reminderMessageTimer.Stop();
+            reminderMessageTimer.Start();
+        }
+
+        static string ReminderWhen(DateTime dueUtc)
+        {
+            DateTime local = dueUtc.ToLocalTime();
+            string time = local.ToString("HH:mm", System.Globalization.CultureInfo.InvariantCulture);
+            if (local.Date == DateTime.Today) return time;
+            if (local.Date == DateTime.Today.AddDays(1)) return Strings.ReminderTomorrow + " " + time;
+            return local.ToString("dd/MM", System.Globalization.CultureInfo.InvariantCulture) + " " + time;
+        }
+
+        void UpdateReminders(bool force)
+        {
+            IReadOnlyList<ReminderStore.Item> items = ReminderItems;
+            System.Text.StringBuilder key = new System.Text.StringBuilder(Strings.Current);
+            int shown = Math.Min(5, items.Count);
+            for (int i = 0; i < shown; i++) key.Append('|').Append(items[i].Id).Append(ReminderWhen(items[i].DueUtc));
+            string drawn = key.ToString();
+            if (!force && drawn == reminderDrawn) return;
+            reminderDrawn = drawn;
+
+            ReminderTitleText.Text = Strings.ReminderTitle;
+            ReminderPlaceholder.Text = Strings.ReminderPlaceholder;
+            ReminderPlaceholder.Visibility = ReminderInput.Text.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
+            ReminderEmptyText.Text = Strings.ReminderEmpty;
+            ReminderEmptyText.Visibility = items.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+            ReminderList.Children.Clear();
+            for (int i = 0; i < shown; i++)
+            {
+                ReminderStore.Item item = items[i];
+                string id = item.Id;
+                Border row = new Border { Height = 17, CornerRadius = new CornerRadius(5), Background = Brushes.Transparent, Margin = new Thickness(-6, 0, -6, 0), Padding = new Thickness(6, 0, 3, 0) };
+                Grid line = new Grid();
+                line.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                line.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+                line.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+                line.Children.Add(new TextBlock { Text = item.Text, FontSize = 12, TextTrimming = TextTrimming.CharacterEllipsis, VerticalAlignment = VerticalAlignment.Center });
+                TextBlock when = new TextBlock { Text = ReminderWhen(item.DueUtc), FontSize = 10.5, Margin = new Thickness(10, 0, 4, 0), VerticalAlignment = VerticalAlignment.Center, Foreground = (Brush)FindResource("Secondary") };
+                Grid.SetColumn(when, 1);
+                line.Children.Add(when);
+                Border x = new Border { Width = 16, Height = 16, CornerRadius = new CornerRadius(8), Background = Brushes.Transparent, Cursor = Cursors.Hand, VerticalAlignment = VerticalAlignment.Center };
+                x.Child = new TextBlock { Text = "", FontFamily = new FontFamily("Segoe Fluent Icons, Segoe MDL2 Assets"), FontSize = 9, Foreground = (Brush)FindResource("Secondary"), HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
+                x.MouseEnter += (s, e) => x.Background = ClipboardHover;
+                x.MouseLeave += (s, e) => x.Background = Brushes.Transparent;
+                x.MouseLeftButtonDown += (s, e) => e.Handled = true;
+                x.MouseLeftButtonUp += (s, e) => { e.Handled = true; if (!reminderSample) reminders?.Remove(id); };
+                Grid.SetColumn(x, 2);
+                line.Children.Add(x);
+                row.Child = line;
+                ReminderList.Children.Add(row);
+            }
+        }
+
         // The lengths chosen in Settings go to the timer
         void SyncPomodoro()
         {
@@ -796,7 +1040,46 @@ namespace WindowsIsland
 
         double ClaudePanelHeight
         {
-            get { return CodexSectionVisible ? 248 : 156; }
+            get { return (CodexSectionVisible ? 248 : 156) + (forecastLine ? 22 : 0) + (dayLine ? 20 : 0); }
+        }
+
+        bool forecastLine, dayLine; // The two small lines under the rings, when there is something to say
+
+        // The chat line under the mouse: a click brings that chat's window forward
+        ClaudeService.ActiveSession ChatAt(MouseEventArgs e, out double top, out double height)
+        {
+            top = height = 0;
+            int count = claude.Active.Count;
+            if (count == 0 || ClaudeStatus.ActualHeight <= 0) return null;
+            int lines = count > 1 ? Math.Min(3, count) + (count > 3 ? 1 : 0) : 1;
+            double each = ClaudeStatus.ActualHeight / lines;
+            int index = (int)(e.GetPosition(ClaudeStatus).Y / each);
+            int chats = count > 1 ? Math.Min(3, count) : 1;
+            if (index < 0 || index >= chats) return null;
+            top = index * each;
+            height = each;
+            return claude.Active[index];
+        }
+
+        void WireChatLines()
+        {
+            ClaudeStatusHost.MouseMove += (s, e) =>
+            {
+                double top, height;
+                ClaudeService.ActiveSession chat = ChatAt(e, out top, out height);
+                ClaudeStatusHost.Cursor = chat != null ? Cursors.Hand : null;
+                ChatHover.Visibility = chat != null ? Visibility.Visible : Visibility.Collapsed;
+                if (chat != null) { ChatHover.Height = height; ChatHover.Margin = new Thickness(-4, top, -4, 0); }
+            };
+            ClaudeStatusHost.MouseLeave += (s, e) => ChatHover.Visibility = Visibility.Collapsed;
+            ClaudeStatusHost.MouseLeftButtonDown += (s, e) => e.Handled = true;
+            ClaudeStatusHost.MouseLeftButtonUp += (s, e) =>
+            {
+                e.Handled = true;
+                double top, height;
+                ClaudeService.ActiveSession chat = ChatAt(e, out top, out height);
+                if (chat != null) ClaudeWindow.FocusSession(chat.Pid, chat.Desktop);
+            };
         }
 
         void UpdateCodex()
@@ -864,6 +1147,9 @@ namespace WindowsIsland
             if (discord != null) discord.Changed -= OnDiscordChanged;
             if (battery != null) battery.Changed -= OnBatteryChanged;
             if (focusState != null) focusState.Changed -= OnFocusChanged;
+            if (clipboardList != null) clipboardList.Changed -= OnClipboardChanged;
+            if (reminders != null) reminders.Changed -= OnRemindersChanged;
+            EndTyping(false, false);
             if (api != null) { api.ActivityUpdated -= OnApiActivity; api.ActivityEnded -= OnApiEnded; }
             enterTimer.Stop();
             leaveTimer.Stop();
@@ -1072,6 +1358,68 @@ namespace WindowsIsland
             SaveSnapshot(System.IO.Path.Combine(folder, "permission" + suffix + ".png"));
             sample.Cancel();
             settings.PermissionPrompts = false;
+
+            // The quick clipboard page, with made-up texts (the real clipboard is never read for the images)
+            clipboardSample = true;
+            clipboardSampleItems = new List<ClipboardHistory.Item>
+            {
+                new ClipboardHistory.Item(Strings.SampleClip1, DateTime.Now.AddSeconds(-12)),
+                new ClipboardHistory.Item(Strings.SampleClip2, DateTime.Now.AddMinutes(-2)),
+                new ClipboardHistory.Item(Strings.SampleClip3, DateTime.Now.AddMinutes(-4)),
+            };
+            settings.ClipboardHistory = true;
+            UpdateClipboard(true);
+            forced = View.ClipboardExpanded;
+            Recompute();
+            SnapAll();
+            ApplyFrame();
+            Root.UpdateLayout();
+            ApplyFrame();
+            Root.UpdateLayout();
+            SaveSnapshot(System.IO.Path.Combine(folder, "clipboardexpanded" + suffix + ".png"));
+            settings.ClipboardHistory = false;
+
+            // The reminders page and a finished download, with made-up data (nothing is read or saved)
+            reminderSample = true;
+            DateTime sampleDay = DateTime.Today;
+            reminderSampleItems = new List<ReminderStore.Item>
+            {
+                new ReminderStore.Item { Id = "a", Text = Strings.SampleReminder1, DueUtc = sampleDay.AddHours(15).ToUniversalTime() },
+                new ReminderStore.Item { Id = "b", Text = Strings.SampleReminder2, DueUtc = sampleDay.AddHours(18).AddMinutes(30).ToUniversalTime() },
+                new ReminderStore.Item { Id = "c", Text = Strings.SampleReminder3, DueUtc = sampleDay.AddDays(1).AddHours(9).ToUniversalTime() },
+            };
+            UpdateReminders(true);
+            forced = View.ReminderExpanded;
+            Recompute();
+            SnapAll();
+            ApplyFrame();
+            Root.UpdateLayout();
+            ApplyFrame();
+            Root.UpdateLayout();
+            SaveSnapshot(System.IO.Path.Combine(folder, "reminderexpanded" + suffix + ".png"));
+            reminderSampleItems = new List<ReminderStore.Item>();
+            UpdateReminders(true);
+            Recompute();
+            SnapAll();
+            ApplyFrame();
+            Root.UpdateLayout();
+            ApplyFrame();
+            Root.UpdateLayout();
+            SaveSnapshot(System.IO.Path.Combine(folder, "reminderempty" + suffix + ".png"));
+            reminderSample = false;
+
+            banners.Clear();
+            bannerUntil = DateTime.MinValue;
+            ShowDownloadBanner(Strings.DownloadDone, Strings.SampleDownloadName, DownloadTracker.FormatSize(230L * 1024 * 1024), null);
+            forced = View.Banner;
+            Recompute();
+            SnapAll();
+            ApplyFrame();
+            Root.UpdateLayout();
+            ApplyFrame();
+            Root.UpdateLayout();
+            SaveSnapshot(System.IO.Path.Combine(folder, "download" + suffix + ".png"));
+            forced = null;
 
             RenderThinStates(folder, suffix);
         }
@@ -1643,17 +1991,19 @@ namespace WindowsIsland
         void Recompute()
         {
             if (hovering) { unreadAt = DateTime.MinValue; toastWaitingUntil = DateTime.MinValue; } // Looked at
-            bool music = MusicActive;
-            bool working = ClaudeActive;
+            bool presenting = Presenting;
+            bool quiet = muted || presenting; // Not the active monitor, or sharing the screen: only the timer stays
+            bool music = MusicActive && !quiet;
+            bool working = ClaudeActive && !quiet;
 
             // Priority: Claude waiting for you, then music, then Claude working, then Codex working.
             List<Activity> active = new List<Activity>();
             if (working && ClaudeWaitingNow) active.Add(Activity.Claude);
             if (music) active.Add(Activity.Music);
             if (working && !ClaudeWaitingNow) active.Add(Activity.Claude);
-            if (CodexActive) active.Add(Activity.Codex);
-            if (ApiActive) active.Add(Activity.External);
-            if (BatteryActive) active.Add(Activity.Battery);
+            if (CodexActive && !quiet) active.Add(Activity.Codex);
+            if (ApiActive && !quiet) active.Add(Activity.External);
+            if (BatteryActive && !quiet) active.Add(Activity.Battery);
             if (timer.Running) active.Insert(working && ClaudeWaitingNow ? 1 : 0, Activity.Timer);
             Activity primary = active.Count > 0 ? active[0] : Activity.None;
             lastPrimary = primary;
@@ -1670,6 +2020,7 @@ namespace WindowsIsland
             View next;
             if (forced.HasValue) next = forced.Value;
             else if (fullscreen && settings.HideInFullscreen && !UrgentShowing) next = View.Hidden;
+            else if (presenting) next = UrgentShowing ? View.Banner : timer.Running ? View.TimerCompact : View.Hidden; // Nothing but the timer
             else if (permission != null) next = View.Permission; // A question that waits for a click comes first
             else if (tucked) next = View.Hidden;
             else if (DateTime.Now < bannerUntil && currentBanner?.OnClick != null) next = View.Banner; // A question waits for its button, even under the mouse
@@ -1727,6 +2078,7 @@ namespace WindowsIsland
             thinGauges = gauges;
             Size wanted = SizeOf(next);
             bool sizeChanged = next == view && (Math.Abs(wanted.Width - morphToW) > 0.5 || Math.Abs(wanted.Height - morphToH) > 0.5); // The name opening beside the cover widens the island in the same view
+            if (typing && next != View.ReminderExpanded) EndTyping(true, false); // The page went away (banner, other page): the keyboard goes back
             if (next != view || nextBubble != bubble || minimalChanged || gaugesChanged || sizeChanged)
             {
                 view = next;
@@ -2055,6 +2407,8 @@ namespace WindowsIsland
                 else if (name == "System" && settings.PageSystem) pages.Add(Activity.System);
                 else if (name == "Timer" && settings.PageTimer) pages.Add(Activity.Timer);
                 else if (name == "Quick" && settings.PageQuick) pages.Add(Activity.Quick);
+                else if (name == "Clipboard" && settings.ClipboardHistory && clipboardList != null) pages.Add(Activity.Clipboard); // Only while the option is on
+                else if (name == "Reminders" && settings.ShowReminders && (reminders != null || reminderSample)) pages.Add(Activity.Reminder);
             }
             return pages;
         }
@@ -2076,12 +2430,12 @@ namespace WindowsIsland
 
         static View ExpandedFor(Activity activity)
         {
-            return activity == Activity.Music ? View.MusicExpanded : activity == Activity.Timer ? View.TimerExpanded : activity == Activity.System ? View.SystemExpanded : activity == Activity.External ? View.ExternalExpanded : activity == Activity.Quick ? View.QuickExpanded : View.ClaudeExpanded;
+            return activity == Activity.Music ? View.MusicExpanded : activity == Activity.Timer ? View.TimerExpanded : activity == Activity.System ? View.SystemExpanded : activity == Activity.External ? View.ExternalExpanded : activity == Activity.Quick ? View.QuickExpanded : activity == Activity.Clipboard ? View.ClipboardExpanded : activity == Activity.Reminder ? View.ReminderExpanded : View.ClaudeExpanded;
         }
 
         static Activity ActivityOf(View value)
         {
-            return value == View.MusicExpanded ? Activity.Music : value == View.TimerExpanded ? Activity.Timer : value == View.SystemExpanded ? Activity.System : value == View.ExternalExpanded ? Activity.External : value == View.QuickExpanded ? Activity.Quick : Activity.Claude;
+            return value == View.MusicExpanded ? Activity.Music : value == View.TimerExpanded ? Activity.Timer : value == View.SystemExpanded ? Activity.System : value == View.ExternalExpanded ? Activity.External : value == View.QuickExpanded ? Activity.Quick : value == View.ClipboardExpanded ? Activity.Clipboard : value == View.ReminderExpanded ? Activity.Reminder : Activity.Claude;
         }
 
         View? PickedPage()
@@ -2095,6 +2449,7 @@ namespace WindowsIsland
         {
             if (!IsExpandedView(view) || view == View.Banner || view == View.Permission) return;
             e.Handled = true;
+            if (typing) return; // The page stays while a reminder is being typed
             if (DateTime.Now - lastWheel < TimeSpan.FromMilliseconds(280)) return; // A touchpad sends a burst
             lastWheel = DateTime.Now;
             List<Activity> pages = Pages();
@@ -2137,6 +2492,7 @@ namespace WindowsIsland
         {
             if (hovering == value) return;
             hovering = value;
+            if (!value && typing) { hovering = true; return; } // Typing a reminder: the island stays open
             UpdatePrivacy();
             if (!value) page = null; // The next visit starts on the default page again
             Recompute();
@@ -2158,11 +2514,14 @@ namespace WindowsIsland
         {
             if (suppressClick) { suppressClick = false; return; } // That press was a drag, not a click
             enterTimer.Stop();
+            if (view == View.ReminderExpanded && e.OriginalSource is DependencyObject source && (source == ReminderInput || ReminderInputBorder.IsAncestorOf(source))) return; // A click in the field is for typing
             if (view == View.Banner)
             {
                 bool fromClaude = currentBanner == null || currentBanner.FromClaude || currentBanner.FromCodex;
                 if (currentBanner?.OnClick != null) { AnswerBannerQuestion(); return; }
+                Action tap = currentBanner?.OnTap; // A click on the note itself (a finished download opens Explorer)
                 bannerUntil = DateTime.MinValue;
+                if (tap != null) { currentBanner.OnTap = null; if (banners.Count > 0) NextBanner(); else Recompute(); tap(); return; }
                 if (banners.Count > 0) { NextBanner(); return; }
                 if (!fromClaude) { Recompute(); return; } // A notification click just dismisses it
                 SetHovering(true);
@@ -2199,6 +2558,7 @@ namespace WindowsIsland
             public Action OnClick;     // A banner that asks: a click answers yes
             public bool Spin;          // The glyph turns (looking, downloading)
             public bool Pop;           // The glyph pops in (done)
+            public Action OnTap;       // Run when the banner is clicked (it still just closes otherwise)
             public bool Urgent;        // A timer that ended: it shows over a fullscreen window, past quiet mode, and goes first
         }
 
@@ -2265,7 +2625,7 @@ namespace WindowsIsland
         DateTime levelUntil;
         internal void ShowLevel(LevelService.Kind kind, int percent, bool muted)
         {
-            if (!settings.ShowLevels) return;
+            if (!settings.ShowLevels || Presenting) return;
             if (fullscreen && settings.HideInFullscreen) return;
             percent = Math.Clamp(percent, 0, 100);
             LevelGlyph.Text = kind == LevelService.Kind.Brightness ? "\uE706" : muted || percent == 0 ? "\uE74F" : percent < 34 ? "\uE992" : percent < 67 ? "\uE993" : "\uE767";
@@ -2335,6 +2695,7 @@ namespace WindowsIsland
         // A short note that never queues: a new one just restarts the time.
         internal void ShowToast(string text, string glyph, double seconds)
         {
+            if (Presenting) return;
             ToastText.Text = text;
             ToastGlyph.Text = glyph;
             toastUntil = DateTime.Now.AddSeconds(seconds);
@@ -2368,7 +2729,7 @@ namespace WindowsIsland
         internal void ShowPermission(ApiPermission request)
         {
             // Not shown at all (off, or hidden for a full-screen window): no decision, so Claude asks as usual
-            if (!settings.PermissionPrompts || (fullscreen && settings.HideInFullscreen)) { request.Resolve("none"); return; }
+            if (!settings.PermissionPrompts || Presenting || (fullscreen && settings.HideInFullscreen)) { request.Resolve("none"); return; }
             request.Closed += () => OnPermissionClosed(request);
             permissionQueue.Enqueue(request);
             if (permission == null) NextPermission();
@@ -2498,6 +2859,17 @@ namespace WindowsIsland
             Enqueue(item);
         }
 
+        // At the current pace the 5-hour or weekly limit would run out before it renews (announced once per window).
+        internal void ShowLimitForecast(bool weekly, DateTime when, DateTime? resets)
+        {
+            if (!settings.ShowClaude || !settings.ShowLimitForecast) return;
+            BannerItem item = new BannerItem { FromClaude = true, Seconds = Math.Max(settings.LimitAlertSeconds, 6) };
+            item.Title = Strings.ForecastPace;
+            item.Subtitle = weekly ? Strings.ForecastWeeklyEnds(when) : Strings.ForecastFiveHourEnds(when);
+            item.GlyphBrush = Amber;
+            Enqueue(item);
+        }
+
         // A banner that waits for a tap: yes runs the action, anything else lets it go.
         internal void ShowQuestion(string title, string body, Action yes)
         {
@@ -2527,7 +2899,7 @@ namespace WindowsIsland
         {
             BannerItem item = new BannerItem { App = Installer.Name, Title = title, Subtitle = body, Seconds = urgent ? Math.Max(settings.AlertSeconds, 10) : settings.AlertSeconds, Urgent = urgent };
             ApplyKind(item, kind);
-            if (kind != null && kind != "timer") { item.Side = item.Subtitle; item.Subtitle = null; } // Battery: the percentage goes big on the right
+            if (kind != null && kind != "timer" && kind != "reminder") { item.Side = item.Subtitle; item.Subtitle = null; } // Battery: the percentage goes big on the right
             Enqueue(item);
         }
 
@@ -2541,17 +2913,27 @@ namespace WindowsIsland
                 case "low": item.Glyph = "\uE850"; item.GlyphBrush = Red; break;
                 case "unplugged": item.Glyph = "\uE83F"; break;
                 case "timer": item.Glyph = "\uE916"; item.GlyphBrush = TimerOrange; break;
+                case "reminder": item.Glyph = "\uE823"; item.GlyphBrush = TimerOrange; break;
             }
+        }
+
+        // A big file finished downloading: a small note with the name and size on the right; a click shows it in Explorer.
+        internal void ShowDownloadBanner(string title, string name, string size, Action onClick)
+        {
+            BannerItem item = new BannerItem { Title = title, Subtitle = name, Side = size, Seconds = settings.AlertSeconds, Glyph = "\uE896", GlyphBrush = Green, OnTap = onClick };
+            Enqueue(item);
         }
 
         // True while the user is looking at or using the island, so an update restart waits.
         internal bool IsBusy
         {
-            get { return hovering || view == View.Banner || view == View.Permission || view == View.MusicExpanded || view == View.ClaudeExpanded || view == View.TimerExpanded || view == View.QuickExpanded || view == View.SystemExpanded || view == View.ExternalExpanded; }
+            get { return hovering || view == View.Banner || view == View.Permission || view == View.MusicExpanded || view == View.ClaudeExpanded || view == View.TimerExpanded || view == View.QuickExpanded || view == View.ClipboardExpanded || view == View.ReminderExpanded || view == View.SystemExpanded || view == View.ExternalExpanded; }
         }
 
         void Enqueue(BannerItem item, bool always = false)
         {
+            if (Presenting && !item.Urgent) return; // Sharing the screen: only the timer's alert
+            if (muted && !item.Urgent && !always) return; // Another monitor is the active one
             if (item.Urgent) always = true;
             else if (fullscreen && settings.HideInFullscreen) return;
             if (settings.IslandQuiet && !always && !item.FromClaude && !item.FromCodex) return; // Do not disturb for the island: only what Claude asks still shows
@@ -2702,7 +3084,7 @@ namespace WindowsIsland
 
         static bool IsExpandedView(View value)
         {
-            return value == View.MusicExpanded || value == View.ClaudeExpanded || value == View.TimerExpanded || value == View.QuickExpanded || value == View.SystemExpanded || value == View.ExternalExpanded || value == View.Banner || value == View.Permission;
+            return value == View.MusicExpanded || value == View.ClaudeExpanded || value == View.TimerExpanded || value == View.QuickExpanded || value == View.ClipboardExpanded || value == View.ReminderExpanded || value == View.SystemExpanded || value == View.ExternalExpanded || value == View.Banner || value == View.Permission;
         }
 
         void PlaceWindow()
@@ -2716,7 +3098,7 @@ namespace WindowsIsland
             // Room for the largest state at the user's sizes, plus the bubble and the shadow (all in DIPs).
             double largest = Math.Max(settings.ExpandedScale, settings.CollapsedScale);
             double wantWidth = Math.Max(520, 372 * largest + 140);
-            double tallest = Math.Max(Math.Max(Math.Max(Sizes[View.MusicExpanded].Height, Sizes[View.TimerExpanded].Height), Sizes[View.SystemExpanded].Height), ClaudePanelHeight);
+            double tallest = Math.Max(Math.Max(Math.Max(Sizes[View.MusicExpanded].Height, Sizes[View.TimerExpanded].Height), Sizes[View.SystemExpanded].Height), 248 + 22 + 20); // The Claude page at its tallest: Codex, the forecast line and the day line
             double wantHeight = Math.Max(tallest * settings.ExpandedScale, 34 * settings.CollapsedScale) + settings.OffsetY + 44;
 
             // Positions are physical pixels so each monitor keeps its own scale: first step onto the monitor
@@ -2971,6 +3353,24 @@ namespace WindowsIsland
 
             UsageWindow session = claude.Session;
             bool hasUsage = session != null && session.Percent.HasValue;
+
+            // Small lines under the rings: the limit forecast (the sooner of 5 h and weekly) and the day summary
+            DateTime? limitAt = claude.SessionLimitAt, weeklyAt = claude.WeeklyLimitAt;
+            bool weeklyFirst = weeklyAt.HasValue && (!limitAt.HasValue || weeklyAt < limitAt);
+            bool wantForecast = hasUsage && settings.ShowLimitForecast && (limitAt.HasValue || weeklyAt.HasValue);
+            ForecastText.Text = !wantForecast ? "" : weeklyFirst ? Strings.ForecastWeekly(weeklyAt.Value) : Strings.ForecastFiveHour(limitAt.Value);
+            bool wantDay = hasUsage && settings.ShowDaySummary && claude.Day.Sessions > 0;
+            ForecastText.Visibility = wantForecast ? Visibility.Visible : Visibility.Collapsed;
+            DaySummaryText.Visibility = wantDay ? Visibility.Visible : Visibility.Collapsed;
+            if (wantDay) DaySummaryText.Text = Strings.DaySummary(claude.Day.Sessions, claude.Day.Worked);
+            if (wantForecast != forecastLine || wantDay != dayLine)
+            {
+                forecastLine = wantForecast;
+                dayLine = wantDay;
+                ClaudeExpanded.Height = ClaudePanelHeight;
+                if (IsLoaded) ApplyTargets();
+            }
+
             UsageRow.Visibility = hasUsage ? Visibility.Visible : Visibility.Collapsed;
             NoUsageText.Visibility = hasUsage ? Visibility.Collapsed : Visibility.Visible;
             if (!hasUsage)
@@ -3035,6 +3435,11 @@ namespace WindowsIsland
             {
                 lastStatus = status;
                 ClaudeStatus.Text = status;
+            }
+            if (dayLine)
+            {
+                string day = Strings.DaySummary(claude.Day.Sessions, claude.Day.Worked);
+                if (day != DaySummaryText.Text) DaySummaryText.Text = day;
             }
         }
 
@@ -3187,7 +3592,7 @@ namespace WindowsIsland
                 if (pair.Key == View.MusicCompact) panel.Width = Math.Max(90, Math.Min(w, 236)); // The cover and the equalizer stay at the island's edges while it grows and shrinks
                 Canvas.SetLeft(panel, (w - panel.Width) / 2);
                 Canvas.SetTop(panel, (bottom ? h - panel.Height : 0) + slide);
-                if (pair.Key == View.MusicExpanded || pair.Key == View.ClaudeExpanded || pair.Key == View.TimerExpanded || pair.Key == View.QuickExpanded || pair.Key == View.SystemExpanded || pair.Key == View.ExternalExpanded)
+                if (pair.Key == View.MusicExpanded || pair.Key == View.ClaudeExpanded || pair.Key == View.TimerExpanded || pair.Key == View.QuickExpanded || pair.Key == View.ClipboardExpanded || pair.Key == View.ReminderExpanded || pair.Key == View.SystemExpanded || pair.Key == View.ExternalExpanded)
                     Cascade(panel, incoming, bottom, opacity);
 
                 double blur = (1 - opacity) * 12;
@@ -3327,6 +3732,18 @@ namespace WindowsIsland
             if (presence[QuickExpanded].Value > 0.01)
             {
                 UpdateQuick(false);
+                keepGoing = true;
+            }
+
+            if (presence[ClipboardExpanded].Value > 0.01)
+            {
+                UpdateClipboard(false);
+                keepGoing = true;
+            }
+
+            if (presence[ReminderExpanded].Value > 0.01)
+            {
+                UpdateReminders(false);
                 keepGoing = true;
             }
 

@@ -169,6 +169,14 @@ To try it without installing, run `WindowsIsland.exe --portable`.
 | Show Windows notifications | Shows new notifications in the island. On by default |
 | Alert size | Small or normal alerts and notifications |
 | Screenshot alert | A very small note when a screenshot is taken with Print Screen or Win+Shift+S |
+| Limit forecast | A warning when the pace says the Claude limit will run out before it renews |
+| Today on the Claude page | Sessions and working time of the day, in one line |
+| Quick clipboard | A page with the last 5 copied texts. Off by default, only in memory, ignores password managers |
+| Download alerts | A small alert when a big file finishes downloading |
+| Reminders | A page where you type "call John 3pm" and get an alert on time, even over a fullscreen window |
+| Only on the active monitor | With one island per monitor, alerts show only where you are |
+| Presentation mode | While the screen is shared, only the timer shows |
+| Timer sound | None, soft, bell or beep, for the timer, the Pomodoro and reminders |
 | Usage ring color | Blue, green or purple. The rings turn amber and red near the limit |
 | Language | Follows Windows by default. English, Portuguese, Spanish and Russian |
 | Empty island | Keeps the collapsed island a plain pill, with no live activities. Hover or click to see them |

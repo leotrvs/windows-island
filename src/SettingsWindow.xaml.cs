@@ -726,9 +726,11 @@ namespace WindowsIsland
             Toggle("\uE8EC", Strings.MenuSongName, Strings.HintSongName, () => settings.SongNameAlways, v => settings.SongNameAlways = v);
             Toggle("img:claude", Strings.MenuClaude, null, () => settings.ShowClaude, v => settings.ShowClaude = v);
             Toggle("\uEA8F", Strings.MenuBanners, null, () => settings.ClaudeBanners, v => settings.ClaudeBanners = v);
+            Toggle("\uE787", Strings.MenuDaySummary, Strings.HintDaySummary, () => settings.ShowDaySummary, v => settings.ShowDaySummary = v);
             Group("\uE9D9", Strings.GroupLimits, () =>
             {
                 Toggle("\uE9D9", Strings.MenuLimitAlerts, Strings.HintLimitAlerts, () => settings.ShowLimitAlerts, v => settings.ShowLimitAlerts = v);
+                Toggle("\uE823", Strings.MenuLimitForecast, Strings.HintLimitForecast, () => settings.ShowLimitForecast, v => settings.ShowLimitForecast = v);
                 Toggle("\uE7BA", Strings.MenuLimitAt(75), null, () => settings.LimitAt75, v => settings.LimitAt75 = v);
                 Toggle("\uE7BA", Strings.MenuLimitAt(90), null, () => settings.LimitAt90, v => settings.LimitAt90 = v);
                 Toggle("\uE7BA", Strings.MenuLimitAt(100), null, () => settings.LimitAt100, v => settings.LimitAt100 = v);
@@ -760,6 +762,13 @@ namespace WindowsIsland
             Toggle("\uE895", Strings.MenuWindowsUpdate, Strings.HintWindowsUpdate, () => settings.ShowWindowsUpdate, v => settings.ShowWindowsUpdate = v);
             Toggle("\uE896", Strings.MenuSteam, Strings.HintSteam, () => settings.ShowSteamDownloads, v => settings.ShowSteamDownloads = v);
             });
+            Group("\uE77F", Strings.GroupClipboard, () =>
+            {
+                // Sensitive (a copy can be a password): off by default, with the warning under the switch
+                Toggle("\uE77F", Strings.MenuClipboardHistory, Strings.HintClipboardHistory, () => settings.ClipboardHistory, v => { settings.ClipboardHistory = v; Dispatcher.BeginInvoke(new Action(Rebuild), DispatcherPriority.Background); });
+                if (settings.ClipboardHistory)
+                    Choice("\uE916", Strings.MenuClipboardForget, null, new[] { 60, 300, 900, 3600 }, false, () => settings.ClipboardForgetMinutes * 60, v => settings.ClipboardForgetMinutes = v / 60);
+            });
             Group("\uE720", Strings.GroupDiscord, DiscordRows);
             Group("\uE83E", Strings.GroupBattery, () =>
             {
@@ -773,6 +782,9 @@ namespace WindowsIsland
                 Toggle("\uE708", Strings.MenuFocus, Strings.HintFocus, () => settings.ShowFocus, v => settings.ShowFocus = v);
                 Toggle("\uE722", Strings.MenuScreenshot, Strings.HintScreenshot, () => settings.ShowScreenshotAlert, v => settings.ShowScreenshotAlert = v);
                 Toggle("\uE7E7", Strings.MenuNotifications, Strings.HintNotifications, () => settings.ShowNotifications, v => settings.ShowNotifications = v);
+                Toggle("\uE896", Strings.MenuDownloads, Strings.HintDownloads, () => settings.ShowDownloadAlerts, v => { settings.ShowDownloadAlerts = v; Dispatcher.BeginInvoke(new Action(Rebuild), DispatcherPriority.Background); });
+                if (settings.ShowDownloadAlerts)
+                    MegabytesRow("\uE896", Strings.MenuDownloadMin, new[] { 10, 50, 100, 500 }, () => settings.DownloadMinMb, v => settings.DownloadMinMb = v);
             });
             Group("\uE767", Strings.GroupLevels, () =>
             {
@@ -924,7 +936,10 @@ namespace WindowsIsland
                 Choice("\uE81C", Strings.MenuAlertDuration, null, new[] { 3, 5, 8, 12, 20 }, false, () => settings.AlertSeconds, v => settings.AlertSeconds = v);
                 Choice("\uE81C", Strings.MenuNotificationDuration, null, new[] { 2, 3, 5, 8, 12 }, false, () => settings.NotificationSeconds, v => settings.NotificationSeconds = v);
                 Choice("\uE81C", Strings.MenuLimitDuration, null, new[] { 3, 4, 6, 8, 12 }, false, () => settings.LimitAlertSeconds, v => settings.LimitAlertSeconds = v);
-                Toggle("\uE767", Strings.MenuTimerSound, Strings.HintTimerSound, () => settings.TimerSound, v => settings.TimerSound = v);
+                Segmented("\uE767", Strings.MenuTimerSound, new[] { Strings.SoundNone, Strings.SoundChime, Strings.SoundBell, Strings.SoundBeep },
+                    () => Math.Max(0, Array.FindIndex(IslandRules.SoundChoices, v => string.Equals(v, settings.TimerSoundChoice, StringComparison.OrdinalIgnoreCase))),
+                    i => { settings.TimerSoundChoice = IslandRules.SoundChoices[i]; TimerSounds.Play(settings.TimerSoundChoice); }); // Choosing one plays it
+                Toggle("\uE7F4", Strings.MenuPresentationMode, Strings.HintPresentationMode, () => settings.PresentationMode, v => settings.PresentationMode = v);
                 Choice("\uE769", Strings.MenuPausedMusic, null, new[] { 0, 2, 5, 15, 30, 60 }, false, () => settings.PausedMusicSeconds, v => settings.PausedMusicSeconds = v);
             });
 
@@ -948,9 +963,17 @@ namespace WindowsIsland
                 else if (name == "Claude") Toggle("img:claude", Strings.PageClaudeLabel, hint, () => settings.PageClaude, v => settings.PageClaude = v, grip);
                 else if (name == "System") Toggle("\uE9D9", Strings.PageSystemLabel, hint, () => settings.PageSystem, v => settings.PageSystem = v, grip);
                 else if (name == "Quick") Toggle("\uE713", Strings.PageQuickLabel, hint, () => settings.PageQuick, v => settings.PageQuick = v, grip);
+                else if (name == "Reminders") Toggle("", Strings.PageRemindersLabel, Strings.HintReminders, () => settings.ShowReminders, v => settings.ShowReminders = v, grip);
+                else if (name == "Clipboard") Toggle("\uE77F", Strings.PageClipboardLabel, Strings.HintClipboardHistory, () => settings.ClipboardHistory, v => { settings.ClipboardHistory = v; Dispatcher.BeginInvoke(new Action(Rebuild), DispatcherPriority.Background); }, grip); // The same switch as the quick clipboard itself
                 else Toggle("\uE916", Strings.PageTimerLabel, hint, () => settings.PageTimer, v => settings.PageTimer = v, grip);
                 pageRows.Add(pageCard.Children[pageCard.Children.Count - 1]);
             }
+        }
+
+        void MegabytesRow(string icon, string label, int[] values, Func<int> get, Action<int> set)
+        {
+            string[] names = values.Select(v => v + " MB").ToArray();
+            Row(icon, label, null, null, SegmentBar(names, Math.Max(0, Array.IndexOf(values, get())), i => set(values[i])));
         }
 
         void MinutesRow(string icon, string label, int[] values, Func<int> get, Action<int> set)
@@ -1508,6 +1531,7 @@ namespace WindowsIsland
             }
             int current = values.FindIndex(v => string.Equals(v, settings.Monitor, StringComparison.OrdinalIgnoreCase));
             Row("\uE7F4", Strings.MonitorLabel, Strings.HintMonitor, null, SegmentBar(names.ToArray(), Math.Max(0, current), i => settings.Monitor = values[i]));
+            Toggle("\uE7F4", Strings.MenuActiveMonitorOnly, Strings.HintActiveMonitorOnly, () => settings.ActiveMonitorOnly, v => settings.ActiveMonitorOnly = v);
         }
 
         void Segmented(string icon, string label, string[] names, Func<int> get, Action<int> set)

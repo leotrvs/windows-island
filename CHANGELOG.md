@@ -1,5 +1,18 @@
 # Changelog
 
+## 4.7.0
+
+- **Limit forecast:** when the pace of use says the 5-hour (or weekly) limit will run out before it renews, the island says so once: "At this pace, the 5-hour limit runs out at 22:13". The same line shows under the rings on the Claude page. Option "Limit forecast" in Settings
+- **Today, in one line:** the Claude page shows "Today: 4 sessions · 2h 15min working". Only numbers are kept, in `day.json`, and they reset at midnight
+- **Click a chat to bring its window forward:** works for Claude Desktop and for chats in a terminal
+- **Quick clipboard (off by default):** a page with the last 5 texts you copied; click one to copy it again. Only in memory, forgotten after 1, 5, 15 or 60 minutes, hidden while the screen is shared, and it ignores what Windows or a password manager marks as private. It never writes to disk, logs or the API
+- **Download complete:** a small alert when a file of 10 to 500 MB (you choose) finishes downloading in your Downloads folder; a click opens it in Explorer. It reads only names and sizes, never the files
+- **Reminders:** a new page where you type, for example, "call John 3pm" or "in 20 min drink water" (also in Portuguese, Spanish and Russian). They are kept in `reminders.json` on this PC, survive a restart, and alert you over a fullscreen window with a sound
+- **Only on the active monitor:** with one island per monitor, alerts and music can show only on the monitor you are using
+- **Presentation mode:** while the screen is shared, the island hides everything but the timer
+- **Timer sound:** choose None, Soft, Bell or Beep, with a preview. Applies to the timer, the Pomodoro and reminders. Anyone who had the sound off keeps it off
+- The Claude page is no longer cut off at the bottom when it shows both new lines
+
 ## 4.6.8
 
 - **An alert when the timer ends:** the island now shows "Timer finished" with a timer icon for at least ten seconds, goes in front of any other banner, and plays a short sound (new option in Settings, Times: "Sound when the timer ends"). It also shows over a fullscreen game or video, which hide the island for everything else. The same goes for the Pomodoro changing from focus to a break and back. Do not disturb for the island does not hide it either, and a click closes it

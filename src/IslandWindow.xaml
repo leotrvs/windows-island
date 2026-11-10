@@ -421,6 +421,55 @@
                     </Grid>
                 </Grid>
 
+                <!-- The quick clipboard, expanded: the last texts copied (in memory only); a click copies one again -->
+                <Grid x:Name="ClipboardExpanded" Width="372" Height="150">
+                    <Grid Margin="20,12,20,18">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <Grid Height="20">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Text="&#xE77F;" FontSize="12" Foreground="{StaticResource Secondary}" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="ClipboardTitleText" Style="{StaticResource Caption}" Margin="7,0,0,0" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="ClipboardHiddenText" Style="{StaticResource Caption}" FontSize="10.5" Margin="6,0,0,0" VerticalAlignment="Center" Visibility="Collapsed"/>
+                            </StackPanel>
+                            <Border x:Name="ClipboardClearButton" HorizontalAlignment="Right" VerticalAlignment="Center" CornerRadius="9" Padding="9,2,9,3" Background="#FF2C2C2E" Cursor="Hand">
+                                <TextBlock x:Name="ClipboardClearText" FontSize="11" FontWeight="SemiBold"/>
+                            </Border>
+                        </Grid>
+                        <StackPanel x:Name="ClipboardList" Grid.Row="1" Margin="0,3,0,0" VerticalAlignment="Top"/>
+                        <TextBlock x:Name="ClipboardEmptyText" Grid.Row="1" Style="{StaticResource Caption}" FontSize="12.5" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,10"/>
+                    </Grid>
+                </Grid>
+
+                <!-- Reminders, expanded: a field to type in ("call John 3pm") and the next reminders, each with an x -->
+                <Grid x:Name="ReminderExpanded" Width="372" Height="172">
+                    <Grid Margin="20,12,20,18">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <Grid Height="20">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Text="&#xE823;" FontSize="12" Foreground="{StaticResource Secondary}" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="ReminderTitleText" Style="{StaticResource Caption}" Margin="7,0,0,0" VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <TextBlock x:Name="ReminderMessageText" FontSize="11" FontWeight="SemiBold" Foreground="#FFFF9F0A" HorizontalAlignment="Right" VerticalAlignment="Center" Visibility="Collapsed"/>
+                        </Grid>
+                        <Border x:Name="ReminderInputBorder" Grid.Row="1" Height="26" Margin="0,4,0,5" CornerRadius="8" Background="#FF2C2C2E" Cursor="IBeam">
+                            <Grid>
+                                <TextBlock x:Name="ReminderPlaceholder" Style="{StaticResource Caption}" FontSize="12.5" Margin="9,0,9,1" VerticalAlignment="Center" IsHitTestVisible="False"/>
+                                <TextBox x:Name="ReminderInput" Background="Transparent" BorderThickness="0" Foreground="White" CaretBrush="White" SelectionBrush="#FF5C5CE0"
+                                         FontSize="12.5" Padding="6,0,6,1" VerticalContentAlignment="Center" MaxLength="200" Focusable="True"/>
+                            </Grid>
+                        </Border>
+                        <StackPanel x:Name="ReminderList" Grid.Row="2" VerticalAlignment="Top"/>
+                        <TextBlock x:Name="ReminderEmptyText" Grid.Row="2" Style="{StaticResource Caption}" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,8"/>
+                    </Grid>
+                </Grid>
+
                 <!-- Live activities from scripts and apps, expanded -->
                 <Grid x:Name="ExternalExpanded" Width="372" Height="150">
                     <StackPanel x:Name="ExternalList" Margin="20,14,20,0" VerticalAlignment="Top"/>
@@ -511,12 +560,17 @@
                             </Border>
                             <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
                                 <TextBlock x:Name="ClaudeTitle" Text="Claude Code" FontSize="15" FontWeight="SemiBold"/>
-                                <TextBlock x:Name="ClaudeStatus" Style="{StaticResource Caption}" Margin="0,1,0,0" TextTrimming="CharacterEllipsis"/>
+                                <Grid x:Name="ClaudeStatusHost" Margin="0,1,0,0" Background="Transparent">
+                                    <!-- A soft bar behind the chat line under the mouse (several chats: a click brings that chat's window forward) -->
+                                    <Border x:Name="ChatHover" Background="#1AFFFFFF" CornerRadius="4" Height="0" VerticalAlignment="Top" Margin="-4,0,-4,0" Visibility="Collapsed" IsHitTestVisible="False"/>
+                                    <TextBlock x:Name="ClaudeStatus" Style="{StaticResource Caption}" TextTrimming="CharacterEllipsis"/>
+                                </Grid>
                                 <TextBlock x:Name="OpenClaudeLink" FontSize="12" Foreground="#0A84FF" Cursor="Hand" Margin="0,3,0,0" Visibility="Collapsed"/>
                             </StackPanel>
                         </Grid>
 
-                        <Grid x:Name="UsageRow" Grid.Row="1" VerticalAlignment="Bottom">
+                        <StackPanel Grid.Row="1" VerticalAlignment="Bottom">
+                        <Grid x:Name="UsageRow">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="0.9*"/>
                                 <ColumnDefinition Width="1.1*"/>
@@ -548,6 +602,11 @@
                                 </StackPanel>
                             </StackPanel>
                         </Grid>
+                        <!-- At the current pace the limit runs out before it renews -->
+                        <TextBlock x:Name="ForecastText" Style="{StaticResource Caption}" FontSize="11" Foreground="#FFFF9F0A" Margin="0,8,0,0" TextTrimming="CharacterEllipsis" Visibility="Collapsed"/>
+                        <!-- Today: sessions and time worked -->
+                        <TextBlock x:Name="DaySummaryText" Style="{StaticResource Caption}" FontSize="11" Opacity="0.8" Margin="0,6,0,0" TextTrimming="CharacterEllipsis" Visibility="Collapsed"/>
+                        </StackPanel>
 
                         <TextBlock x:Name="NoUsageText" Grid.Row="1" Style="{StaticResource Caption}" TextWrapping="Wrap"
                                    TextTrimming="None" VerticalAlignment="Center" Visibility="Collapsed"/>

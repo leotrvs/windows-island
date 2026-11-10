@@ -416,6 +416,60 @@ namespace WindowsIsland
                                                   "Avisa quando o limite de 5 horas ou o semanal chega a 75%, 90% e 100%, e quando renova",
                                                   "Avisa cuando el límite de 5 horas o el semanal llega al 75%, 90% y 100%, y cuando se renueva",
                                                   "Сообщает, когда лимит за 5 часов или недельный достигает 75%, 90% и 100%, и когда он обновляется");
+        public static string MenuLimitForecast => T("Limit forecast", "Previsão do limite", "Previsión del límite", "Прогноз лимита");
+        public static string HintLimitForecast => T("Warns once when, at the current pace, the 5-hour or weekly limit would run out before it renews",
+                                                    "Avisa uma vez quando, no ritmo atual, o limite de 5 horas ou o semanal acabaria antes de renovar",
+                                                    "Avisa una vez cuando, al ritmo actual, el límite de 5 horas o el semanal se agotaría antes de renovarse",
+                                                    "Предупреждает один раз, если при текущем темпе лимит за 5 часов или недельный закончится до обновления");
+        public static string MenuDaySummary => T("Summary of the day", "Resumo do dia", "Resumen del día", "Итоги дня");
+        public static string HintDaySummary => T("On the Claude page: today's sessions and how long Claude worked",
+                                                 "Na página do Claude: as sessões de hoje e quanto tempo o Claude trabalhou",
+                                                 "En la página de Claude: las sesiones de hoy y cuánto tiempo trabajó Claude",
+                                                 "На странице Claude: сессии за сегодня и сколько времени Claude работал");
+
+        // "At this pace, the 5-hour limit runs out at 22:13", in two parts for the banner (title, then the rest)
+        public static string ForecastPace => T("At this pace", "No ritmo atual", "Al ritmo actual", "В таком темпе");
+
+        public static string ForecastFiveHourEnds(DateTime when)
+        {
+            string time = when.ToString("HH:mm", Culture);
+            return T("the 5-hour limit runs out at " + time,
+                     "o limite de 5h acaba às " + time,
+                     "el límite de 5 h se agota a las " + time,
+                     "лимит 5 ч закончится в " + time);
+        }
+
+        public static string ForecastWeeklyEnds(DateTime when)
+        {
+            string time = when.ToString("ddd HH:mm", Culture);
+            return T("the weekly limit runs out " + time,
+                     "o limite semanal acaba " + time,
+                     "el límite semanal se agota el " + time,
+                     "недельный лимит закончится: " + time);
+        }
+
+        public static string ForecastFiveHour(DateTime when) => ForecastPace + ", " + ForecastFiveHourEnds(when);
+        public static string ForecastWeekly(DateTime when) => ForecastPace + ", " + ForecastWeeklyEnds(when);
+
+        // "Today: 4 sessions · 2h 15min working"
+        public static string DaySummary(int sessions, TimeSpan worked)
+        {
+            int hours = (int)worked.TotalHours, minutes = worked.Minutes;
+            string time;
+            if (lang == "ru") time = hours > 0 ? (minutes > 0 ? hours + " ч " + minutes + " мин" : hours + " ч") : minutes + " мин";
+            else time = hours > 0 ? (minutes > 0 ? hours + "h " + minutes + "min" : hours + "h") : minutes + "min";
+            switch (lang)
+            {
+                case "pt": return "Hoje: " + (sessions == 1 ? "1 sessão" : sessions + " sessões") + " · " + time + " trabalhando";
+                case "es": return "Hoy: " + (sessions == 1 ? "1 sesión" : sessions + " sesiones") + " · " + time + " trabajando";
+                case "ru":
+                    int last = sessions % 10, tens = sessions % 100;
+                    string word = last == 1 && tens != 11 ? "сессия" : last >= 2 && last <= 4 && (tens < 12 || tens > 14) ? "сессии" : "сессий";
+                    return "Сегодня: " + sessions + " " + word + " · " + time + " в работе";
+                default: return "Today: " + (sessions == 1 ? "1 session" : sessions + " sessions") + " · " + time + " working";
+            }
+        }
+
         public static string LimitReached(string window) => T(window + " reached", window + " atingido", window + " alcanzado", window + ": достигнут");
         public static string LimitRenewed(string window) => T(window + " renewed", window + " renovado", window + " renovado", window + ": обновлён");
         public static string LimitFull => T("Your full limit is available again", "Seu limite está cheio de novo", "Tu límite está completo otra vez", "Лимит снова полный");
@@ -505,7 +559,21 @@ namespace WindowsIsland
                                     "Mostra só a barra da ilha. Precisa da barra de volume acima. Desligue para a barra do Windows voltar",
                                     "Muestra solo la barra de la isla. Requiere la barra de volumen de arriba. Desactívalo para recuperar la del Windows",
                                     "Показывает только полосу острова. Нужна полоса громкости выше. Выключите, чтобы вернуть окно Windows");
-        public static string MenuTimerSound => T("Sound when the timer ends", "Som quando o timer acaba", "Sonido cuando termina el temporizador", "Звук, когда таймер закончился");
+        public static string SoundNone => T("None", "Nenhum", "Ninguno", "Нет");
+        public static string SoundChime => T("Soft", "Suave", "Suave", "Мягкий");
+        public static string SoundBell => T("Bell", "Sino", "Campana", "Колокол");
+        public static string SoundBeep => T("Beep", "Bipe", "Pitido", "Сигнал");
+        public static string MenuActiveMonitorOnly => T("Only on the monitor you are using", "Só no monitor que você está usando", "Solo en el monitor que estás usando", "Только на активном мониторе");
+        public static string HintActiveMonitorOnly => T("With All monitors: alerts, music and Claude show only on the island of the monitor with the mouse",
+                                                        "Com Todos os monitores: avisos, música e Claude aparecem só na ilha do monitor onde está o mouse",
+                                                        "Con Todos los monitores: avisos, música y Claude aparecen solo en la isla del monitor donde está el ratón",
+                                                        "При режиме «Все»: уведомления, музыка и Claude видны только на острове монитора с мышью");
+        public static string MenuPresentationMode => T("Presentation mode", "Modo apresentação", "Modo presentación", "Режим презентации");
+        public static string HintPresentationMode => T("While the screen is shared or recorded, the island shows only the timer. Everything else comes back afterwards",
+                                                       "Enquanto a tela é compartilhada ou gravada, a ilha mostra só o timer. O resto volta depois",
+                                                       "Mientras se comparte o graba la pantalla, la isla muestra solo el temporizador. Lo demás vuelve después",
+                                                       "Пока экран транслируется или записывается, остров показывает только таймер. Потом всё возвращается");
+        public static string MenuTimerSound =>T("Sound when the timer ends", "Som quando o timer acaba", "Sonido cuando termina el temporizador", "Звук, когда таймер закончился");
         public static string HintTimerSound => T("A short sound. The alert shows over a fullscreen game or video too",
                                                  "Um som curto. O aviso aparece também sobre um jogo ou vídeo em tela cheia",
                                                  "Un sonido corto. El aviso también aparece sobre un juego o vídeo a pantalla completa",
@@ -544,5 +612,58 @@ namespace WindowsIsland
         public static string BannerSizeLabel => T("Alert size", "Tamanho dos avisos", "Tamaño de los avisos", "Размер оповещений");
         public static string BannerSmall => T("Small", "Pequeno", "Pequeño", "Малый");
         public static string BannerNormal => T("Normal", "Normal", "Normal", "Обычный");
+
+        // The quick clipboard
+        public static string GroupClipboard => T("Quick clipboard", "Área de transferência rápida", "Portapapeles rápido", "Быстрый буфер обмена");
+        public static string MenuClipboardHistory => T("Remember the last 5 copied texts", "Lembrar os últimos 5 textos copiados", "Recordar los últimos 5 textos copiados", "Запоминать последние 5 скопированных текстов");
+        public static string HintClipboardHistory => T("Off by default. What you copy can be a password: the texts stay only in memory, are never saved or sent, and are forgotten after the time below and when the app closes. Copies from password managers and copies marked private are skipped",
+                                                       "Desligado por padrão. O que você copia pode ser uma senha: os textos ficam só na memória, nunca são salvos nem enviados, e são esquecidos após o tempo abaixo e ao fechar o app. Cópias de gerenciadores de senha e cópias marcadas como privadas são ignoradas",
+                                                       "Desactivado por defecto. Lo que copias puede ser una contraseña: los textos quedan solo en memoria, nunca se guardan ni se envían, y se olvidan tras el tiempo de abajo y al cerrar la app. Se ignoran las copias de gestores de contraseñas y las marcadas como privadas",
+                                                       "По умолчанию выключено. Скопированное может быть паролем: тексты хранятся только в памяти, никогда не сохраняются и не отправляются и забываются через время ниже и при закрытии приложения. Копии из менеджеров паролей и помеченные как личные пропускаются");
+        public static string MenuClipboardForget => T("Forget each text after", "Esquecer cada texto após", "Olvidar cada texto tras", "Забывать каждый текст через");
+        public static string PageClipboardLabel => T("Clipboard page", "Página da área de transferência", "Página del portapapeles", "Страница буфера обмена");
+        public static string ClipboardTitle => T("Clipboard", "Área de transferência", "Portapapeles", "Буфер обмена");
+        public static string ClipboardEmpty => T("Nothing copied yet", "Nada copiado ainda", "Nada copiado todavía", "Пока ничего не скопировано");
+        public static string ClipboardClear => T("Clear", "Limpar", "Borrar", "Очистить");
+        public static string ClipboardCopied => T("Copied", "Copiado", "Copiado", "Скопировано");
+        public static string ClipboardHidden => T("hidden while the screen is shared", "oculto com a tela compartilhada", "oculto con la pantalla compartida", "скрыто при показе экрана");
+        public static string ClipboardAgo(TimeSpan age)
+        {
+            if (age.TotalSeconds < 5) return T("now", "agora", "ahora", "сейчас");
+            if (age.TotalMinutes < 1) { int s = (int)age.TotalSeconds; return T(s + " s ago", "há " + s + " s", "hace " + s + " s", s + " с назад"); }
+            int m = (int)age.TotalMinutes;
+            return T(m + " min ago", "há " + m + " min", "hace " + m + " min", m + " мин назад");
+        }
+        public static string SampleClip1 => T("Meeting moved to 3 pm, room 2", "Reunião passou para as 15h, sala 2", "La reunión pasó a las 15 h, sala 2", "Встреча перенесена на 15:00, зал 2");
+        public static string SampleClip2 => T("https://example.com/docs/getting-started", "https://example.com/docs/primeiros-passos", "https://example.com/docs/primeros-pasos", "https://example.com/docs/getting-started");
+        public static string SampleClip3 => T("Order 4821 shipped", "Pedido 4821 enviado", "Pedido 4821 enviado", "Заказ 4821 отправлен");
+
+        // Download complete
+        public static string MenuDownloads => T("Download complete alert", "Aviso de download concluído", "Aviso de descarga completa", "Оповещение о завершении загрузки");
+        public static string HintDownloads => T("A small note when a big file finishes downloading into your Downloads folder. The island reads only file names and sizes there, never what is inside the files",
+            "Um aviso pequeno quando um arquivo grande termina de baixar na pasta Downloads. A ilha lê só nomes e tamanhos de arquivos ali, nunca o conteúdo",
+            "Un aviso pequeño cuando un archivo grande termina de descargarse en la carpeta Descargas. La isla lee solo nombres y tamaños de archivos allí, nunca el contenido",
+            "Небольшое уведомление, когда большой файл загрузился в папку «Загрузки». Остров читает там только имена и размеры файлов, но не их содержимое");
+        public static string MenuDownloadMin => T("Only files of at least", "Só arquivos de pelo menos", "Solo archivos de al menos", "Только файлы от");
+        public static string DownloadDone => T("Download complete", "Download concluído", "Descarga completa", "Загрузка завершена");
+        public static string DownloadDoneHidden => T("File downloaded", "Arquivo baixado", "Archivo descargado", "Файл загружен");
+        public static string SampleDownloadName => T("holiday-photos-2026.zip", "fotos-das-ferias-2026.zip", "fotos-de-vacaciones-2026.zip", "holiday-photos-2026.zip");
+
+        // Reminders
+        public static string PageRemindersLabel => T("Reminders page", "Página de lembretes", "Página de recordatorios", "Страница напоминаний");
+        public static string HintReminders => T("Type something like \"call John 3pm\" or \"in 20 min stretch\" on the Reminders page and the island tells you then. Reminders stay only on this PC, in a small file (reminders.json), and are never sent anywhere",
+            "Digite algo como \"ligar pro João 15h\" ou \"em 20 min alongar\" na página de lembretes e a ilha avisa na hora. Os lembretes ficam só neste PC, em um arquivo pequeno (reminders.json), e nunca são enviados",
+            "Escribe algo como \"llamar a Juan 15h\" o \"en 20 min estirar\" en la página de recordatorios y la isla te avisa a esa hora. Los recordatorios quedan solo en este PC, en un archivo pequeño (reminders.json), y nunca se envían",
+            "Введите на странице напоминаний, например, «позвонить Ивану 15:00» или «через 20 минут размяться», и остров напомнит вовремя. Напоминания хранятся только на этом ПК в небольшом файле (reminders.json) и никуда не отправляются");
+        public static string ReminderTitle => T("Reminders", "Lembretes", "Recordatorios", "Напоминания");
+        public static string ReminderBanner => T("Reminder", "Lembrete", "Recordatorio", "Напоминание");
+        public static string ReminderLate => T("(late)", "(atrasado)", "(atrasado)", "(с опозданием)");
+        public static string ReminderEmpty => T("Type, for example: call John 3pm", "Digite, por exemplo: ligar pro João 15h", "Escribe, por ejemplo: llamar a Juan 15h", "Введите, например: позвонить Ивану 15:00");
+        public static string ReminderPlaceholder => T("New reminder…", "Novo lembrete…", "Nuevo recordatorio…", "Новое напоминание…");
+        public static string ReminderNoTime => T("I did not understand the time", "Não entendi a hora", "No entendí la hora", "Не понял время");
+        public static string ReminderTomorrow => T("tomorrow", "amanhã", "mañana", "завтра");
+        public static string SampleReminder1 => T("Call John", "Ligar pro João", "Llamar a Juan", "Позвонить Ивану");
+        public static string SampleReminder2 => T("Take the medicine", "Tomar o remédio", "Tomar la medicina", "Принять лекарство");
+        public static string SampleReminder3 => T("Team meeting", "Reunião do time", "Reunión del equipo", "Встреча команды");
     }
 }

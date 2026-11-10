@@ -19,10 +19,16 @@
     <Compile Include="..\src\ClaudeWaiting.cs" Link="App\ClaudeWaiting.cs" />
     <Compile Include="..\src\ClaudeHook.cs" Link="App\ClaudeHook.cs" />
     <Compile Include="..\src\LimitMath.cs" Link="App\LimitMath.cs" />
+    <Compile Include="..\src\DayStats.cs" Link="App\DayStats.cs" />
     <Compile Include="..\src\DiscordRpc.cs" Link="App\DiscordRpc.cs" />
     <Compile Include="..\src\SteamManifest.cs" Link="App\SteamManifest.cs" />
     <Compile Include="..\src\ObsLog.cs" Link="App\ObsLog.cs" />
     <Compile Include="..\src\FootballFeed.cs" Link="App\FootballFeed.cs" />
+    <Compile Include="..\src\ClipboardHistory.cs" Link="App\ClipboardHistory.cs" />
+    <Compile Include="..\src\ReminderParser.cs" Link="App\ReminderParser.cs" />
+    <Compile Include="..\src\ReminderStore.cs" Link="App\ReminderStore.cs" />
+    <Compile Include="..\src\DownloadRules.cs" Link="App\DownloadRules.cs" />
+    <Compile Include="..\src\IslandRules.cs" Link="App\IslandRules.cs" />
   </ItemGroup>
 
 </Project>

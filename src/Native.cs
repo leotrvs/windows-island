@@ -58,6 +58,39 @@ namespace WindowsIsland
             SetWindowLongPtr(hwnd, GWL_EXSTYLE, new IntPtr(style));
         }
 
+        [DllImport("user32.dll")] static extern bool SetForegroundWindow(IntPtr hWnd);
+        [DllImport("user32.dll")] static extern bool IsWindow(IntPtr hWnd);
+        [DllImport("user32.dll")] static extern uint GetWindowThreadProcessId(IntPtr hWnd, IntPtr processId);
+        [DllImport("user32.dll")] static extern bool AttachThreadInput(uint from, uint to, bool attach);
+        [DllImport("kernel32.dll")] static extern uint GetCurrentThreadId();
+
+        public static IntPtr Foreground() { return GetForegroundWindow(); }
+
+        // The island normally never takes focus. To type in it, the no-activate style is lifted and the window comes forward
+        // (the click that started this gives the process the right to). Call Release when typing ends.
+        public static void TakeFocus(IntPtr hwnd)
+        {
+            if (hwnd == IntPtr.Zero) return;
+            long style = GetWindowLongPtr(hwnd, GWL_EXSTYLE).ToInt64();
+            SetWindowLongPtr(hwnd, GWL_EXSTYLE, new IntPtr(style & ~WS_EX_NOACTIVATE));
+            IntPtr front = GetForegroundWindow();
+            if (front == hwnd) return;
+            uint frontThread = front == IntPtr.Zero ? 0 : GetWindowThreadProcessId(front, IntPtr.Zero);
+            uint mine = GetCurrentThreadId();
+            bool attached = frontThread != 0 && frontThread != mine && AttachThreadInput(mine, frontThread, true);
+            SetForegroundWindow(hwnd);
+            if (attached) AttachThreadInput(mine, frontThread, false);
+        }
+
+        // Back to the no-activate overlay; the window that had the focus before gets it back.
+        public static void ReleaseFocus(IntPtr hwnd, IntPtr previous)
+        {
+            if (hwnd == IntPtr.Zero) return;
+            long style = GetWindowLongPtr(hwnd, GWL_EXSTYLE).ToInt64();
+            SetWindowLongPtr(hwnd, GWL_EXSTYLE, new IntPtr(style | WS_EX_NOACTIVATE));
+            if (previous != IntPtr.Zero && previous != hwnd && IsWindow(previous) && GetForegroundWindow() == hwnd) SetForegroundWindow(previous);
+        }
+
         // Moves a window to physical screen pixels without activating it. Crossing to a monitor with another scale
         // makes Windows send the DPI change right away, so callers set the size after this returns.
         public static void MoveTo(IntPtr hwnd, int x, int y)

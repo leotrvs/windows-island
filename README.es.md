@@ -168,6 +168,14 @@ Para probarla sin instalar, ejecuta `WindowsIsland.exe --portable`.
 | Show Windows notifications | Muestra las notificaciones nuevas en la isla. Activado por defecto |
 | Alert size | Avisos y notificaciones pequeños o normales |
 | Screenshot alert | Una nota muy pequeña cuando haces una captura con Impr Pant o Win+Mayús+S |
+| Limit forecast | Un aviso cuando el ritmo indica que el límite de Claude se agotará antes de renovarse |
+| Today on the Claude page | Sesiones y tiempo de trabajo del día, en una línea |
+| Quick clipboard | Una página con los últimos 5 textos copiados. Desactivada por defecto, solo en memoria, ignora gestores de contraseñas |
+| Download alerts | Un aviso pequeño cuando termina de descargarse un archivo grande |
+| Reminders | Una página donde escribes "llamar a Juan 15h" y recibes el aviso a la hora, incluso sobre pantalla completa |
+| Only on the active monitor | Con una isla por monitor, los avisos salen solo donde estás |
+| Presentation mode | Mientras se comparte la pantalla, solo se ve el temporizador |
+| Timer sound | Ninguno, suave, campana o pitido, para el temporizador, el Pomodoro y los recordatorios |
 | Usage ring color | Azul, verde o morado. Los anillos pasan a ámbar y rojo cerca del límite |
 | Language | Sigue a Windows por defecto. Inglés, portugués, español y ruso |
 | Empty island | Mantiene la isla contraída como una píldora simple, sin actividades. Pasa el ratón o haz clic para verlas |

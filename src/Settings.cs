@@ -58,6 +58,8 @@ namespace WindowsIsland
         public int LimitAlertSeconds { get; set; } = 4;     // How long a limit alert stays
         public int NotificationSeconds { get; set; } = 3;   // How long a Windows notification stays
         public bool ShowLimitAlerts { get; set; } = true; // Claude 5-hour and weekly limits at 75, 90 and 100% and when they renew
+        public bool ShowLimitForecast { get; set; } = true; // Warns once when, at the current pace, a limit runs out before it renews
+        public bool ShowDaySummary { get; set; } = true;    // "Today: 4 sessions · 2h 15min working" on the Claude page
         public bool ShowCodex { get; set; } = true;     // Only shows anything once Codex is installed
         public bool CodexBanners { get; set; } = true;
         public string Language { get; set; } = "Auto";   // Auto follows Windows; or en, pt, es, ru
@@ -69,9 +71,9 @@ namespace WindowsIsland
         public bool PageTimer { get; set; } = true;
         public bool PageSystem { get; set; } = true;
         public bool PageQuick { get; set; } = true;     // The shortcuts page: mute the microphone or speakers, screenshot, volume
-        public string PageOrder { get; set; } = "Music,Claude,System,Timer,Quick"; // The order of the pages when the island is open
+        public string PageOrder { get; set; } = "Music,Claude,System,Timer,Quick,Clipboard,Reminders"; // The order of the pages when the island is open
 
-        public static readonly string[] PageNames = { "Music", "Claude", "System", "Timer", "Quick" };
+        public static readonly string[] PageNames = { "Music", "Claude", "System", "Timer", "Quick", "Clipboard", "Reminders" }; // Clipboard shows only while ClipboardHistory is on, Reminders while ShowReminders is on
 
         // The saved order, with anything missing or unknown fixed: every page exactly once.
         public System.Collections.Generic.List<string> PageOrderList()
@@ -99,13 +101,22 @@ namespace WindowsIsland
         public bool SystemMonitor { get; set; } = false; // CPU and memory on the collapsed island when nothing else is happening
         public string MonitorStyle { get; set; } = "Rings"; // Rings, Bars or Numbers
         public bool HideWindowsOsd { get; set; } = false; // Experimental: hide Windows' own volume popup
-        public bool TimerSound { get; set; } = true; // A short sound when a timer ends
+        [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+        public bool? TimerSound { get; set; } // Old on/off switch: only read from the file, to become TimerSoundChoice
+        public string TimerSoundChoice { get; set; } = "Chime"; // None, Chime, Bell or Beep: the sound when a timer, a Pomodoro phase or a reminder ends
+        public bool ActiveMonitorOnly { get; set; } = false; // With "All" monitors: alerts and activities show only on the island of the monitor with the mouse
+        public bool PresentationMode { get; set; } = false; // While the screen is shared or recorded, the island shows only the timer
         public bool ShowLevels { get; set; } = true; // Volume and brightness while they change
         public bool ShowPrivacyDots { get; set; } = true;
         public int PrivacyNameSeconds { get; set; } = 0; // How long the app's name shows by itself when an app starts recording (0 = only on hover)
         public bool BatteryAlerts { get; set; } = true;
         public bool BatteryActivity { get; set; } = true; // Charging shows in the island like any other activity
         public bool ShowScreenshotAlert { get; set; } = true;
+        public bool ClipboardHistory { get; set; } = false;   // The quick clipboard: the last 5 texts copied, in memory only (a copy can be a password, so it starts off)
+        public int ClipboardForgetMinutes { get; set; } = 5;  // Each text is forgotten after this long: 1, 5, 15 or 60
+        public bool ShowDownloadAlerts { get; set; } = true;  // "Download complete" for a big file in the Downloads folder (names and sizes only, never the content)
+        public int DownloadMinMb { get; set; } = 50;          // Only files at least this big: 10, 50, 100 or 500
+        public bool ShowReminders { get; set; } = true;       // The Reminders page: type "call John 3pm" and the island tells you then (kept only in reminders.json on this PC)
         public bool ShowNotifications { get; set; } = true; // Reads notification content: on by default, asked again in the welcome
         public bool HideInFullscreen { get; set; } = true;
         public bool StartWithWindows { get; set; } = true;
@@ -192,6 +203,10 @@ namespace WindowsIsland
             CollapsedScale = Math.Clamp(CollapsedScale, MinScale, MaxScale);
             ExpandedScale = Math.Clamp(ExpandedScale, MinScale, MaxScale);
             ApiPort = Math.Clamp(ApiPort, LocalApi.MinPort, LocalApi.MaxPort);
+            TimerSoundChoice = IslandRules.MigrateSound(TimerSound, TimerSoundChoice);
+            TimerSound = null;
+            if (ClipboardForgetMinutes != 1 && ClipboardForgetMinutes != 5 && ClipboardForgetMinutes != 15 && ClipboardForgetMinutes != 60) ClipboardForgetMinutes = 5;
+            if (DownloadMinMb != 10 && DownloadMinMb != 50 && DownloadMinMb != 100 && DownloadMinMb != 500) DownloadMinMb = 50;
             return this;
         }
 

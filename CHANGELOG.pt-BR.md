@@ -2,6 +2,19 @@
 
 > Tradução de [CHANGELOG.md](CHANGELOG.md), que é o original em inglês.
 
+## 4.7.0
+
+- **Previsão do limite:** quando o ritmo de uso indica que o limite de 5 horas (ou o semanal) vai acabar antes de renovar, a ilha avisa uma vez: "No ritmo atual, o limite de 5h acaba às 22:13". A mesma linha aparece sob os anéis na página do Claude. Opção "Previsão do limite" nos Ajustes
+- **O dia em uma linha:** a página do Claude mostra "Hoje: 4 sessões · 2h 15min trabalhando". Só números são guardados, em `day.json`, e zeram à meia-noite
+- **Clicar no chat traz a janela dele para a frente:** vale para o Claude Desktop e para chats em um terminal
+- **Área de transferência rápida (desligada por padrão):** uma página com os últimos 5 textos copiados; clique num para copiar de novo. Só em memória, esquecidos após 1, 5, 15 ou 60 minutos, escondidos enquanto a tela é compartilhada, e ignora o que o Windows ou um gerenciador de senhas marcam como privado. Nunca grava em disco, em log nem na API
+- **Download concluído:** um aviso pequeno quando um arquivo de 10 a 500 MB (você escolhe) termina de baixar na pasta Downloads; um clique abre no Explorador. Lê só nomes e tamanhos, nunca os arquivos
+- **Lembretes:** uma página nova onde você digita, por exemplo, "ligar pro João 15h" ou "em 20 min tomar água" (também em inglês, espanhol e russo). Ficam em `reminders.json` neste PC, sobrevivem a um reinício e avisam por cima de uma janela em tela cheia, com som
+- **Só no monitor ativo:** com uma ilha por monitor, avisos e música podem aparecer só no monitor que você está usando
+- **Modo apresentação:** enquanto a tela é compartilhada, a ilha esconde tudo menos o timer
+- **Som do timer:** escolha Nenhum, Suave, Sino ou Bipe, com uma prévia. Vale para o timer, o Pomodoro e os lembretes. Quem tinha o som desligado continua sem som
+- A página do Claude não é mais cortada embaixo quando mostra as duas linhas novas
+
 ## 4.6.8
 
 - **Um aviso quando o timer acaba:** a ilha agora mostra "Timer terminou" com um ícone de timer por pelo menos dez segundos, passa na frente de qualquer outro aviso e toca um som curto (opção nova nos Ajustes, em Tempos: "Som quando o timer acaba"). Ele aparece também sobre um jogo ou vídeo em tela cheia, que escondem a ilha para todo o resto. O mesmo vale para o Pomodoro passando do foco para a pausa e de volta. O não perturbe da ilha também não o esconde, e um clique o fecha
