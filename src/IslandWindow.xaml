@@ -270,7 +270,7 @@
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
-                        <Grid>
+                        <Grid x:Name="TrackInfo" Background="Transparent" Cursor="Hand">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="60"/>
                                 <ColumnDefinition Width="*"/>

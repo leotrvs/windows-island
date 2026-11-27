@@ -172,6 +172,14 @@ namespace WindowsIsland
             Pill.MouseWheel += OnPillWheel;
             ProgressHit.MouseLeftButtonUp += Seek;
             ProgressHit.MouseLeftButtonDown += (s, e) => e.Handled = true;
+            // A click on the cover, title or artist brings the player (Spotify, the browser) to the front. If no window
+            // of it is found, the click falls through to the island as before.
+            TrackInfo.MouseLeftButtonDown += (s, e) => e.Handled = true;
+            TrackInfo.MouseLeftButtonUp += (s, e) =>
+            {
+                if (suppressClick) return; // A drag: the island's own handler clears it
+                if (media.FocusSource()) e.Handled = true;
+            };
 
             ApplyTexts();
             ApplyBannerSize();

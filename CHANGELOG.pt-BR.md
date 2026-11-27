@@ -2,8 +2,9 @@
 
 > Tradução de [CHANGELOG.md](CHANGELOG.md), que é o original em inglês.
 
-## Ainda não lançado
+## Unreleased
 
+- **Clicar na música abre o player:** na página de música expandida, um clique na capa, no título ou no artista traz o Spotify (ou o navegador ou app que está tocando) para a frente, restaurando se estiver minimizado. Os botões continuam controlando a música
 - **Lembretes mais fáceis de criar:** dois campos, um para o que lembrar e outro para quando. Ainda dá para digitar tudo junto no primeiro ("ligar pro João amanhã 15h"), e uma linha embaixo dos campos explica isso. Agora aceita outros dias: "amanhã", "depois de amanhã", dia da semana ("sexta 10h") ou data ("28/11 14h"); um dia sem hora vale 9h. Enquanto você digita, a ilha mostra quando o lembrete vai tocar ("→ sex 10:00")
 - **Lembretes mais fáceis de ler:** campos e lista maiores, e quando um dispara o próprio texto dele é a linha grande, com "Lembrete · 15:00" pequeno em cima
 
