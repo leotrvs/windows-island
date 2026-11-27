@@ -12,7 +12,6 @@ namespace WindowsIsland
         int quickVolume = -1;
         DateTime quickRead = DateTime.MinValue;
         static readonly Brush QuickGray = Freeze(new SolidColorBrush(Color.FromRgb(0x2C, 0x2C, 0x2E)));
-        static readonly Brush QuickRed = Freeze(new SolidColorBrush(Color.FromRgb(0xFF, 0x45, 0x3A)));
 
         void SetQuickVolume(double x)
         {
@@ -40,7 +39,7 @@ namespace WindowsIsland
             QuickSpeakerLabel.Text = quickSpeakerMuted ? Strings.QuickSpeakerMuted : Strings.QuickSpeaker;
             QuickShotLabel.Text = Strings.QuickShot;
             QuickSoundLabel.Text = Strings.QuickSoundSettings;
-            QuickMicButton.Background = quickMicMuted ? QuickRed : QuickGray;
+            QuickMicButton.Background = quickMicMuted ? Red : QuickGray;
             QuickMicSlash.Visibility = quickMicMuted ? Visibility.Visible : Visibility.Collapsed;
             QuickSpeakerButton.Background = quickSpeakerMuted ? Brushes.White : QuickGray;
             QuickSpeakerGlyph.Foreground = quickSpeakerMuted ? Brushes.Black : Brushes.White;

@@ -263,8 +263,8 @@ namespace WindowsIsland
             {
                 ThinCpuRing.Data = Arc(34, 14, 1.6);
                 ThinMemRing.Data = Arc(61, 14, 1.6);
-                ThinCpuRing.Stroke = MonitorBlue;
-                ThinMemRing.Stroke = MonitorGreen;
+                ThinCpuRing.Stroke = SystemBlue;
+                ThinMemRing.Stroke = Green;
             }
             if (privacyDots)
             {
@@ -442,7 +442,6 @@ namespace WindowsIsland
             clips.Add(("pomodoro-compact", View.Idle, () => { timer.StartPomodoro(); UpdateTimerPage(); forced = View.TimerCompact; Recompute(); }, 3.0));
 
             // Banners: a Claude alert, a Windows notification, Claude needing you, the battery and the limits
-            Action<BannerItem> bannerClip = null;
             clips.Add(("banner", View.Idle, () => { forced = View.Banner; Recompute(); }, 3.2));
             clips.Add(("notification", View.Idle, () => { forced = View.Banner; Recompute(); banners.Enqueue(new BannerItem { App = "Mail", Title = Strings.SampleNotificationTitle, Subtitle = Strings.SampleNotificationBody, Seconds = 5 }); NextBanner(); }, 3.4));
             clips.Add(("banner-waiting", View.Idle, () => { forced = View.Banner; Recompute(); banners.Enqueue(new BannerItem { FromClaude = true, Title = Strings.ClaudeNeedsYou, Subtitle = Strings.SampleQuestion, Seconds = 5 }); NextBanner(); }, 3.4));

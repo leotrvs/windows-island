@@ -14,14 +14,9 @@ namespace WindowsIsland
     sealed class Tray : IDisposable
     {
         const int WM_APP_TRAY = 0x8001;
-        const int WM_LBUTTONUP = 0x0202, WM_RBUTTONUP = 0x0205, WM_NULL = 0;
-        const uint NIM_ADD = 0, NIM_MODIFY = 1, NIM_DELETE = 2;
+        const int WM_LBUTTONUP = 0x0202, WM_RBUTTONUP = 0x0205;
+        const uint NIM_ADD = 0, NIM_DELETE = 2;
         const uint NIF_MESSAGE = 1, NIF_ICON = 2, NIF_TIP = 4;
-        const uint MF_STRING = 0, MF_CHECKED = 8, MF_SEPARATOR = 0x800;
-        const uint TPM_RIGHTBUTTON = 2, TPM_BOTTOMALIGN = 0x20, TPM_RETURNCMD = 0x100;
-        const uint MF_POPUP = 0x10;
-        const int CmdSettings = 1, CmdEmpty = 2, CmdUpdates = 3, CmdQuit = 4, CmdStopwatch = 200, CmdStopTimer = 201, CmdMinutes = 1000;
-        static readonly int[] TimerMinutes = { 1, 5, 10, 15, 25, 30, 45, 60 };
 
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
         struct NOTIFYICONDATA

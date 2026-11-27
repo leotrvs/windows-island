@@ -48,8 +48,6 @@ namespace WindowsIsland
             MemoryFill.Width = 132.0 * systemStats.Memory / 100;
         }
         // The system monitor on the collapsed island: processor and memory as rings, bars or numbers, once a second.
-        static readonly Brush MonitorBlue = Freeze(new SolidColorBrush(Color.FromRgb(0x0A, 0x84, 0xFF)));
-        static readonly Brush MonitorGreen = Freeze(new SolidColorBrush(Color.FromRgb(0x30, 0xD1, 0x58)));
         readonly DispatcherTimer monitorTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
         double monitorWidth = 140;
         string monitorStyleDrawn;
@@ -73,8 +71,8 @@ namespace WindowsIsland
             int cpu = systemStats.Cpu, memory = systemStats.Memory;
             ThinCpuRing.Data = Arc(Math.Max(cpu, 3), 14, 1.6);
             ThinMemRing.Data = Arc(Math.Max(memory, 3), 14, 1.6);
-            ThinCpuRing.Stroke = cpu >= 90 ? Red : cpu >= 70 ? Amber : MonitorBlue;
-            ThinMemRing.Stroke = memory >= 90 ? Red : memory >= 70 ? Amber : MonitorGreen;
+            ThinCpuRing.Stroke = cpu >= 90 ? Red : cpu >= 70 ? Amber : SystemBlue;
+            ThinMemRing.Stroke = memory >= 90 ? Red : memory >= 70 ? Amber : Green;
         }
 
         void UpdateSystemMonitor()
@@ -94,8 +92,8 @@ namespace WindowsIsland
                 SystemCompact.Width = monitorWidth;
                 if (view == View.SystemCompact) ApplyTargets();
             }
-            Brush cpuBrush = cpu >= 90 ? Red : cpu >= 70 ? Amber : MonitorBlue;
-            Brush memoryBrush = memory >= 90 ? Red : memory >= 70 ? Amber : MonitorGreen;
+            Brush cpuBrush = cpu >= 90 ? Red : cpu >= 70 ? Amber : SystemBlue;
+            Brush memoryBrush = memory >= 90 ? Red : memory >= 70 ? Amber : Green;
             if (style == "Rings")
             {
                 SysCpuRing.Data = Arc(Math.Max(cpu, 2), 20, 3);

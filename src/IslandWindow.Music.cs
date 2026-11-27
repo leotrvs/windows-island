@@ -36,10 +36,8 @@ namespace WindowsIsland
                 return;
             }
             string glyph = null;
-            bool songChanged = false;
             if (title.Length > 0 && title != musicTitle)
             {
-                songChanged = true;
                 // The command that was just given says which way; without one, a song heard a moment ago means back
                 bool recent = DateTime.Now - media.LastWayAt < TimeSpan.FromSeconds(4);
                 bool back = recent ? media.LastWay == MediaService.Way.Previous : musicHistory.Contains(title);
@@ -89,7 +87,6 @@ namespace WindowsIsland
         string titleNow, artistNow;
         DateTime songNameUntil = DateTime.MinValue;
         DispatcherTimer songNameTimer;
-        readonly Dictionary<FrameworkElement, int> swapToken = new Dictionary<FrameworkElement, int>();
 
         bool SongNameShown { get { return settings.SongNameAlways || DateTime.Now < songNameUntil; } }
 

@@ -52,7 +52,6 @@ namespace WindowsIsland
             moving |= bubbleOpacity.Step(dt);
             moving |= privacyOpacity.Step(dt);
             moving |= thinGaugesOpacity.Step(dt);
-            moving |= privacyShift.Step(dt);
             moving |= sessionArc.Step(dt);
             moving |= weeklyArc.Step(dt);
             foreach (Spring spring in presence.Values) moving |= spring.Step(dt);

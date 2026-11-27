@@ -77,14 +77,5 @@ namespace WindowsIsland
             else
                 spin.BeginAnimation(RotateTransform.AngleProperty, null);
         }
-
-        // Opens on the System tab, where updates live.
-        public void GoToSystem()
-        {
-            if (welcome) return;
-            tab = 3;
-            BuildTabs();
-            Rebuild();
-        }
     }
 }

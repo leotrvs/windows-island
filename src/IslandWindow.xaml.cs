@@ -50,6 +50,7 @@ namespace WindowsIsland
         static readonly Brush Green = Freeze(new SolidColorBrush(Color.FromRgb(0x30, 0xD1, 0x58)));
         static readonly Brush Amber = Freeze(new SolidColorBrush(Color.FromRgb(0xFF, 0x9F, 0x0A)));
         static readonly Brush Red = Freeze(new SolidColorBrush(Color.FromRgb(0xFF, 0x45, 0x3A)));
+        static readonly Brush SystemBlue = Freeze(new SolidColorBrush(Color.FromRgb(0x0A, 0x84, 0xFF)));
         static readonly Brush ClaudeTint = Freeze(new SolidColorBrush(Color.FromArgb(0x29, 0xE8, 0x87, 0x5F)));
         static readonly Brush CodexTint = Brushes.Transparent; // The Codex icon brings its own color
         static readonly Brush Blue = Freeze(new SolidColorBrush(Color.FromRgb(0x3B, 0x8C, 0xFF)));
@@ -63,7 +64,6 @@ namespace WindowsIsland
         readonly TimerService timer;
         readonly PrivacyService privacy;
         readonly Spring privacyOpacity = new Spring(0, 0.002, 700, 1);
-        readonly Spring privacyShift = new Spring(0, 0.05, 1100, 1); // Quick and without a bounce: it only has to keep up with the island's own spring
 
         // Shape: slightly bouncy, like the real island.
         readonly Spring width = new Spring(112, 0.05, 280, 0.72);
