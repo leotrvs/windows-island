@@ -658,9 +658,19 @@ namespace WindowsIsland
         public static string ReminderTitle => T("Reminders", "Lembretes", "Recordatorios", "Напоминания");
         public static string ReminderBanner => T("Reminder", "Lembrete", "Recordatorio", "Напоминание");
         public static string ReminderLate => T("(late)", "(atrasado)", "(atrasado)", "(с опозданием)");
-        public static string ReminderEmpty => T("Type, for example: call John 3pm", "Digite, por exemplo: ligar pro João 15h", "Escribe, por ejemplo: llamar a Juan 15h", "Введите, например: позвонить Ивану 15:00");
-        public static string ReminderPlaceholder => T("New reminder…", "Novo lembrete…", "Nuevo recordatorio…", "Новое напоминание…");
-        public static string ReminderNoTime => T("I did not understand the time", "Não entendi a hora", "No entendí la hora", "Не понял время");
+        public static string ReminderEmpty => T("No reminders yet", "Nenhum lembrete ainda", "Aún no hay recordatorios", "Напоминаний пока нет");
+        public static string ReminderPlaceholder => T("What to remember…", "O que lembrar…", "Qué recordar…", "О чём напомнить…");
+        public static string ReminderWhenPlaceholder => T("When", "Quando", "Cuándo", "Когда");
+        public static string ReminderGuide => T("When: 3pm · tomorrow 9am · friday 10am · 28/11 2pm · in 20 min", "Quando: 15h · amanhã 9h · sexta 10h · 28/11 14h · em 20 min", "Cuándo: 15h · mañana 9h · viernes 10h · 28/11 14h · en 20 min", "Когда: 15:00 · завтра 9:00 · в пятницу 10:00 · 28/11 14:00");
+        public static string ReminderGuideTogether => T("Or all in the first one: call John tomorrow 3pm", "Ou tudo junto no primeiro: ligar pro João amanhã 15h", "O todo junto en el primero: llamar a Juan mañana 15h", "Или всё в первом: позвонить Ивану завтра 15:00");
+        public static string ReminderNoTime => T("Add a time, like 3pm", "Falta a hora, ex.: 15h", "Falta la hora, ej.: 15h", "Укажите время, напр. 15:00");
+        public static string ReminderToday => T("today", "hoje", "hoy", "сегодня");
+        public static string WeekdayShort(DayOfWeek day)
+        {
+            int i = (int)day;
+            return T(new[] { "sun", "mon", "tue", "wed", "thu", "fri", "sat" }[i], new[] { "dom", "seg", "ter", "qua", "qui", "sex", "sáb" }[i],
+                new[] { "dom", "lun", "mar", "mié", "jue", "vie", "sáb" }[i], new[] { "вс", "пн", "вт", "ср", "чт", "пт", "сб" }[i]);
+        }
         public static string ReminderTomorrow => T("tomorrow", "amanhã", "mañana", "завтра");
         public static string SampleReminder1 => T("Call John", "Ligar pro João", "Llamar a Juan", "Позвонить Ивану");
         public static string SampleReminder2 => T("Take the medicine", "Tomar o remédio", "Tomar la medicina", "Принять лекарство");

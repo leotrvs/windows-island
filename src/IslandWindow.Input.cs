@@ -135,7 +135,7 @@ namespace WindowsIsland
         {
             if (suppressClick) { suppressClick = false; return; } // That press was a drag, not a click
             enterTimer.Stop();
-            if (view == View.ReminderExpanded && e.OriginalSource is DependencyObject source && (source == ReminderInput || ReminderInputBorder.IsAncestorOf(source))) return; // A click in the field is for typing
+            if (view == View.ReminderExpanded && IsReminderField(e.OriginalSource)) return; // A click in a field is for typing
             if (view == View.Banner)
             {
                 bool fromClaude = currentBanner == null || currentBanner.FromClaude || currentBanner.FromCodex;

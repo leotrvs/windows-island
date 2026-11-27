@@ -96,12 +96,50 @@ namespace WindowsIsland.Tests
         [InlineData("   ")]
         [InlineData("ligar pro João")]
         [InlineData("comprar 3 pães")]
-        [InlineData("amanhã reunião")]
         [InlineData("25h reunião")]
         [InlineData("reunião 14:75")]
         [InlineData("13pm teste")]
         [InlineData("em 0 min")]
         public void NoTimeNoReminder(string input)
+        {
+            Assert.False(ReminderParser.Parse(input, Now).Ok, input);
+        }
+
+        // Now is Tuesday 2026-11-10, 10:00
+        [Theory]
+        [InlineData("reunião sexta 10h", "reunião", 2026, 11, 13, 10, 0)]
+        [InlineData("na sexta às 15 dentista", "dentista", 2026, 11, 13, 15, 0)]
+        [InlineData("dentista sexta-feira 14:30", "dentista", 2026, 11, 13, 14, 30)]
+        [InlineData("call John on friday 3pm", "call John", 2026, 11, 13, 15, 0)]
+        [InlineData("llamar a Juan el viernes 17h", "llamar a Juan", 2026, 11, 13, 17, 0)]
+        [InlineData("встреча в пятницу в 15", "встреча", 2026, 11, 13, 15, 0)]
+        [InlineData("reunião terça 11h", "reunião", 2026, 11, 10, 11, 0)]          // Today is Tuesday, 11h is still ahead
+        [InlineData("reunião terça 9h", "reunião", 2026, 11, 17, 9, 0)]            // 9h is gone: next Tuesday
+        [InlineData("domingo 8h correr", "correr", 2026, 11, 15, 8, 0)]
+        [InlineData("dentista 28/11 14h", "dentista", 2026, 11, 28, 14, 0)]
+        [InlineData("dia 28/11 às 14:30 dentista", "dentista", 2026, 11, 28, 14, 30)]
+        [InlineData("renovar passaporte 05/01 9h", "renovar passaporte", 2027, 1, 5, 9, 0)] // A date gone this year: next year
+        [InlineData("prova 15/12/2026 8h", "prova", 2026, 12, 15, 8, 0)]
+        [InlineData("depois de amanhã 10h médico", "médico", 2026, 11, 12, 10, 0)]
+        [InlineData("doctor the day after tomorrow 10am", "doctor", 2026, 11, 12, 10, 0)]
+        [InlineData("amanhã reunião", "reunião", 2026, 11, 11, 9, 0)]              // A day without a time: 9h
+        [InlineData("sexta dentista", "dentista", 2026, 11, 13, 9, 0)]
+        [InlineData("dentista 28/11", "dentista", 2026, 11, 28, 9, 0)]
+        [InlineData("ligar pro João amanhã 15h", "ligar pro João", 2026, 11, 11, 15, 0)] // The two fields, joined
+        public void OtherDays(string input, string text, int y, int mo, int d, int h, int m)
+        {
+            ReminderParser.Result r = ReminderParser.Parse(input, Now);
+            Assert.True(r.Ok, input);
+            Assert.Equal(text, r.Text);
+            Assert.Equal(new DateTime(y, mo, d, h, m, 0), r.When);
+        }
+
+        [Theory]
+        [InlineData("pagar a segunda via do boleto")]  // "segunda" here is not Monday
+        [InlineData("reunião 31/02 10h")]              // No such day
+        [InlineData("reunião 01/11/2026 10h")]         // Already gone
+        [InlineData("hoje reunião")]                   // Today, but when?
+        public void NotADay(string input)
         {
             Assert.False(ReminderParser.Parse(input, Now).Ok, input);
         }

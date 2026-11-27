@@ -377,7 +377,7 @@ namespace WindowsIsland
             }));
             reminders.Due += (text, late) =>
             {
-                foreach (IslandWindow island in Targets()) island.ShowSystemBanner(Strings.ReminderBanner, late ? text + " " + Strings.ReminderLate : text, "reminder", true);
+                foreach (IslandWindow island in Targets()) island.ShowReminderBanner(text, late);
                 if (!sample) TimerSounds.Play(settings);
             };
             battery.Alert += (title, body, kind) => Notifier?.ShowSystemBanner(title, body, kind);

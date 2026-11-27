@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- **Reminders, easier to set:** two fields, one for what to remember and one for when. Everything can still go together in the first one ("call John tomorrow 3pm"), and a line under the fields says so. Other days work now: "tomorrow", "the day after tomorrow", a weekday ("friday 10am") or a date ("28/11 2pm"); a day without a time means 9am. While typing, the island shows when the reminder will go off ("→ fri 10:00")
+- **Reminders, easier to read:** bigger fields and list, and when one goes off its own text is the large line, with "Reminder · 15:00" small above it
+
 ## 4.7.0
 
 - **Limit forecast:** when the pace of use says the 5-hour (or weekly) limit will run out before it renews, the island says so once: "At this pace, the 5-hour limit runs out at 22:13". The same line shows under the rings on the Claude page. Option "Limit forecast" in Settings

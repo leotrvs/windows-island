@@ -443,10 +443,12 @@
                     </Grid>
                 </Grid>
 
-                <!-- Reminders, expanded: a field to type in ("call John 3pm") and the next reminders, each with an x -->
-                <Grid x:Name="ReminderExpanded" Width="372" Height="172">
-                    <Grid Margin="20,12,20,18">
+                <!-- Reminders, expanded: two fields (what, and when: "amanhã 15h", "sexta 10h", "28/11 14h"), a line that says
+                     both can also go together in the first one, and the next reminders, each with an x -->
+                <Grid x:Name="ReminderExpanded" Width="372" Height="206">
+                    <Grid Margin="20,12,20,20">
                         <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
@@ -456,17 +458,31 @@
                                 <TextBlock FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Text="&#xE823;" FontSize="12" Foreground="{StaticResource Secondary}" VerticalAlignment="Center"/>
                                 <TextBlock x:Name="ReminderTitleText" Style="{StaticResource Caption}" Margin="7,0,0,0" VerticalAlignment="Center"/>
                             </StackPanel>
-                            <TextBlock x:Name="ReminderMessageText" FontSize="11" FontWeight="SemiBold" Foreground="#FFFF9F0A" HorizontalAlignment="Right" VerticalAlignment="Center" Visibility="Collapsed"/>
+                            <TextBlock x:Name="ReminderMessageText" FontSize="12" FontWeight="SemiBold" Foreground="#FFFF9F0A" HorizontalAlignment="Right" VerticalAlignment="Center" Visibility="Collapsed"/>
                         </Grid>
-                        <Border x:Name="ReminderInputBorder" Grid.Row="1" Height="26" Margin="0,4,0,5" CornerRadius="8" Background="#FF2C2C2E" Cursor="IBeam">
-                            <Grid>
-                                <TextBlock x:Name="ReminderPlaceholder" Style="{StaticResource Caption}" FontSize="12.5" Margin="9,0,9,1" VerticalAlignment="Center" IsHitTestVisible="False"/>
-                                <TextBox x:Name="ReminderInput" Background="Transparent" BorderThickness="0" Foreground="White" CaretBrush="White" SelectionBrush="#FF5C5CE0"
-                                         FontSize="12.5" Padding="6,0,6,1" VerticalContentAlignment="Center" MaxLength="200" Focusable="True"/>
-                            </Grid>
-                        </Border>
-                        <StackPanel x:Name="ReminderList" Grid.Row="2" VerticalAlignment="Top"/>
-                        <TextBlock x:Name="ReminderEmptyText" Grid.Row="2" Style="{StaticResource Caption}" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,8"/>
+                        <Grid Grid.Row="1" Margin="0,5,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="116"/>
+                            </Grid.ColumnDefinitions>
+                            <Border x:Name="ReminderInputBorder" Height="32" CornerRadius="9" Background="#FF2C2C2E" Cursor="IBeam">
+                                <Grid>
+                                    <TextBlock x:Name="ReminderPlaceholder" Style="{StaticResource Caption}" FontSize="14" Margin="10,0,10,1" VerticalAlignment="Center" IsHitTestVisible="False"/>
+                                    <TextBox x:Name="ReminderInput" Background="Transparent" BorderThickness="0" Foreground="White" CaretBrush="White" SelectionBrush="#FF5C5CE0"
+                                             FontSize="14" Padding="7,0,7,1" VerticalContentAlignment="Center" MaxLength="200" Focusable="True"/>
+                                </Grid>
+                            </Border>
+                            <Border x:Name="ReminderWhenBorder" Grid.Column="1" Height="32" Margin="6,0,0,0" CornerRadius="9" Background="#FF2C2C2E" Cursor="IBeam">
+                                <Grid>
+                                    <TextBlock x:Name="ReminderWhenPlaceholder" Style="{StaticResource Caption}" FontSize="14" Margin="10,0,8,1" VerticalAlignment="Center" IsHitTestVisible="False"/>
+                                    <TextBox x:Name="ReminderWhenInput" Background="Transparent" BorderThickness="0" Foreground="White" CaretBrush="White" SelectionBrush="#FF5C5CE0"
+                                             FontSize="14" Padding="7,0,5,1" VerticalContentAlignment="Center" MaxLength="40" Focusable="True"/>
+                                </Grid>
+                            </Border>
+                        </Grid>
+                        <TextBlock x:Name="ReminderGuideText" Grid.Row="2" Style="{StaticResource Caption}" FontSize="11.5" Margin="2,5,0,3" TextTrimming="CharacterEllipsis"/>
+                        <StackPanel x:Name="ReminderList" Grid.Row="3" VerticalAlignment="Top"/>
+                        <TextBlock x:Name="ReminderEmptyText" Grid.Row="3" Style="{StaticResource Caption}" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,6"/>
                     </Grid>
                 </Grid>
 
