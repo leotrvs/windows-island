@@ -3,6 +3,8 @@
 ## Unreleased
 
 - **Click the song to open the player:** on the expanded music page, a click on the cover, title or artist brings Spotify (or the browser or app that is playing) to the front, restoring it if it is minimized. A click on the controls still controls the music
+- **Reminders, easier to set:** two fields, one for what to remember and one for when. Everything can still go together in the first one ("call John tomorrow 3pm"), and a line under the fields says so. Other days work now: "tomorrow", "the day after tomorrow", a weekday ("friday 10am") or a date ("28/11 2pm"); a day without a time means 9am. While typing, the island shows when the reminder will go off ("→ fri 10:00")
+- **Reminders, easier to read:** bigger fields and list, and when one goes off its own text is the large line, with "Reminder · 15:00" small above it
 
 ## 4.7.0
 

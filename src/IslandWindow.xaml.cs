@@ -33,7 +33,7 @@ namespace WindowsIsland
             [View.TimerExpanded] = new Size(372, 150),
             [View.QuickExpanded] = new Size(372, 150),
             [View.ClipboardExpanded] = new Size(372, 150),
-            [View.ReminderExpanded] = new Size(372, 172),
+            [View.ReminderExpanded] = new Size(372, 206),
             [View.SystemExpanded] = new Size(372, 150),
             [View.ClaudeExpanded] = new Size(372, 156),
             [View.Banner] = new Size(352, 74),

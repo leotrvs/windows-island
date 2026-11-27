@@ -21,8 +21,16 @@ namespace WindowsIsland
         static readonly Regex Relative = new Regex(
             @"(?<![\p{L}\d])(?:daqui\s+a|dentro\s+de|em|in|en|через)\s+(?<n>\d{1,3}|um|uma|una|an|a|один|одну)?\s*(?<u>minutos?|minutes?|mins?|мин(?:уту|уты|ут)?|horas?|hours?|hrs?|h|час(?:а|ов)?)(?![\p{L}\d])", Opts);
 
-        // The word for a day
-        static readonly Regex DayWord = new Regex(@"(?<![\p{L}\d])(?<d>amanh[ãa]|tomorrow|ma[ñn]ana|завтра|hoje|today|hoy|сегодня)(?![\p{L}\d])", Opts);
+        // The word for a day ("depois de amanhã" before "amanhã", so the longer one wins)
+        static readonly Regex DayWord = new Regex(@"(?<![\p{L}\d])(?<d>depois\s+de\s+amanh[ãa]|(?:the\s+)?day\s+after\s+tomorrow|pasado\s+ma[ñn]ana|послезавтра|amanh[ãa]|tomorrow|ma[ñn]ana|завтра|hoje|today|hoy|сегодня)(?![\p{L}\d])", Opts);
+
+        // A day of the week, with the preposition that goes with it ("na sexta", "on friday", "el viernes", "в пятницу")
+        static readonly Regex Weekday = new Regex(@"(?<![\p{L}\d])(?:(?:na|no|on|el|в|во)\s+)?(?<w>segunda|ter[çc]a|quarta|quinta|sexta|s[áa]bado|domingo|monday|tuesday|wednesday|thursday|friday|saturday|sunday|lunes|martes|mi[ée]rcoles|jueves|viernes|понедельник|вторник|сред[ау]|четверг|пятниц[ау]|суббот[ау]|воскресенье)(?:-feira)?(?![\p{L}\d])(?!\s+(?:via|vez|parte|temporada|chance|op[çc][ãa]o|m[ãa]o|s[ée]rie|edi[çc][ãa]o)(?![\p{L}]))", Opts);
+
+        // A date: "28/11", "28/11/2026", "dia 28/11" (day first, as the list shows it)
+        static readonly Regex DateNum = new Regex(@"(?<![\p{L}\d/])(?:(?:dia|day|el|on)\s+)?(?<d>\d{1,2})/(?<mo>\d{1,2})(?:/(?<y>\d{2}|\d{4}))?(?![\d/])", Opts);
+
+        const int DefaultHour = 9; // A day without a time ("amanhã reunião", "sexta dentista"): in the morning
 
         const string Prep = @"(?:(?<![\p{L}\d])(?:às|as|à|at|a\s+las?|a|в|во|к)\s+)?";
 
@@ -52,21 +60,41 @@ namespace WindowsIsland
                 if (amount > 0 && amount <= (minutes ? 24 * 60 : 24 * 7))
                 {
                     DateTime when = minutes ? now.AddMinutes(amount) : now.AddHours(amount);
-                    return Done(text, rel.Index, rel.Length, null, when);
+                    return Done(text, rel.Index, rel.Length, when);
                 }
             }
 
-            Match day = DayWord.Match(text);
-            int addDays = 0;
-            if (day.Success)
+            // The day: a word ("amanhã"), a weekday ("sexta") or a date ("28/11"). It is blanked out (same length, so the
+            // indexes stay right) before looking for the time, so "28/11" is never read as a time.
+            Match day = null;
+            DateTime? date = null;
+            bool explicitDay = false; // A day other than today was named: a time already gone is not pushed to tomorrow
+            Match word = DayWord.Match(text);
+            Match weekday = Weekday.Match(text);
+            Match numeric = DateNum.Match(text);
+            if (word.Success)
             {
-                string d = day.Groups["d"].Value.ToLowerInvariant();
-                addDays = d == "hoje" || d == "today" || d == "hoy" || d == "сегодня" ? 0 : 1;
+                string d = word.Groups["d"].Value.ToLowerInvariant();
+                int add = d == "hoje" || d == "today" || d == "hoy" || d == "сегодня" ? 0
+                    : d.StartsWith("depois", StringComparison.Ordinal) || d.Contains("after") || d.StartsWith("pasado", StringComparison.Ordinal) || d == "послезавтра" ? 2 : 1;
+                day = word; date = now.Date.AddDays(add); explicitDay = add > 0;
+            }
+            else if (numeric.Success)
+            {
+                if (!TryDate(numeric, now, out DateTime on)) return fail; // "31/02", or a day already gone: not today at that hour
+                day = numeric; date = on; explicitDay = on > now.Date;
+            }
+            else if (weekday.Success)
+            {
+                int target = WeekdayNumber(weekday.Groups["w"].Value.ToLowerInvariant());
+                int ahead = ((target - (int)now.DayOfWeek) + 7) % 7;
+                day = weekday; date = now.Date.AddDays(ahead); explicitDay = ahead > 0;
             }
 
+            string search = day == null ? text : text.Substring(0, day.Index) + new string(' ', day.Length) + text.Substring(day.Index + day.Length);
             foreach (Regex pattern in new[] { Colon, HourH, AmPm, Bare })
             {
-                foreach (Match m in pattern.Matches(text))
+                foreach (Match m in pattern.Matches(search))
                 {
                     int hour = int.Parse(m.Groups["h"].Value, CultureInfo.InvariantCulture);
                     int minute = m.Groups["m"].Success && m.Groups["m"].Length > 0 ? int.Parse(m.Groups["m"].Value, CultureInfo.InvariantCulture) : 0;
@@ -80,22 +108,55 @@ namespace WindowsIsland
                     }
                     else if (hour > 23) continue;
 
-                    DateTime date = now.Date.AddDays(addDays).AddHours(hour).AddMinutes(minute);
-                    if (!day.Success || addDays == 0) { if (date <= now) date = date.AddDays(1); } // A time already gone today means tomorrow
-                    return Done(text, m.Index, m.Length, day.Success ? day : null, date);
+                    DateTime when = (date ?? now.Date).AddHours(hour).AddMinutes(minute);
+                    if (when <= now)
+                    {
+                        if (!explicitDay && (day == null || day == word)) when = when.AddDays(1);      // A time already gone today means tomorrow
+                        else if (day == weekday) when = when.AddDays(7);                                // "sexta 10h" on a Friday at 11: next Friday
+                        else continue;                                                                  // A date in the past: not a reminder
+                    }
+                    return Done(search, m.Index, m.Length, when, text);
                 }
             }
+
+            // A day was named but no time: in the morning of that day (not today: "hoje" alone says nothing)
+            if (day != null && explicitDay) return Done(search, 0, 0, date.Value.AddHours(DefaultHour), text);
             return fail;
         }
 
-        static Result Done(string text, int index, int length, Match day, DateTime when)
+        static bool TryDate(Match m, DateTime now, out DateTime date)
         {
-            // Cut the time and the day word out (the later one first so the indexes stay right)
-            string rest = text;
-            if (day != null && day.Index > index) { rest = rest.Remove(day.Index, day.Length); rest = rest.Remove(index, length); }
-            else if (day != null) { rest = rest.Remove(index, length); rest = rest.Remove(day.Index, day.Length); }
-            else rest = rest.Remove(index, length);
-            return new Result { Ok = true, Text = Clean(rest, text), When = when };
+            date = default;
+            int d = int.Parse(m.Groups["d"].Value, CultureInfo.InvariantCulture);
+            int mo = int.Parse(m.Groups["mo"].Value, CultureInfo.InvariantCulture);
+            int y = now.Year;
+            bool yearGiven = m.Groups["y"].Success && m.Groups["y"].Length > 0;
+            if (yearGiven) { y = int.Parse(m.Groups["y"].Value, CultureInfo.InvariantCulture); if (y < 100) y += 2000; }
+            if (mo < 1 || mo > 12 || d < 1 || d > DateTime.DaysInMonth(y, mo)) return false;
+            date = new DateTime(y, mo, d);
+            if (!yearGiven && date < now.Date) // "05/01" in November: next January
+            {
+                if (d > DateTime.DaysInMonth(y + 1, mo)) return false;
+                date = new DateTime(y + 1, mo, d);
+            }
+            return date >= now.Date;
+        }
+
+        static int WeekdayNumber(string w)
+        {
+            if (w.StartsWith("seg") || w.StartsWith("mon") || w.StartsWith("lun") || w.StartsWith("пон")) return 1;
+            if (w.StartsWith("ter") || w.StartsWith("tue") || w.StartsWith("mar") || w.StartsWith("вто")) return 2;
+            if (w.StartsWith("qua") || w.StartsWith("wed") || w.StartsWith("mi") || w.StartsWith("сре")) return 3;
+            if (w.StartsWith("qui") || w.StartsWith("thu") || w.StartsWith("jue") || w.StartsWith("чет")) return 4;
+            if (w.StartsWith("sex") || w.StartsWith("fri") || w.StartsWith("vie") || w.StartsWith("пят")) return 5;
+            if (w.StartsWith("s") && w.Length > 1 && (w[1] == 'á' || w[1] == 'a') || w.StartsWith("суб")) return 6;
+            return 0; // domingo, sunday, воскресенье
+        }
+
+        static Result Done(string text, int index, int length, DateTime when, string original = null)
+        {
+            string rest = text.Remove(index, length); // The day was already blanked out by the caller
+            return new Result { Ok = true, Text = Clean(rest, original ?? text), When = when };
         }
 
         static string Clean(string rest, string original)
