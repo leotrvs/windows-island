@@ -176,7 +176,6 @@ namespace WindowsIsland
         public event Action<WatchedActivity> Updated;
 
         readonly DispatcherTimer timer;
-        DateTime busySince = DateTime.MinValue;
         bool installing, rebootShown;
         DateTime rebootAt = DateTime.MinValue;
 

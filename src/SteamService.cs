@@ -91,7 +91,6 @@ namespace WindowsIsland
         }
 
         // Steam's own log is the quickest to say what runs and what is paused; the manifest follows later
-        string logPath;
         long logLength = -1;
         DateTime logWrite;
         Dictionary<string, string> logStates = new Dictionary<string, string>();

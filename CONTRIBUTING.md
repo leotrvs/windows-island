@@ -40,6 +40,7 @@ Run the tests with `dotnet test tests`. They cover the logic that has no window 
 |---|---|
 | `src\IslandWindow.xaml` | The island: shape, layout of every state and the glyphs |
 | `src\IslandWindow.xaml.cs` | Which state to show, the spring animations and the live parts |
+| `src\IslandWindow.*.cs` | The rest of the island, one file per part: `Music`, `Claude`, `Timer`, `Banners`, `Permission`, `Thin`, `Input`, `Animation`, `Render` (the README images) and the other pages |
 | `src\Spring.cs` | The damped spring behind every animation |
 | `src\MediaService.cs` | What is playing, from the Windows media controls |
 | `src\ClaudeService.cs` | Claude Code session status, alerts and when to read the limits |
@@ -47,6 +48,7 @@ Run the tests with `dotnet test tests`. They cover the logic that has no window 
 | `src\CodexService.cs` | Codex activity and limits, from the end of its newest session file |
 | `src\Displays.cs` | The monitors and their bounds, for placing each island |
 | `src\SettingsWindow.xaml` | The settings window |
+| `src\SettingsWindow.*.cs` | The settings code: `Pages` (the tabs), `Controls` (rows, switches, sliders), `Rows`, `Updates`, `Welcome` and `Snapshots` |
 | `src\ClaudeSpark.cs` | The Claude spark and its thinking animation, from `src\Assets\thinking.png` |
 | `src\NotificationService.cs` | New Windows notifications, read-only, through the SQLite that ships with Windows |
 | `src\Installer.cs` | Install, shortcuts and uninstall |
