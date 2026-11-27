@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- **Click the song to open the player:** on the expanded music page, a click on the cover, title or artist brings Spotify (or the browser or app that is playing) to the front, restoring it if it is minimized. A click on the controls still controls the music
+
 ## 4.7.0
 
 - **Limit forecast:** when the pace of use says the 5-hour (or weekly) limit will run out before it renews, the island says so once: "At this pace, the 5-hour limit runs out at 22:13". The same line shows under the rings on the Claude page. Option "Limit forecast" in Settings
