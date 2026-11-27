@@ -43,6 +43,7 @@ Run the tests with `dotnet test tests`. They cover the logic that has no window 
 | `src\IslandWindow.*.cs` | The rest of the island, one file per part: `Music`, `Claude`, `Timer`, `Banners`, `Permission`, `Thin`, `Input`, `Animation`, `Render` (the README images) and the other pages |
 | `src\Spring.cs` | The damped spring behind every animation |
 | `src\MediaService.cs` | What is playing, from the Windows media controls |
+| `src\SourceWindow.cs` | Brings the player of the current song to the front |
 | `src\ClaudeService.cs` | Claude Code session status, alerts and when to read the limits |
 | `src\UsageProbe.cs` | Reads the limits from Claude Code's `/usage` command |
 | `src\CodexService.cs` | Codex activity and limits, from the end of its newest session file |
