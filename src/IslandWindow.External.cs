@@ -21,12 +21,9 @@ namespace WindowsIsland
         bool RecordingOn { get { return (renderThin && minimalKind == Thin.Recording) || (api != null && api.Activities.Any(a => a.State == "running" && IsRecording(a))); } }
         bool ApiActive { get { return api != null && api.Activities.Count > 0; } }
 
-        static readonly Brush ApiBlue = Freeze(new SolidColorBrush(Color.FromRgb(0x0A, 0x84, 0xFF)));
-        static readonly Brush ApiGreen = Freeze(new SolidColorBrush(Color.FromRgb(0x30, 0xD1, 0x58)));
-        static readonly Brush ApiRed = Freeze(new SolidColorBrush(Color.FromRgb(0xFF, 0x45, 0x3A)));
-        static Brush StateBrush(string state) { return state == "done" ? ApiGreen : state == "error" ? ApiRed : ApiBlue; }
+        static Brush StateBrush(string state) { return state == "done" ? Green : state == "error" ? Red : SystemBlue; }
         static bool IsRecording(ApiActivity a) { return a.Id.StartsWith("obs-", StringComparison.Ordinal) || a.Id.StartsWith("gamebar-", StringComparison.Ordinal); }
-        static Brush ActivityBrush(ApiActivity a) { return a.State == "running" && IsRecording(a) ? ApiRed : StateBrush(a.State); } // A recording is red, not blue
+        static Brush ActivityBrush(ApiActivity a) { return a.State == "running" && IsRecording(a) ? Red : StateBrush(a.State); } // A recording is red, not blue
         static string SideOf(ApiActivity a) { return a.State == "done" ? "\u2713" : a.State == "error" ? "\u2715" : a.Progress >= 0 ? a.Progress + "%" : "\u2026"; }
 
         void UpdateExternal()

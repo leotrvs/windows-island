@@ -47,7 +47,7 @@ namespace WindowsIsland
             // The part that is left ends at the top and shrinks clockwise, like the iPhone's timer
             timerRing.StrokeDashArray = new DoubleCollection { left * unit, unit };
             timerRing.StrokeDashOffset = -(1 - left) * unit;
-            timerRing.Stroke = OnBreak ? PomodoroGreen : TimerOrange;
+            timerRing.Stroke = OnBreak ? Green : Amber;
             timerRing.Opacity = timerRail.Opacity = Math.Clamp(presenceValue, 0, 1);
         }
 
@@ -62,9 +62,9 @@ namespace WindowsIsland
                 TimerBig.Text = text;
             }
             TimerCompactText.Opacity = timer.Paused ? 0.5 : 1;
-            Brush phase = OnBreak ? PomodoroGreen : TimerOrange; // Focus is orange, a break is green
+            Brush phase = OnBreak ? Green : Amber; // Focus is orange, a break is green
             TimerCompactText.Foreground = phase;
-            TimerBig.Foreground = OnBreak ? PomodoroGreen : Brushes.White;
+            TimerBig.Foreground = OnBreak ? Green : Brushes.White;
             UpdateTimerRing(Pill.Width, Pill.Height);
         }
 
@@ -77,8 +77,6 @@ namespace WindowsIsland
         }
 
         FontFamily plusFont; // The "+" button's own font, back when it is not the skip button
-        static readonly Brush PomodoroGreen = Freeze(new SolidColorBrush(Color.FromRgb(0x30, 0xD1, 0x58)));
-        static readonly Brush TimerOrange = Freeze(new SolidColorBrush(Color.FromRgb(0xFF, 0x9F, 0x0A)));
         bool OnBreak { get { return timer.Pomodoro && timer.Current != TimerService.Phase.Focus; } }
 
         void UpdateTimerPage()
@@ -99,7 +97,7 @@ namespace WindowsIsland
                     TimerDots.Children.Add(new System.Windows.Shapes.Ellipse
                     {
                         Width = 6, Height = 6, Margin = new Thickness(0, 0, 4, 0),
-                        Fill = i < timer.Cycle || (i == timer.Cycle && timer.Current == TimerService.Phase.Focus) ? TimerOrange : (Brush)new SolidColorBrush(Color.FromRgb(0x48, 0x48, 0x4A)),
+                        Fill = i < timer.Cycle || (i == timer.Cycle && timer.Current == TimerService.Phase.Focus) ? Amber : (Brush)new SolidColorBrush(Color.FromRgb(0x48, 0x48, 0x4A)),
                     });
             }
             BtnPlusText.Text = pomodoro ? "\uE893" : "+";

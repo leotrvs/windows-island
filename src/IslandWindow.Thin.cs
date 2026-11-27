@@ -22,7 +22,6 @@ namespace WindowsIsland
         internal void SetOnline(bool online) { networkOffline = !online; Recompute(); }
         Thin minimalKind = Thin.None;
         bool minimalHasContent; // Only the moon needs more room than the line
-        string minimalSig = "";
         Color minimalColor = Colors.White;
         double minimalFraction;
         static readonly FontFamily FluentIcons = new FontFamily("Segoe Fluent Icons, Segoe MDL2 Assets");
@@ -41,7 +40,6 @@ namespace WindowsIsland
             bool changed = minimalHasContent;
             minimalHasContent = false;
             minimalKind = Thin.None;
-            minimalSig = "";
             return changed;
         }
 
@@ -121,7 +119,6 @@ namespace WindowsIsland
             bool has = kind == Thin.Focus;
             bool had = minimalHasContent;
             minimalHasContent = has;
-            minimalSig = kind.ToString();
             return has != had;
         }
 

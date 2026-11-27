@@ -260,8 +260,8 @@ namespace WindowsIsland
                 case "full": item.Glyph = "\uE83F"; item.GlyphBrush = Green; break;
                 case "low": item.Glyph = "\uE850"; item.GlyphBrush = Red; break;
                 case "unplugged": item.Glyph = "\uE83F"; break;
-                case "timer": item.Glyph = "\uE916"; item.GlyphBrush = TimerOrange; break;
-                case "reminder": item.Glyph = "\uE823"; item.GlyphBrush = TimerOrange; break;
+                case "timer": item.Glyph = "\uE916"; item.GlyphBrush = Amber; break;
+                case "reminder": item.Glyph = "\uE823"; item.GlyphBrush = Amber; break;
             }
         }
 

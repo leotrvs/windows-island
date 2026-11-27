@@ -188,21 +188,6 @@ namespace WindowsIsland
             return input;
         }
 
-        static void Tap(ushort vk)
-        {
-            SendInput(2, new[] { Key(vk, 0, 0), Key(vk, 0, KEYEVENTF_KEYUP) }, Marshal.SizeOf(typeof(INPUT)));
-        }
-
-        static void Press(ushort modifier, ushort vk)
-        {
-            SendInput(4, new[] { Key(modifier, 0, 0), Key(vk, 0, 0), Key(vk, 0, KEYEVENTF_KEYUP), Key(modifier, 0, KEYEVENTF_KEYUP) }, Marshal.SizeOf(typeof(INPUT)));
-        }
-
-        static void Unicode(char ch)
-        {
-            SendInput(2, new[] { Key(0, ch, KEYEVENTF_UNICODE), Key(0, ch, KEYEVENTF_UNICODE | KEYEVENTF_KEYUP) }, Marshal.SizeOf(typeof(INPUT)));
-        }
-
         // The folder name of the profile the browser used last ("Default", "Profile 2"), from its Local State file.
         static string LastUsedProfile(bool edge)
         {

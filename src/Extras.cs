@@ -362,7 +362,7 @@ namespace WindowsIsland
 
         readonly DispatcherTimer timer;
         bool known, wasOnAc, wasFull;
-        int lastPercent = 100, lowNotified = 100;
+        int lowNotified = 100;
 
         public BatteryService(Dispatcher dispatcher)
         {
@@ -410,7 +410,6 @@ namespace WindowsIsland
             known = true;
             wasOnAc = onAc;
             wasFull = full;
-            lastPercent = percent;
         }
     }
 
