@@ -217,6 +217,12 @@ namespace WindowsIsland
         public void Next() { NoteWay(Way.Next); Run(() => session.TrySkipNextAsync()); }
         public void Previous() { NoteWay(Way.Previous); Run(() => session.TrySkipPreviousAsync()); }
 
+        // Brings the player of the current song to the front (Spotify, the browser, ...). False when no window was found.
+        public bool FocusSource()
+        {
+            return session != null && SourceWindow.Focus(sourceApp);
+        }
+
         public void Seek(TimeSpan target)
         {
             if (session == null) return;

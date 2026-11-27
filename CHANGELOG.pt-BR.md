@@ -2,6 +2,10 @@
 
 > Tradução de [CHANGELOG.md](CHANGELOG.md), que é o original em inglês.
 
+## Unreleased
+
+- **Clicar na música abre o player:** na página de música expandida, um clique na capa, no título ou no artista traz o Spotify (ou o navegador ou app que está tocando) para a frente, restaurando se estiver minimizado. Os botões continuam controlando a música
+
 ## 4.7.0
 
 - **Previsão do limite:** quando o ritmo de uso indica que o limite de 5 horas (ou o semanal) vai acabar antes de renovar, a ilha avisa uma vez: "No ritmo atual, o limite de 5h acaba às 22:13". A mesma linha aparece sob os anéis na página do Claude. Opção "Previsão do limite" nos Ajustes
