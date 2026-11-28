@@ -78,6 +78,9 @@ namespace WindowsIsland
             return minutes < remaining ? (DateTime?)now.AddMinutes(minutes) : null;
         }
 
+        // A threshold so large that a forecast is announced only once per window.
+        public static readonly TimeSpan OncePerWindow = TimeSpan.FromDays(3650);
+
         // A forecast is announced once per window: again only when the predicted time moved by at least the threshold.
         public static bool ShouldAnnounceForecast(DateTime? announced, DateTime predicted, TimeSpan threshold)
         {

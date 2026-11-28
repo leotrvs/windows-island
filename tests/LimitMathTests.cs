@@ -132,5 +132,14 @@ namespace WindowsIsland.Tests
             Assert.True(LimitMath.ShouldAnnounceForecast(at, at.AddMinutes(-60), threshold));
             Assert.True(LimitMath.ShouldAnnounceForecast(at, at.AddHours(2), threshold));
         }
+
+        [Fact]
+        public void AWeeklyForecastIsAnnouncedOncePerWindowHoweverMuchItMoves()
+        {
+            System.DateTime at = Now.AddDays(2);
+            Assert.False(LimitMath.ShouldAnnounceForecast(at, at.AddDays(-1.5), LimitMath.OncePerWindow));
+            Assert.False(LimitMath.ShouldAnnounceForecast(at, at.AddDays(3), LimitMath.OncePerWindow));
+            Assert.True(LimitMath.ShouldAnnounceForecast(null, at, LimitMath.OncePerWindow));
+        }
     }
 }

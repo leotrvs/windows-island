@@ -107,9 +107,18 @@ namespace WindowsIsland
             get { return UsageProbe.ClaudeFound; }
         }
 
-        public ClaudeService(Dispatcher dispatcher)
+        readonly Settings settings;
+
+        public ClaudeService(Dispatcher dispatcher, Settings settings = null)
         {
             this.dispatcher = dispatcher;
+            this.settings = settings;
+            // The weekly forecast was already announced for this window before the app restarted
+            if (settings != null && settings.WeeklyForecastWindow.HasValue)
+            {
+                weeklyLimitAt.Resets = settings.WeeklyForecastWindow;
+                weeklyLimitAt.Announced = settings.WeeklyForecastWindow;
+            }
         }
 
         static string ConfigDirectory
@@ -312,6 +321,11 @@ namespace WindowsIsland
             if (!when.HasValue) return;
             if (!LimitMath.ShouldAnnounceForecast(state.Announced, when.Value, threshold)) return;
             state.Announced = when;
+            if (index == 1 && settings != null)
+            {
+                settings.WeeklyForecastWindow = resets; // Remembered across restarts: once per week
+                settings.Save();
+            }
             Forecast?.Invoke(index == 1, when.Value, resets);
         }
 
@@ -355,7 +369,7 @@ namespace WindowsIsland
             Session = usage.Session;
             Weekly = usage.Weekly;
             CheckForecast(0, Session, 5, ref sessionLimitAt, TimeSpan.FromMinutes(60));
-            CheckForecast(1, Weekly, 7 * 24, ref weeklyLimitAt, TimeSpan.FromHours(12));
+            CheckForecast(1, Weekly, 7 * 24, ref weeklyLimitAt, LimitMath.OncePerWindow); // The weekly pace swings a lot: warned once per week, not whenever it moves
             SessionLimitAt = sessionLimitAt.Predicted;
             WeeklyLimitAt = weeklyLimitAt.Predicted;
             usageVersion++;
