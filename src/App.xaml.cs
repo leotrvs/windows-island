@@ -176,7 +176,7 @@ namespace WindowsIsland
                 settings.Save(); // Started again (new, or from before the welcome): saved at once, so it is not started again next time
             if (!sample) Strings.Use(settings.Language);
             media = new MediaService(Dispatcher);
-            claude = new ClaudeService(Dispatcher);
+            claude = new ClaudeService(Dispatcher, settings);
             codex = new CodexService(Dispatcher);
             timer = new TimerService(Dispatcher);
             Action<WatchedActivity> watched = w =>

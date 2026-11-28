@@ -59,6 +59,7 @@ namespace WindowsIsland
         public int NotificationSeconds { get; set; } = 3;   // How long a Windows notification stays
         public bool ShowLimitAlerts { get; set; } = true; // Claude 5-hour and weekly limits at 75, 90 and 100% and when they renew
         public bool ShowLimitForecast { get; set; } = true; // Warns once when, at the current pace, a limit runs out before it renews
+        public DateTime? WeeklyForecastWindow { get; set; } // The weekly window (its reset time) whose forecast was already announced
         public bool ShowDaySummary { get; set; } = true;    // "Today: 4 sessions · 2h 15min working" on the Claude page
         public bool ShowCodex { get; set; } = true;     // Only shows anything once Codex is installed
         public bool CodexBanners { get; set; } = true;
